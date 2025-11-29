@@ -260,6 +260,7 @@ impl PartialEq for Variant<'_> {
 /// See [`crate::selector`] for more information.
 #[derive(Clone, Debug)]
 pub(crate) struct Selector<'a> {
+    pub(crate) layer: i8,
     pub(crate) order: usize,
     pub(crate) full: &'a str,
     pub(crate) modifier: Modifier<'a>,
@@ -275,6 +276,7 @@ impl PartialEq for Selector<'_> {
             && self.modifier == other.modifier
             && self.variants == other.variants
             && self.is_important == other.is_important
+            && self.layer == other.layer
     }
 }
 
@@ -296,44 +298,46 @@ impl Ord for Selector<'_> {
             return Ordering::Equal;
         }
 
-        if self.variants.is_empty() && !other.variants.is_empty() {
-            Ordering::Less
-        } else if !self.variants.is_empty() && other.variants.is_empty() {
-            Ordering::Greater
-        } else if !self.variants.is_empty() && !other.variants.is_empty() {
-            let mut compared = None;
+        self.layer.cmp(&other.layer).then_with(|| {
+            if self.variants.is_empty() && !other.variants.is_empty() {
+                Ordering::Less
+            } else if !self.variants.is_empty() && other.variants.is_empty() {
+                Ordering::Greater
+            } else if !self.variants.is_empty() && !other.variants.is_empty() {
+                let mut compared = None;
 
-            // Compare variants in the lexicographic order
-            for variant_i in 0..self.variants.len() {
-                if variant_i >= other.variants.len() {
-                    compared = Some(Ordering::Greater);
-                    break;
+                // Compare variants in the lexicographic order
+                for variant_i in 0..self.variants.len() {
+                    if variant_i >= other.variants.len() {
+                        compared = Some(Ordering::Greater);
+                        break;
+                    }
+
+                    let res = self
+                        .variants
+                        .get(variant_i)
+                        .as_ref()
+                        .unwrap()
+                        .order
+                        .cmp(&other.variants.get(variant_i).unwrap().order);
+
+                    if res != Ordering::Equal {
+                        compared = Some(res);
+                        break;
+                    }
                 }
 
-                let res = self
-                    .variants
-                    .get(variant_i)
-                    .as_ref()
-                    .unwrap()
-                    .order
-                    .cmp(&other.variants.get(variant_i).unwrap().order);
-
-                if res != Ordering::Equal {
-                    compared = Some(res);
-                    break;
-                }
-            }
-
-            compared.unwrap_or(Ordering::Less).then_with(|| {
+                compared.unwrap_or(Ordering::Less).then_with(|| {
+                    self.order
+                        .cmp(&other.order)
+                        .then_with(|| self.full.cmp(other.full))
+                })
+            } else {
                 self.order
                     .cmp(&other.order)
                     .then_with(|| self.full.cmp(other.full))
-            })
-        } else {
-            self.order
-                .cmp(&other.order)
-                .then_with(|| self.full.cmp(other.full))
-        }
+            }
+        })
     }
 }
 
@@ -370,6 +374,37 @@ mod tests {
         assert!(
             iter.next().unwrap().full == "bg-red-500"
                 && iter.next().unwrap().full == "lg:bg-red-500"
+        );
+    }
+
+    #[test]
+    fn layers_test() {
+        let config = Config::default();
+
+        let selectors1 = parse(
+            "lg:bg-red-500",
+            None,
+            None,
+            &config,
+            &config.get_derived_variants(),
+        );
+        let mut selectors2 = parse(
+            "bg-red-500",
+            None,
+            None,
+            &config,
+            &config.get_derived_variants(),
+        );
+        selectors2[0].as_mut().unwrap().layer = 42;
+
+        let mut selectors = BTreeSet::new();
+        selectors.insert(selectors1[0].as_ref().unwrap());
+        selectors.insert(selectors2[0].as_ref().unwrap());
+
+        let mut iter = selectors.iter();
+        assert!(
+            iter.next().unwrap().full == "lg:bg-red-500"
+                && iter.next().unwrap().full == "bg-red-500"
         );
     }
 }

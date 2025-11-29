@@ -504,7 +504,8 @@ fn parse_recursive<'a>(
                 .map(|variants| {
                     Ok(Selector {
                         // Arbitrary properties will be placed at the end of the CSS
-                        order: BUILTIN_PLUGINS.len() + config.custom_plugins.len(),
+                        layer: i8::MAX,
+                        order: usize::MAX,
                         full: if let Some(full_class) = full_class {
                             full_class
                         } else {
@@ -523,14 +524,19 @@ fn parse_recursive<'a>(
                 .collect()
         } else {
             // Find the right plugin for handling this selector
-            for (order, (namespace, plugin)) in BUILTIN_PLUGINS
+            for (order, layer, (namespace, plugin)) in BUILTIN_PLUGINS
                 .iter()
                 .enumerate()
-                // Selectors generated using custom plugins are placed first to be easily
-                // overridden, so we need to shift the order of builtin plugins to take that
-                // into account
-                .map(|p| (p.0 + config.custom_plugins.len(), p.1))
-                .chain(config.custom_plugins.iter().enumerate())
+                .map(|p| (p.0, 0, p.1))
+                .chain(
+                    // Selectors generated using custom plugins are placed first to be easily
+                    // overridden
+                    config
+                        .custom_plugins
+                        .iter()
+                        .enumerate()
+                        .map(|p| (p.0, -1, p.1)),
+                )
             {
                 // Find the modifier
                 if let Some(modifier) = remaining
@@ -557,6 +563,7 @@ fn parse_recursive<'a>(
                             .into_iter()
                             .map(|variants| {
                                 Ok(Selector {
+                                    layer,
                                     order,
                                     full: if let Some(full_class) = full_class {
                                         full_class
@@ -664,6 +671,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "absolute",
                 order: Default::default(), // order is not checked in tests
                 plugin: &layout::position::PluginDefinition,
@@ -691,6 +699,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "text-center",
                 order: Default::default(),
                 plugin: &typography::text_align::PluginDefinition,
@@ -718,6 +727,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "bg-red-500/25",
                 order: Default::default(),
                 plugin: &background::background_color::PluginDefinition,
@@ -739,6 +749,7 @@ mod tests {
                 .as_ref()
                 .unwrap(),
             &Selector {
+                layer: 0,
                 full: "!px-4",
                 order: Default::default(),
                 plugin: &spacing::padding::PluginDefinition,
@@ -760,6 +771,7 @@ mod tests {
                 .as_ref()
                 .unwrap(),
             &Selector {
+                layer: 0,
                 full: "-px-4",
                 order: Default::default(),
                 plugin: &spacing::padding::PluginDefinition,
@@ -787,6 +799,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "!-px-4",
                 order: Default::default(),
                 plugin: &spacing::padding::PluginDefinition,
@@ -808,6 +821,7 @@ mod tests {
                 .as_ref()
                 .unwrap(),
             &Selector {
+                layer: 0,
                 full: "px-4",
                 order: Default::default(),
                 plugin: &spacing::padding::PluginDefinition,
@@ -835,6 +849,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "px-1.5",
                 order: Default::default(),
                 plugin: &spacing::padding::PluginDefinition,
@@ -862,6 +877,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "hover:text-center",
                 order: Default::default(),
                 plugin: &typography::text_align::PluginDefinition,
@@ -893,6 +909,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "marker:xl:hover:text-center",
                 order: Default::default(),
                 plugin: &typography::text_align::PluginDefinition,
@@ -936,6 +953,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "marker:xl:hover:-mx-4",
                 order: Default::default(),
                 plugin: &spacing::margin::PluginXDefinition,
@@ -979,6 +997,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "[&>*]:text-center",
                 order: Default::default(),
                 plugin: &typography::text_align::PluginDefinition,
@@ -1010,6 +1029,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "group-checked:block",
                 order: Default::default(),
                 plugin: &layout::display::PluginDefinition,
@@ -1037,6 +1057,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "peer-checked:block",
                 order: Default::default(),
                 plugin: &layout::display::PluginDefinition,
@@ -1064,6 +1085,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "peer-not-checked:block",
                 order: Default::default(),
                 plugin: &layout::display::PluginDefinition,
@@ -1095,6 +1117,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "group-checked/item:block",
                 order: Default::default(),
                 plugin: &layout::display::PluginDefinition,
@@ -1122,6 +1145,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "peer-checked/item:block",
                 order: Default::default(),
                 plugin: &layout::display::PluginDefinition,
@@ -1149,6 +1173,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "peer-not-checked/item:block",
                 order: Default::default(),
                 plugin: &layout::display::PluginDefinition,
@@ -1180,6 +1205,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "[@supports_not_(display:grid)]:grid",
                 order: Default::default(),
                 plugin: &layout::display::PluginDefinition,
@@ -1211,6 +1237,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "xl:[&>*]:focus:text-center",
                 order: Default::default(),
                 plugin: &typography::text_align::PluginDefinition,
@@ -1254,6 +1281,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "xl:[&>*]:focus:-m-4",
                 order: Default::default(),
                 plugin: &spacing::margin::PluginDefinition,
@@ -1297,6 +1325,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "mx-[12px]",
                 order: Default::default(),
                 plugin: &spacing::margin::PluginDefinition,
@@ -1325,6 +1354,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "bg-[url('/hello_world.png')]",
                 order: Default::default(),
                 plugin: &background::background_image::PluginDefinition,
@@ -1353,6 +1383,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "bg-[color:#fff]",
                 order: Default::default(),
                 plugin: &background::background_color::PluginDefinition,
@@ -1381,6 +1412,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "xl:marker:bg-[#fff]",
                 order: Default::default(),
                 plugin: &background::background_color::PluginDefinition,
@@ -1420,6 +1452,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "xl:marker:bg-[color:#fff]",
                 order: Default::default(),
                 plugin: &background::background_color::PluginDefinition,
@@ -1459,6 +1492,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "[&>*]:bg-[#fff]",
                 order: Default::default(),
                 plugin: &background::background_color::PluginDefinition,
@@ -1491,6 +1525,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: r"[&#91;type=&#39;input&#39;&#93;_&>:*]:bg-red-300",
                 order: Default::default(),
                 plugin: &background::background_color::PluginDefinition,
@@ -1522,6 +1557,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "xl:[&>*]:hover:bg-[#fff]",
                 order: Default::default(),
                 plugin: &background::background_color::PluginDefinition,
@@ -1566,6 +1602,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: "xl:[&>*]:hover:bg-[color:#fff]",
                 order: Default::default(),
                 plugin: &background::background_color::PluginDefinition,
@@ -1610,6 +1647,7 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 0,
                 full: r"bg-[url(&#34;/url_with_&#93;&#41;&#39;.png&#34;)]",
                 order: Default::default(),
                 plugin: &background::background_image::PluginDefinition,
@@ -1638,8 +1676,9 @@ mod tests {
             .as_ref()
             .unwrap(),
             &Selector {
+                layer: 127,
                 full: "hover:[mask-type:luminance]",
-                order: BUILTIN_PLUGINS.len(),
+                order: Default::default(),
                 plugin: &CssPropertyPlugin,
                 variants: vec![Variant {
                     order: Default::default(),
@@ -1669,6 +1708,7 @@ mod tests {
             ),
             vec![
                 Ok(Selector {
+                    layer: 0,
                     full: "hover:(focus:bg-gray-500,text-[color:black,])",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -1691,6 +1731,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "hover:(focus:bg-gray-500,text-[color:black,])",
                     order: Default::default(),
                     plugin: &typography::text_color::PluginDefinition,
@@ -1722,6 +1763,7 @@ mod tests {
                 &config.get_derived_variants()
             ),
             vec![Ok(Selector {
+                layer: 0,
                 full: "hover:(bg-gray-500)",
                 order: Default::default(),
                 plugin: &background::background_color::PluginDefinition,
@@ -1765,6 +1807,7 @@ mod tests {
                 &config.get_derived_variants()
             ),
             vec![Ok(Selector {
+                layer: 0,
                 full: "min-[475px]:visible",
                 order: Default::default(),
                 plugin: &layout::visibility::PluginDefinition,
@@ -1795,6 +1838,7 @@ mod tests {
             ),
             vec![
                 Ok(Selector {
+                    layer: 0,
                     full: "focus:([&>*]:-m-4,xl:dark:(bg-red-100,rtl:text-[color:black]))",
                     order: Default::default(),
                     plugin: &spacing::margin::PluginDefinition,
@@ -1817,6 +1861,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "focus:([&>*]:-m-4,xl:dark:(bg-red-100,rtl:text-[color:black]))",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -1844,6 +1889,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "focus:([&>*]:-m-4,xl:dark:(bg-red-100,rtl:text-[color:black]))",
                     order: Default::default(),
                     plugin: &typography::text_color::PluginDefinition,
@@ -1893,6 +1939,7 @@ mod tests {
             ),
             vec![
                 Ok(Selector {
+                    layer: 0,
                     full: r"focus:([&>*]:-m-4,xl:dark:([&#91;type=&#39;text&#39;&#93;.light_&,.foo]:bg-red-100,text-[color:black,]))",
                     order: Default::default(),
                     plugin: &spacing::margin::PluginDefinition,
@@ -1915,6 +1962,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: r"focus:([&>*]:-m-4,xl:dark:([&#91;type=&#39;text&#39;&#93;.light_&,.foo]:bg-red-100,text-[color:black,]))",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -1947,6 +1995,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: r"focus:([&>*]:-m-4,xl:dark:([&#91;type=&#39;text&#39;&#93;.light_&,.foo]:bg-red-100,text-[color:black,]))",
                     order: Default::default(),
                     plugin: &typography::text_color::PluginDefinition,
@@ -1991,6 +2040,7 @@ mod tests {
             ),
             vec![
                 Ok(Selector {
+                    layer: 0,
                     full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
                     order: Default::default(),
                     plugin: &border::outline_style::PluginDefinition,
@@ -2013,6 +2063,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
                     order: Default::default(),
                     plugin: &border::outline_color::PluginDefinition,
@@ -2035,6 +2086,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2057,6 +2109,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
                     order: Default::default(),
                     plugin: &typography::text_color::PluginDefinition,
@@ -2096,6 +2149,7 @@ mod tests {
             ),
             vec![
                 Ok(Selector {
+                    layer: 0,
                     full: "(hover,focus):bg-red-400",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2111,6 +2165,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "(hover,focus):bg-red-400",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2138,6 +2193,7 @@ mod tests {
             ),
             vec![
                 Ok(Selector {
+                    layer: 0,
                     full: "([@supports_(display:flex)],focus-visible):flex",
                     order: Default::default(),
                     plugin: &flexbox::flex::PluginDefinition,
@@ -2153,6 +2209,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "([@supports_(display:flex)],focus-visible):flex",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2180,6 +2237,7 @@ mod tests {
             ),
             vec![
                 Ok(Selector {
+                    layer: 0,
                     full: "([@supports_(display:flex)],focus-visible):!-m-4",
                     order: Default::default(),
                     plugin: &spacing::margin::PluginDefinition,
@@ -2195,6 +2253,7 @@ mod tests {
                     is_important: true,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "([@supports_(display:flex)],focus-visible):!-m-4",
                     order: Default::default(),
                     plugin: &spacing::margin::PluginDefinition,
@@ -2222,6 +2281,7 @@ mod tests {
             ),
             vec![
                 Ok(Selector {
+                    layer: 0,
                     full: "xl:(hover,focus):bg-red-400",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2244,6 +2304,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "xl:(hover,focus):bg-red-400",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2280,6 +2341,7 @@ mod tests {
             ),
             vec![
                 Ok(Selector {
+                    layer: 0,
                     full: "(hover:bg-red-400,focus:bg-green-400)",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2295,6 +2357,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "(hover:bg-red-400,focus:bg-green-400)",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2322,6 +2385,7 @@ mod tests {
             ),
             vec![
                 Ok(Selector {
+                    layer: 0,
                     full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2354,6 +2418,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2386,6 +2451,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2413,6 +2479,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2452,6 +2519,7 @@ mod tests {
             ),
             vec![
                 Ok(Selector {
+                    layer: 0,
                     full: "(hover,focus):(focus-within,target):bg-red-400",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2474,6 +2542,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "(hover,focus):(focus-within,target):bg-red-400",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2496,6 +2565,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "(hover,focus):(focus-within,target):bg-red-400",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2518,6 +2588,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "(hover,focus):(focus-within,target):bg-red-400",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2552,6 +2623,7 @@ mod tests {
             ),
             vec![
                 Ok(Selector {
+                    layer: 0,
                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2567,6 +2639,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2582,6 +2655,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2604,6 +2678,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2626,6 +2701,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
@@ -2648,6 +2724,7 @@ mod tests {
                     is_important: false,
                 }),
                 Ok(Selector {
+                    layer: 0,
                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
                     order: Default::default(),
                     plugin: &background::background_color::PluginDefinition,
