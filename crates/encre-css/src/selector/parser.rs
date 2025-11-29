@@ -31,6 +31,10 @@ const VALID_PLUGIN_HINT: [&str; 13] = [
     "shadow",
 ];
 
+const LAYER_CUSTOM: i8 = -1;
+const LAYER_BUILTIN: i8 = 0;
+const LAYER_ARBITRARY: i8 = i8::MAX;
+
 /// Remove the first and last character of a string.
 pub(crate) fn unwrap_string(val: &mut &str) {
     let len = val.len();
@@ -150,6 +154,7 @@ fn push_variant<'a>(
     is_arbitrary: bool,
     full_variant: &'a str,
     variant_list: &mut Vec<Variant<'a>>,
+    forced_variant: &mut Option<i8>,
     val: &'a str,
     span: &Range<usize>,
     config: &Config,
@@ -287,6 +292,11 @@ fn push_variant<'a>(
                     return Ok(());
                 }
             }
+        } else if let Some(layer_name) = full_variant.strip_prefix("l-") {
+            if let Some(layer_index) = config.layers.get(layer_name) {
+                *forced_variant = Some(*layer_index);
+                return Ok(());
+            }
         }
     }
 
@@ -307,11 +317,12 @@ fn parse_recursive<'a>(
     let span = span.unwrap_or(0..val.len());
 
     // Parse variants
-    let (variants, mut remaining) = {
+    let (variants, forced_layer, mut remaining) = {
         let mut arbitraries = 0usize;
         let mut groups = 0usize;
         let mut last_index = 0;
         let mut variants = vec![vec![]];
+        let mut forced_layer = None;
 
         for ch in val.char_indices() {
             if last_index > val.len() {
@@ -370,6 +381,7 @@ fn parse_recursive<'a>(
                             is_arbitrary,
                             variant,
                             &mut new_variant_list,
+                            &mut forced_layer,
                             val,
                             &span,
                             config,
@@ -403,6 +415,7 @@ fn parse_recursive<'a>(
                         is_arbitrary,
                         variant,
                         variant_list,
+                        &mut forced_layer,
                         val,
                         &span,
                         config,
@@ -418,7 +431,7 @@ fn parse_recursive<'a>(
             }
         }
 
-        (variants, (last_index, &val[last_index..]))
+        (variants, forced_layer, (last_index, &val[last_index..]))
     };
 
     if remaining.1.is_empty() {
@@ -504,7 +517,7 @@ fn parse_recursive<'a>(
                 .map(|variants| {
                     Ok(Selector {
                         // Arbitrary properties will be placed at the end of the CSS
-                        layer: i8::MAX,
+                        layer: forced_layer.unwrap_or(LAYER_ARBITRARY),
                         order: usize::MAX,
                         full: if let Some(full_class) = full_class {
                             full_class
@@ -527,7 +540,7 @@ fn parse_recursive<'a>(
             for (order, layer, (namespace, plugin)) in BUILTIN_PLUGINS
                 .iter()
                 .enumerate()
-                .map(|p| (p.0, 0, p.1))
+                .map(|p| (p.0, forced_layer.unwrap_or(LAYER_BUILTIN), p.1))
                 .chain(
                     // Selectors generated using custom plugins are placed first to be easily
                     // overridden
@@ -535,7 +548,7 @@ fn parse_recursive<'a>(
                         .custom_plugins
                         .iter()
                         .enumerate()
-                        .map(|p| (p.0, -1, p.1)),
+                        .map(|p| (p.0, forced_layer.unwrap_or(LAYER_CUSTOM), p.1)),
                 )
             {
                 // Find the modifier

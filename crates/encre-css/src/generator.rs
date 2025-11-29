@@ -108,19 +108,23 @@ pub fn generate_class<T: FnOnce(&mut ContextHandle)>(
 
     // The browser will automatically replace the escape codes in the classes, so we need to also
     // replace them in the generated CSS full selector
-    let unescaped_full_selector = crate::selector::parser::replace_escape_codes(Cow::Borrowed(selector.full));
-    unescaped_full_selector.chars().enumerate().for_each(|(i, ch)| {
-        if !ch.is_alphanumeric() && ch != '-' && ch != '_' {
-            base_class.push('\\');
-            base_class.push(ch);
-        } else if i == 0 && ch.is_numeric() {
-            // CSS classes must not start with a number, we need to escape it
-            base_class.push_str("\\3");
-            base_class.push(ch);
-        } else {
-            base_class.push(ch);
-        }
-    });
+    let unescaped_full_selector =
+        crate::selector::parser::replace_escape_codes(Cow::Borrowed(selector.full));
+    unescaped_full_selector
+        .chars()
+        .enumerate()
+        .for_each(|(i, ch)| {
+            if !ch.is_alphanumeric() && ch != '-' && ch != '_' {
+                base_class.push('\\');
+                base_class.push(ch);
+            } else if i == 0 && ch.is_numeric() {
+                // CSS classes must not start with a number, we need to escape it
+                base_class.push_str("\\3");
+                base_class.push(ch);
+            } else {
+                base_class.push(ch);
+            }
+        });
 
     if !selector.variants.is_empty() {
         // Variants are applied from right to left
@@ -1183,6 +1187,45 @@ mod tests {
   .supports-\[display\:flex\]\:flex {
     display: flex;
   }
+}"
+            )
+        );
+    }
+
+    #[test]
+    fn layers() {
+        let mut config = base_config();
+        config.layers.add("1", 1);
+        config.layers.add("2", 2);
+        config.layers.add("3", 3);
+        config.layers.add("4", 4);
+
+        let generated = generate(
+            ["l-1:bg-red-500 l-2:bg-red-100 l-4:inset-12 l-1:(bg-blue-800,l-2:(bg-blue-700,bg-blue-600,l-3:bg-blue-500))"],
+            &config,
+        );
+
+        assert_eq!(
+            generated,
+            String::from(
+                r".l-1\:\(bg-blue-800\,l-2\:\(bg-blue-700\,bg-blue-600\,l-3\:bg-blue-500\)\) {
+  background-color: oklch(42.4% .199 265.638);
+}
+
+.l-1\:bg-red-500 {
+  background-color: oklch(63.7% .237 25.331);
+}
+
+.l-2\:bg-red-100 {
+  background-color: oklch(93.6% .032 17.717);
+}
+
+.l-1\:\(bg-blue-800\,l-2\:\(bg-blue-700\,bg-blue-600\,l-3\:bg-blue-500\)\) {
+  background-color: oklch(62.3% .214 259.815);
+}
+
+.l-4\:inset-12 {
+  inset: 3rem;
 }"
             )
         );
