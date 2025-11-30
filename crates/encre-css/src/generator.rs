@@ -870,6 +870,26 @@ mod tests {
 }"
             )
         );
+
+        let generated = generate(
+            ["(bg-blue-100,bg-blue-200,bg-blue-300)"],
+            &base_config(),
+        );
+
+        assert_eq!(
+            generated,
+            String::from(r".\(bg-blue-100\,bg-blue-200\,bg-blue-300\) {
+  background-color: oklch(93.2% .032 255.585);
+}
+
+.\(bg-blue-100\,bg-blue-200\,bg-blue-300\) {
+  background-color: oklch(88.2% .059 254.128);
+}
+
+.\(bg-blue-100\,bg-blue-200\,bg-blue-300\) {
+  background-color: oklch(80.9% .105 251.813);
+}"),
+        );
     }
 
     #[test]
@@ -1209,6 +1229,14 @@ mod tests {
             generated,
             String::from(
                 r".l-1\:\(bg-blue-800\,l-2\:\(bg-blue-700\,bg-blue-600\,l-3\:bg-blue-500\)\) {
+  background-color: oklch(54.6% .245 262.881);
+}
+
+.l-1\:\(bg-blue-800\,l-2\:\(bg-blue-700\,bg-blue-600\,l-3\:bg-blue-500\)\) {
+  background-color: oklch(48.8% .243 264.376);
+}
+
+.l-1\:\(bg-blue-800\,l-2\:\(bg-blue-700\,bg-blue-600\,l-3\:bg-blue-500\)\) {
   background-color: oklch(42.4% .199 265.638);
 }
 

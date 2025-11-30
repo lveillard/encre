@@ -2149,6 +2149,10 @@ mod tests {
 }
 
 .btn-primary {
+  background-color: oklch(62.3% .214 259.815);
+}
+
+.btn-primary {
   background-color: oklch(63.7% .237 25.331);
 }"
             )
@@ -2174,6 +2178,10 @@ mod tests {
 
 .btn-primary {
   border-width: 1px;
+}
+
+.btn-primary {
+  background-color: oklch(62.3% .214 259.815);
 }
 
 .btn-primary {

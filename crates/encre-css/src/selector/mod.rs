@@ -94,7 +94,7 @@ pub(crate) use parser::parse;
 
 /// The modifier is the rest of the selector after the namespace, it is used to clarify the
 /// CSS needed to be generated.
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, PartialOrd, Ord)]
 pub enum Modifier<'a> {
     /// A builtin static modifier (e.g. `bg-red-500`).
     Builtin {
@@ -328,14 +328,18 @@ impl Ord for Selector<'_> {
                 }
 
                 compared.unwrap_or(Ordering::Less).then_with(|| {
-                    self.order
-                        .cmp(&other.order)
-                        .then_with(|| self.full.cmp(other.full))
+                    self.order.cmp(&other.order).then_with(|| {
+                        self.full
+                            .cmp(other.full)
+                            .then_with(|| self.modifier.cmp(&other.modifier))
+                    })
                 })
             } else {
-                self.order
-                    .cmp(&other.order)
-                    .then_with(|| self.full.cmp(other.full))
+                self.order.cmp(&other.order).then_with(|| {
+                    self.full
+                        .cmp(other.full)
+                        .then_with(|| self.modifier.cmp(&other.modifier))
+                })
             }
         })
     }
