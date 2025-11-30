@@ -1229,19 +1229,19 @@ mod tests {
             generated,
             String::from(
                 r".l-1\:\(bg-blue-800\,l-2\:\(bg-blue-700\,bg-blue-600\,l-3\:bg-blue-500\)\) {
-  background-color: oklch(54.6% .245 262.881);
-}
-
-.l-1\:\(bg-blue-800\,l-2\:\(bg-blue-700\,bg-blue-600\,l-3\:bg-blue-500\)\) {
-  background-color: oklch(48.8% .243 264.376);
-}
-
-.l-1\:\(bg-blue-800\,l-2\:\(bg-blue-700\,bg-blue-600\,l-3\:bg-blue-500\)\) {
   background-color: oklch(42.4% .199 265.638);
 }
 
 .l-1\:bg-red-500 {
   background-color: oklch(63.7% .237 25.331);
+}
+
+.l-1\:\(bg-blue-800\,l-2\:\(bg-blue-700\,bg-blue-600\,l-3\:bg-blue-500\)\) {
+  background-color: oklch(54.6% .245 262.881);
+}
+
+.l-1\:\(bg-blue-800\,l-2\:\(bg-blue-700\,bg-blue-600\,l-3\:bg-blue-500\)\) {
+  background-color: oklch(48.8% .243 264.376);
 }
 
 .l-2\:bg-red-100 {

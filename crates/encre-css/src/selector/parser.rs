@@ -146,7 +146,7 @@ pub(crate) fn parse<'a>(
         ))];
     }
 
-    parse_recursive(val, span, full_class, config, config_derived_variants)
+    parse_recursive(val, span, full_class, None, config, config_derived_variants)
 }
 
 #[allow(clippy::too_many_lines)]
@@ -311,6 +311,7 @@ fn parse_recursive<'a>(
     val: &'a str,
     span: Option<Range<usize>>,
     full_class: Option<&'a str>,
+    parent_forced_layer: Option<i8>,
     config: &Config,
     config_derived_variants: &[(Cow<'static, str>, Variant<'static>)],
 ) -> Vec<Result<Selector<'a>, ParseError<'a>>> {
@@ -467,6 +468,7 @@ fn parse_recursive<'a>(
                     } else {
                         val
                     }),
+                    forced_layer,
                     config,
                     config_derived_variants,
                 );
@@ -517,7 +519,8 @@ fn parse_recursive<'a>(
                 .map(|variants| {
                     Ok(Selector {
                         // Arbitrary properties will be placed at the end of the CSS
-                        layer: forced_layer.unwrap_or(LAYER_ARBITRARY),
+                        layer: forced_layer
+                            .unwrap_or(parent_forced_layer.unwrap_or(LAYER_ARBITRARY)),
                         order: usize::MAX,
                         full: if let Some(full_class) = full_class {
                             full_class
@@ -540,15 +543,23 @@ fn parse_recursive<'a>(
             for (order, layer, (namespace, plugin)) in BUILTIN_PLUGINS
                 .iter()
                 .enumerate()
-                .map(|p| (p.0, forced_layer.unwrap_or(LAYER_BUILTIN), p.1))
+                .map(|p| {
+                    (
+                        p.0,
+                        forced_layer.unwrap_or(parent_forced_layer.unwrap_or(LAYER_BUILTIN)),
+                        p.1,
+                    )
+                })
                 .chain(
                     // Selectors generated using custom plugins are placed first to be easily
                     // overridden
-                    config
-                        .custom_plugins
-                        .iter()
-                        .enumerate()
-                        .map(|p| (p.0, forced_layer.unwrap_or(LAYER_CUSTOM), p.1)),
+                    config.custom_plugins.iter().enumerate().map(|p| {
+                        (
+                            p.0,
+                            forced_layer.unwrap_or(parent_forced_layer.unwrap_or(LAYER_CUSTOM)),
+                            p.1,
+                        )
+                    }),
                 )
             {
                 // Find the modifier
