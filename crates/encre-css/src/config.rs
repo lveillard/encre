@@ -1352,6 +1352,19 @@ impl Shortcuts {
 ///
 /// It defines a list of layers used to change the ordering of the generated classes.
 ///
+/// ### Layers and ordering
+///
+/// By default, every class is ordered based on its plugin, variants and modifier.
+///
+/// If you want more control over the ordering of a specific set of classes, you can define a
+/// _layer_ in the configuration (see the example below) and use the variant `l-<layer_name>` to
+/// put the class in the corresponding layer.
+///
+/// By default, the layer containing builtin plugins has the index `0` and the layer containing
+/// custom plugins has index `-1`.
+///
+/// The index is an `i8`, so it's between -128 and 127.
+///
 /// # Example
 ///
 /// ```
