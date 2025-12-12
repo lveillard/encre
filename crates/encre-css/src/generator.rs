@@ -1163,14 +1163,22 @@ mod tests {
     #[test]
     fn named_group_and_peer() {
         let generated = generate(
-            ["group-checked/item:block peer-checked/item:block peer-not-checked/item:block"],
+            ["group-checked/item:block peer-checked/item:block peer-not-checked/item:block", "peer-[:focus-within]/item:block", "peer-[:nth-of-type(3)_&]/item:block"],
             &base_config(),
         );
 
         assert_eq!(
             generated,
             String::from(
-                r".group\/item:checked .group-checked\/item\:block {
+                r":nth-of-type(3) .peer\/item ~ .peer-\[\:nth-of-type\(3\)_\&\]\/item\:block {
+  display: block;
+}
+
+.peer\/item:focus-within ~ .peer-\[\:focus-within\]\/item\:block {
+  display: block;
+}
+
+.group\/item:checked .group-checked\/item\:block {
   display: block;
 }
 

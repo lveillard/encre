@@ -708,8 +708,6 @@ pub const BUILTIN_VARIANTS: phf::OrderedMap<&'static str, Variant> = {
 
     phf_ordered_map! {
         "not" => Variant::new_const(&mut counter, "&:not({})").with_prefixed(),
-        "group" => Variant::new_const(&mut counter, "&:is(:where(.group){} *)").with_prefixed(),
-        "peer" => Variant::new_const(&mut counter, "&:is(:where(.peer){} ~ *)").with_prefixed(),
 
         "first-letter" => Variant::new_const(&mut counter, "&::first-letter"),
         "first-line" => Variant::new_const(&mut counter, "&::first-line"),
