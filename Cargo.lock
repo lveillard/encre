@@ -400,7 +400,7 @@ checksum = "a26ae43d7bcc3b814de94796a5e736d4029efb0ee900c12e2d54c993ad1a1e07"
 
 [[package]]
 name = "encre-css"
-version = "0.19.1"
+version = "0.20.0"
 dependencies = [
  "criterion",
  "phf",
@@ -412,7 +412,7 @@ dependencies = [
 
 [[package]]
 name = "encre-css-cli"
-version = "0.19.1"
+version = "0.20.0"
 dependencies = [
  "clap",
  "color-eyre",
@@ -427,7 +427,7 @@ dependencies = [
 
 [[package]]
 name = "encre-css-icons"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "directories",
  "encre-css",
@@ -440,7 +440,7 @@ dependencies = [
 
 [[package]]
 name = "encre-css-typography"
-version = "0.5.1"
+version = "0.6.0"
 dependencies = [
  "encre-css",
 ]

@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.20.0] - 2025-12-13
+
+### Bug Fixes
+
+- Classes not being generated when using the same modifier inside variant groups
+- Support inheriting layer in variant groups
+- Support named `peer` and `group` variants while using arbitrary values
+
+### Documentation
+
+- Add more documentation for layers
+
+### Features
+
+- Add a layer system to precisely control the order of the generated classes
+- Add configuration for layers
+
 ## [0.19.1] - 2025-09-21
 
 ### Bug Fixes

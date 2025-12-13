@@ -18,7 +18,7 @@
 //! To integrate `encre-css-icons` with `encre-css`, add it in your `Cargo.toml`:
 //!
 //! <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">[dependencies]</span>
-//! encre-css-icons = <span class="string">"0.6.1"</span></code></pre></div>
+//! encre-css-icons = <span class="string">"0.7.0"</span></code></pre></div>
 //!
 //! Then, call the `register` function with a mutable reference to a `Config`
 //! structure and some parameters (all parameters are optional, you can use `None`
