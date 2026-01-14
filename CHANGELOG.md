@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.20.1] - 2026-01-14
+
+### Bug Fixes
+
+- `group`-prefixed variants should be able to prefix any other variant
+
+### Documentation
+
+- Improve documentation about replacements in arbitrary contents
+
 ## [0.20.0] - 2025-12-13
 
 ### Bug Fixes

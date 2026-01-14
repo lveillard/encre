@@ -1,6 +1,6 @@
 [package]
 name = "encre-css-typography"
-version = "0.6.0"
+version = "0.6.1"
 description = "Define beautiful typographic defaults for HTML you don't control"
 license = "MIT"
 edition = "2021"
@@ -10,4 +10,4 @@ keywords = ["tailwind", "css", "compiler", "encre-css"]
 categories = ["web-programming"]
 
 [dependencies]
-encre-css = { path = "../encre-css", version = "0.20.0" }
+encre-css = { path = "../encre-css", version = "0.20.1" }
