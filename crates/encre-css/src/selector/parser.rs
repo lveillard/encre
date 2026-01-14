@@ -187,7 +187,7 @@ fn push_variant<'a>(
         variant_list.push(variant.1.clone());
         return Ok(());
     } else if let Some(group_variant) = full_variant.strip_prefix("group-") {
-        let (group_variant, name) = if let Some((variant, name)) = group_variant.split_once('/') {
+        let (group_variant, name) = if let Some((variant, name)) = group_variant.rsplit_once('/') {
             (variant, Some(name.to_string()))
         } else {
             (group_variant, None)
@@ -210,40 +210,54 @@ fn push_variant<'a>(
                 variant_list.push(variant.clone());
                 return Ok(());
             }
-        } else if let Some(arbitrary_variant) = group_variant
-            .strip_prefix(ARBITRARY_START)
-            .and_then(|p| p.strip_suffix(ARBITRARY_END))
-        {
-            if !arbitrary_variant.starts_with('@') {
-                let template =
-                    replace_escape_codes(underscores_to_spaces(Cow::from(arbitrary_variant)));
+        } else if let Some((prefix, value)) = group_variant.split_once(ARBITRARY_START) {
+            if !value.starts_with('@') {
+                if let Some(value) = value.strip_suffix(ARBITRARY_END) {
+                    let prefix = prefix.strip_suffix('-').unwrap_or(prefix);
 
-                let suffix = if let Some(name) = name {
-                    Cow::Owned(format!("\\/{name}"))
-                } else {
-                    Cow::Borrowed("")
-                };
+                    let mut variant = if let Some(variant) = BUILTIN_VARIANTS.get(prefix).cloned() {
+                        variant
+                    } else if let Some(variant) = config
+                        .custom_variants
+                        .iter()
+                        .find(|(n, _)| n == prefix)
+                        .cloned()
+                    {
+                        variant.1
+                    } else {
+                        Variant {
+                            order: config.last_variant_order(),
+                            prefixed: false,
+                            template: Cow::Owned("{}".to_string()),
+                        }
+                    };
 
-                let template = if template.contains('&') {
-                    template.replace('&', &format!(".group{suffix}"))
-                } else {
-                    format!(".group{suffix}{template}")
-                };
+                    let value = replace_escape_codes(underscores_to_spaces(Cow::from(value)));
+                    variant.template = Cow::Owned(variant.template.replace("{}", &value));
 
-                let template = Cow::Owned(format!("{} &", template));
-                let variant = Variant {
-                    order: config.last_variant_order(),
-                    prefixed: false,
-                    template,
-                };
+                    let suffix = if let Some(name) = name {
+                        Cow::Owned(format!("\\/{name}"))
+                    } else {
+                        Cow::Borrowed("")
+                    };
 
-                variant_list.push(variant.clone());
-                return Ok(());
+                    let template = if variant.template.contains('&') {
+                        variant.template.replace('&', &format!(".group{suffix}"))
+                    } else {
+                        format!(".group{suffix}{}", variant.template)
+                    };
+
+                    let template = Cow::Owned(format!("{} &", template));
+                    variant.template = template;
+
+                    variant_list.push(variant.clone());
+                    return Ok(());
+                }
             }
         }
     } else if let Some(peer_not_variant) = full_variant.strip_prefix("peer-not-") {
         let (peer_not_variant, name) =
-            if let Some((variant, name)) = peer_not_variant.split_once('/') {
+            if let Some((variant, name)) = peer_not_variant.rsplit_once('/') {
                 (variant, Some(name.to_string()))
             } else {
                 (peer_not_variant, None)
@@ -268,39 +282,55 @@ fn push_variant<'a>(
                 variant_list.push(variant.clone());
                 return Ok(());
             }
-        } else if let Some(arbitrary_variant) = peer_not_variant
-            .strip_prefix(ARBITRARY_START)
-            .and_then(|p| p.strip_suffix(ARBITRARY_END))
-        {
-            if !arbitrary_variant.starts_with('@') {
-                let template =
-                    replace_escape_codes(underscores_to_spaces(Cow::from(arbitrary_variant)));
+        } else if let Some((prefix, value)) = peer_not_variant.split_once(ARBITRARY_START) {
+            if !value.starts_with('@') {
+                if let Some(value) = value.strip_suffix(ARBITRARY_END) {
+                    let prefix = prefix.strip_suffix('-').unwrap_or(prefix);
 
-                let suffix = if let Some(name) = name {
-                    Cow::Owned(format!("\\/{name}"))
-                } else {
-                    Cow::Borrowed("")
-                };
+                    let mut variant = if let Some(variant) = BUILTIN_VARIANTS.get(prefix).cloned() {
+                        variant
+                    } else if let Some(variant) = config
+                        .custom_variants
+                        .iter()
+                        .find(|(n, _)| n == prefix)
+                        .cloned()
+                    {
+                        variant.1
+                    } else {
+                        Variant {
+                            order: config.last_variant_order(),
+                            prefixed: false,
+                            template: Cow::Owned("{}".to_string()),
+                        }
+                    };
 
-                let template = if template.contains('&') {
-                    template.replace('&', &format!(".peer{suffix}:not("))
-                } else {
-                    format!(".peer{suffix}:not({template}")
-                };
+                    let value = replace_escape_codes(underscores_to_spaces(Cow::from(value)));
+                    variant.template = Cow::Owned(variant.template.replace("{}", &value));
 
-                let template = Cow::Owned(format!("{}) ~ &", template));
-                let variant = Variant {
-                    order: config.last_variant_order(),
-                    prefixed: false,
-                    template,
-                };
+                    let suffix = if let Some(name) = name {
+                        Cow::Owned(format!("\\/{name}"))
+                    } else {
+                        Cow::Borrowed("")
+                    };
 
-                variant_list.push(variant.clone());
-                return Ok(());
+                    let template = if variant.template.contains('&') {
+                        variant
+                            .template
+                            .replace('&', &format!(".peer{suffix}:not("))
+                    } else {
+                        format!(".peer{suffix}:not({}", variant.template)
+                    };
+
+                    let template = Cow::Owned(format!("{}) ~ &", template));
+                    variant.template = template;
+
+                    variant_list.push(variant.clone());
+                    return Ok(());
+                }
             }
         }
     } else if let Some(peer_variant) = full_variant.strip_prefix("peer-") {
-        let (peer_variant, name) = if let Some((variant, name)) = peer_variant.split_once('/') {
+        let (peer_variant, name) = if let Some((variant, name)) = peer_variant.rsplit_once('/') {
             (variant, Some(name.to_string()))
         } else {
             (peer_variant, None)
@@ -323,35 +353,49 @@ fn push_variant<'a>(
                 variant_list.push(variant.clone());
                 return Ok(());
             }
-        } else if let Some(arbitrary_variant) = peer_variant
-            .strip_prefix(ARBITRARY_START)
-            .and_then(|p| p.strip_suffix(ARBITRARY_END))
-        {
-            if !arbitrary_variant.starts_with('@') {
-                let template =
-                    replace_escape_codes(underscores_to_spaces(Cow::from(arbitrary_variant)));
+        } else if let Some((prefix, value)) = peer_variant.split_once(ARBITRARY_START) {
+            if !value.starts_with('@') {
+                if let Some(value) = value.strip_suffix(ARBITRARY_END) {
+                    let prefix = prefix.strip_suffix('-').unwrap_or(prefix);
 
-                let suffix = if let Some(name) = name {
-                    Cow::Owned(format!("\\/{name}"))
-                } else {
-                    Cow::Borrowed("")
-                };
+                    let mut variant = if let Some(variant) = BUILTIN_VARIANTS.get(prefix).cloned() {
+                        variant
+                    } else if let Some(variant) = config
+                        .custom_variants
+                        .iter()
+                        .find(|(n, _)| n == prefix)
+                        .cloned()
+                    {
+                        variant.1
+                    } else {
+                        Variant {
+                            order: config.last_variant_order(),
+                            prefixed: false,
+                            template: Cow::Owned("{}".to_string()),
+                        }
+                    };
 
-                let template = if template.contains('&') {
-                    template.replace('&', &format!(".peer{suffix}"))
-                } else {
-                    format!(".peer{suffix}{template}")
-                };
+                    let value = replace_escape_codes(underscores_to_spaces(Cow::from(value)));
+                    variant.template = Cow::Owned(variant.template.replace("{}", &value));
 
-                let template = Cow::Owned(format!("{} ~ &", template));
-                let variant = Variant {
-                    order: config.last_variant_order(),
-                    prefixed: false,
-                    template,
-                };
+                    let suffix = if let Some(name) = name {
+                        Cow::Owned(format!("\\/{name}"))
+                    } else {
+                        Cow::Borrowed("")
+                    };
 
-                variant_list.push(variant.clone());
-                return Ok(());
+                    let template = if variant.template.contains('&') {
+                        variant.template.replace('&', &format!(".peer{suffix}"))
+                    } else {
+                        format!(".peer{suffix}{}", variant.template)
+                    };
+
+                    let template = Cow::Owned(format!("{} ~ &", template));
+                    variant.template = template;
+
+                    variant_list.push(variant.clone());
+                    return Ok(());
+                }
             }
         }
     } else if let Some((prefix, value)) = full_variant.split_once(ARBITRARY_START) {
@@ -1267,6 +1311,34 @@ mod tests {
                 is_important: false,
             }
         );
+
+        assert_eq!(
+            parse(
+                "group-has-[#test]:block",
+                None,
+                None,
+                &config,
+                &config.get_derived_variants()
+            )[0]
+            .as_ref()
+            .unwrap(),
+            &Selector {
+                layer: 0,
+                full: "group-has-[#test]:block",
+                order: Default::default(),
+                plugin: &layout::display::PluginDefinition,
+                variants: vec![Variant {
+                    order: Default::default(),
+                    prefixed: false,
+                    template: Cow::from(".group:has(#test) &"),
+                }],
+                modifier: Modifier::Builtin {
+                    is_negative: false,
+                    value: "block",
+                },
+                is_important: false,
+            }
+        );
     }
 
     #[test]
@@ -1375,6 +1447,62 @@ mod tests {
                     order: Default::default(),
                     prefixed: false,
                     template: Cow::from(".peer\\/item:focus-within ~ &"),
+                }],
+                modifier: Modifier::Builtin {
+                    is_negative: false,
+                    value: "block",
+                },
+                is_important: false,
+            }
+        );
+
+        assert_eq!(
+            parse(
+                "group-has-[#test]/item:block",
+                None,
+                None,
+                &config,
+                &config.get_derived_variants()
+            )[0]
+            .as_ref()
+            .unwrap(),
+            &Selector {
+                layer: 0,
+                full: "group-has-[#test]/item:block",
+                order: Default::default(),
+                plugin: &layout::display::PluginDefinition,
+                variants: vec![Variant {
+                    order: Default::default(),
+                    prefixed: true,
+                    template: Cow::from(r".group\/item:has(#test) &"),
+                }],
+                modifier: Modifier::Builtin {
+                    is_negative: false,
+                    value: "block",
+                },
+                is_important: false,
+            }
+        );
+
+        assert_eq!(
+            parse(
+                "group-has-[#page/el]/item:block",
+                None,
+                None,
+                &config,
+                &config.get_derived_variants()
+            )[0]
+            .as_ref()
+            .unwrap(),
+            &Selector {
+                layer: 0,
+                full: "group-has-[#page/el]/item:block",
+                order: Default::default(),
+                plugin: &layout::display::PluginDefinition,
+                variants: vec![Variant {
+                    order: Default::default(),
+                    prefixed: true,
+                    template: Cow::from(r".group\/item:has(#page/el) &"),
                 }],
                 modifier: Modifier::Builtin {
                     is_negative: false,

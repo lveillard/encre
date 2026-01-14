@@ -701,6 +701,9 @@ pub const BUILTIN_CONTAINERS: &[(&str, &str)] = &[
 /// Besides the default variants, some others are auto-generated from the configuration like
 /// breakpoints (see [`BUILTIN_SCREENS`]), container sizes (see [`BUILTIN_CONTAINERS`]) and the dark mode (`dark:` variant).
 ///
+/// You can prefix all variants by `group-`, `peer-` or `peer-not-` so that they apply to the group
+/// or peer element, e.g `group-hover:bg-blue-100` or `peer-has-[#test]:hidden`.
+///
 /// Based on [Tailwind's default variants](https://tailwindcss.com/docs/hover-focus-and-other-states).
 #[rustfmt::skip]
 pub const BUILTIN_VARIANTS: phf::OrderedMap<&'static str, Variant> = {
