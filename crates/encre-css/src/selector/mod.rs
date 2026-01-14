@@ -82,6 +82,23 @@
 //! first modifier can be omitted, e.g. `m1` instead of `m-1`), arbitrary values/variants are surrounded by `[]` and variant
 //! groups are surrounded by `()`.
 //!
+//! ### Automatic replacements
+//!
+//! Because HTML classes can't contain several symbols (e.g spaces), replacement characters must be
+//! used **in arbitrary values, variants and CSS properties**.
+//!
+//! - `_` is replaced by a space (e.g instead of writing `content-[hello world]` which is
+//!   considered two different classes by browsers, use `content-[hello_world]`)
+//! - `&#34;` is replaced by `"`
+//! - `&#39;` is replaced by `'`
+//! - `&#40;` is replaced by `(`
+//! - `&#41;` is replaced by `)`
+//! - `&#91;` is replaced by `[`
+//! - `&#92;` is replaced by `\`
+//! - `&#93;` is replaced by `]`
+//! - `&#95;` is replaced by `_` (useful when a real `_` is needed instead of a space)
+//! - `&#96;` is replaced by `` ` ``
+//!
 //! [`BUILTIN_SCREENS`]: crate::config::BUILTIN_SCREENS
 //! [`BUILTIN_COLORS`]: crate::config::BUILTIN_COLORS
 pub(crate) mod parser;
