@@ -454,6 +454,8 @@ dependencies = [
  "clap",
  "color-eyre",
  "encre-css",
+ "encre-css-icons",
+ "encre-css-typography",
  "notify",
  "rand",
  "serde",

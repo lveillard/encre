@@ -23,4 +23,9 @@ toml = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
 notify = "8.1.0"
+encre-css-icons = { version = "0.7.1", path = "../encre-css-icons", optional = true }
+encre-css-typography = { version = "0.6.1", path = "../encre-css-typography", optional = true }
 
+[features]
+encre-css-icons = ["dep:encre-css-icons"]
+encre-css-typography = ["dep:encre-css-typography"]

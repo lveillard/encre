@@ -33,9 +33,18 @@ struct Config {
 
 impl Config {
     fn from_file<T: AsRef<Path>>(path: T) -> Result<Self> {
-        Ok(toml::from_str(&fs::read_to_string(&path).map_err(
+        #[allow(unused_mut)]
+        let mut base_config: Config = toml::from_str(&fs::read_to_string(&path).map_err(
             |e| Error::ConfigFileNotFound(path.as_ref().to_path_buf(), e),
-        )?)?)
+        )?)?;
+
+        #[cfg(feature = "encre-css-icons")]
+        encre_css_icons::register(&mut base_config.encre_config);
+
+        #[cfg(feature = "encre-css-typography")]
+        encre_css_typopgraphy::register(&mut base_config.encre_config);
+
+        Ok(base_config)
     }
 }
 
