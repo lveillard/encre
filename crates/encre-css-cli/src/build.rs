@@ -14,7 +14,10 @@ use std::{
     result,
     sync::{mpsc::channel, Arc},
 };
-use wax::Glob;
+use wax::{
+    walk::{Entry, GlobEntry},
+    Glob,
+};
 
 use super::utils::has_file_match;
 
@@ -40,10 +43,15 @@ impl Config {
 pub(crate) enum ScanError {
     #[error(transparent)]
     Glob(#[from] wax::BuildError),
+
     #[error(transparent)]
     Io(#[from] std::io::Error),
+
     #[error(transparent)]
     IntConversion(#[from] std::num::TryFromIntError),
+
+    #[error("unkown glob error")]
+    UnknownGlobError,
 }
 
 fn gen_css<'a, T: AsRef<Path>>(
@@ -82,7 +90,8 @@ fn scan_path<T: AsRef<Path>>(glob_path: T, buffer: &mut String) -> result::Resul
         file.read_to_string(buffer)?;
         Ok(())
     } else {
-        glob.walk(prefix)
+        glob.ok_or(ScanError::UnknownGlobError)?
+            .walk(prefix)
             .filter_map(|entry| -> Option<usize> {
                 let entry = entry.ok()?;
                 let path = entry.path();
@@ -235,9 +244,12 @@ fn watch<T: AsRef<Path>>(
                         let glob_string = path.as_path().to_str()?;
                         Glob::new(glob_string)
                             .inspect_err(|e| eprintln!("Warning: {e}"))
-                            .map(|g| {
+                            .map_err(|e| ScanError::Glob(e))
+                            .and_then(|g| {
                                 let (prefix, g) = g.partition();
-                                (prefix, g, path)
+                                g.ok_or(ScanError::UnknownGlobError)
+                                    .inspect_err(|e| eprintln!("Warning: {e}"))
+                                    .map(|g| (prefix, g, path))
                             })
                             .ok()
                     })
@@ -246,7 +258,7 @@ fn watch<T: AsRef<Path>>(
                             vec![prefix]
                         } else {
                             glob.walk(prefix)
-                                .filter_map(|wr| wr.map(wax::WalkEntry::into_path).ok())
+                                .filter_map(|wr| wr.map(GlobEntry::into_path).ok())
                                 .collect::<Vec<_>>()
                         }
                     });
@@ -264,8 +276,9 @@ fn watch<T: AsRef<Path>>(
                         Some(vec![prefix])
                     } else {
                         Some(
-                            glob.walk(prefix)
-                                .filter_map(|wr| wr.map(wax::WalkEntry::into_path).ok())
+                            glob.ok_or(ScanError::UnknownGlobError)?
+                                .walk(prefix)
+                                .filter_map(|wr| wr.map(GlobEntry::into_path).ok())
                                 .collect::<Vec<_>>(),
                         )
                     }
