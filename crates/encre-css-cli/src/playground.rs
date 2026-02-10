@@ -39,6 +39,6 @@ pub fn launch(name: Option<String>) -> Result<()> {
         "failed to create `{DEFAULT_CONFIG_FILE}` file in `{name}` directory"
     ))?;
 
-    println!("  `{name}` is ready!\n  To start editing it, run: `cd {name} && encre build --watch -o styles.css` and open the `index.html` file in your preferred editor");
+    println!("  `{name}` is ready!\n  To start editing it, run: `cd {name} && encrecss build --watch -o styles.css` and open the `index.html` file in your preferred editor");
     Ok(())
 }
