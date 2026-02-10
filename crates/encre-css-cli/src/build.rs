@@ -42,7 +42,7 @@ impl Config {
         encre_css_icons::register(&mut base_config.encre_config);
 
         #[cfg(feature = "encre-css-typography")]
-        encre_css_typopgraphy::register(&mut base_config.encre_config);
+        encre_css_typography::register(&mut base_config.encre_config);
 
         Ok(base_config)
     }
