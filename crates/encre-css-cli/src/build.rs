@@ -34,9 +34,10 @@ struct Config {
 impl Config {
     fn from_file<T: AsRef<Path>>(path: T) -> Result<Self> {
         #[allow(unused_mut)]
-        let mut base_config: Config = toml::from_str(&fs::read_to_string(&path).map_err(
-            |e| Error::ConfigFileNotFound(path.as_ref().to_path_buf(), e),
-        )?)?;
+        let mut base_config: Config = toml::from_str(
+            &fs::read_to_string(&path)
+                .map_err(|e| Error::ConfigFileNotFound(path.as_ref().to_path_buf(), e))?,
+        )?;
 
         #[cfg(feature = "encre-css-icons")]
         encre_css_icons::register(&mut base_config.encre_config);
@@ -59,7 +60,7 @@ pub(crate) enum ScanError {
     #[error(transparent)]
     IntConversion(#[from] std::num::TryFromIntError),
 
-    #[error("unkown glob error")]
+    #[error("unknown glob error")]
     UnknownGlobError,
 }
 
@@ -254,23 +255,30 @@ fn watch<T: AsRef<Path>>(
                         Glob::new(glob_string)
                             .inspect_err(|e| eprintln!("Warning: {e}"))
                             .map_err(|e| ScanError::Glob(e))
-                            .and_then(|g| {
+                            .map(|g| {
                                 let (prefix, g) = g.partition();
-                                g.ok_or(ScanError::UnknownGlobError)
-                                    .inspect_err(|e| eprintln!("Warning: {e}"))
-                                    .map(|g| (prefix, g, path))
+                                (prefix, g, path)
                             })
                             .ok()
                     })
-                    .flat_map(|(prefix, glob, glob_path)| {
+                    .filter_map(|(prefix, glob, glob_path)| {
                         if prefix == *glob_path {
-                            vec![prefix]
+                            Some(vec![prefix])
                         } else {
-                            glob.walk(prefix)
-                                .filter_map(|wr| wr.map(GlobEntry::into_path).ok())
-                                .collect::<Vec<_>>()
+                            match glob {
+                                Some(glob) => Some(
+                                    glob.walk(prefix)
+                                        .filter_map(|wr| wr.map(GlobEntry::into_path).ok())
+                                        .collect::<Vec<_>>(),
+                                ),
+                                None => {
+                                    eprintln!("Warning: {}", ScanError::UnknownGlobError);
+                                    None
+                                }
+                            }
                         }
-                    });
+                    })
+                    .flatten();
 
                 let extra_input_files = if let Some(extra_input) = extra_input {
                     let (prefix, glob) = extra_input
