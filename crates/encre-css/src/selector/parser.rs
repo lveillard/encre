@@ -85,6 +85,7 @@ pub(crate) fn underscores_to_spaces(val: Cow<str>) -> Cow<str> {
 /// - `&#93;` by `]`
 /// - `&#95;` by `_`
 /// - `&#96;` by `` ` ``
+#[allow(clippy::needless_pass_by_value)]
 pub(crate) fn replace_escape_codes(val: Cow<str>) -> Cow<str> {
     Cow::from(
         val.replace("&#34;", "\"")
@@ -103,7 +104,7 @@ pub(crate) fn replace_escape_codes(val: Cow<str>) -> Cow<str> {
 ///
 ///  -  `_` (underscores) are converted to ` ` (spaces) (not in `url`s or if using `&#95;`);
 ///  - Spaces are added around operators in the `calc` CSS function.
-///  - Some escape codes are replaced by the characters, see [replace_escape_codes]
+///  - Some escape codes are replaced by the characters, see [`replace_escape_codes`]
 pub(crate) fn to_css_value(val: &str) -> Cow<'_, str> {
     let mut val = underscores_to_spaces(Cow::from(val));
 
@@ -149,7 +150,7 @@ pub(crate) fn parse<'a>(
     parse_recursive(val, span, full_class, None, config, config_derived_variants)
 }
 
-#[allow(clippy::too_many_lines)]
+#[allow(clippy::too_many_lines, clippy::too_many_arguments)]
 fn push_variant<'a>(
     is_arbitrary: bool,
     full_variant: &'a str,
@@ -247,7 +248,7 @@ fn push_variant<'a>(
                         format!(".group{suffix}{}", variant.template)
                     };
 
-                    let template = Cow::Owned(format!("{} &", template));
+                    let template = Cow::Owned(format!("{template} &"));
                     variant.template = template;
 
                     variant_list.push(variant.clone());
@@ -321,7 +322,7 @@ fn push_variant<'a>(
                         format!(".peer{suffix}:not({}", variant.template)
                     };
 
-                    let template = Cow::Owned(format!("{}) ~ &", template));
+                    let template = Cow::Owned(format!("{template}) ~ &"));
                     variant.template = template;
 
                     variant_list.push(variant.clone());
@@ -390,7 +391,7 @@ fn push_variant<'a>(
                         format!(".peer{suffix}{}", variant.template)
                     };
 
-                    let template = Cow::Owned(format!("{} ~ &", template));
+                    let template = Cow::Owned(format!("{template} ~ &"));
                     variant.template = template;
 
                     variant_list.push(variant.clone());

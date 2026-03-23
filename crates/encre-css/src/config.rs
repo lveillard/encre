@@ -1091,7 +1091,7 @@ pub const BUILTIN_PLUGINS: &[(Cow<'static, str>, &'static (dyn Plugin + Send + S
 ///
 /// The default value is [`DarkMode::Media`] which enables the automatic detection of the theme based
 /// on  user preference.
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum DarkMode {
     /// The `dark:` variant will modify the class of the selector. You'll then need to toggle this
@@ -1140,13 +1140,8 @@ pub enum DarkMode {
     ///   }
     /// }"#));
     /// ```
+    #[default]
     Media,
-}
-
-impl Default for DarkMode {
-    fn default() -> Self {
-        Self::Media
-    }
 }
 
 impl DarkMode {
@@ -1405,7 +1400,7 @@ impl Layers {
     /// Add a layer to the list.
     #[inline]
     pub fn add<T1: Into<Cow<'static, str>>>(&mut self, key: T1, val: i8) {
-        self.0.insert(key.into(), val.into());
+        self.0.insert(key.into(), val);
     }
 
     /// Remove a layer from the list.
