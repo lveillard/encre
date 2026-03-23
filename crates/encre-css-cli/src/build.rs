@@ -34,7 +34,7 @@ struct Config {
 impl Config {
     fn from_file<T: AsRef<Path>>(path: T) -> Result<Self> {
         #[allow(unused_mut)]
-        let mut base_config: Config = toml::from_str(
+        let mut base_config = toml::from_str(
             &fs::read_to_string(&path)
                 .map_err(|e| Error::ConfigFileNotFound(path.as_ref().to_path_buf(), e))?,
         )?;
@@ -254,7 +254,7 @@ fn watch<T: AsRef<Path>>(
                         let glob_string = path.as_path().to_str()?;
                         Glob::new(glob_string)
                             .inspect_err(|e| eprintln!("Warning: {e}"))
-                            .map_err(|e| ScanError::Glob(e))
+                            .map_err(ScanError::Glob)
                             .map(|g| {
                                 let (prefix, g) = g.partition();
                                 (prefix, g, path)
@@ -264,18 +264,15 @@ fn watch<T: AsRef<Path>>(
                     .filter_map(|(prefix, glob, glob_path)| {
                         if prefix == *glob_path {
                             Some(vec![prefix])
+                        } else if let Some(glob) = glob {
+                            Some(
+                                glob.walk(prefix)
+                                    .filter_map(|wr| wr.map(GlobEntry::into_path).ok())
+                                    .collect::<Vec<_>>(),
+                            )
                         } else {
-                            match glob {
-                                Some(glob) => Some(
-                                    glob.walk(prefix)
-                                        .filter_map(|wr| wr.map(GlobEntry::into_path).ok())
-                                        .collect::<Vec<_>>(),
-                                ),
-                                None => {
-                                    eprintln!("Warning: {}", ScanError::UnknownGlobError);
-                                    None
-                                }
-                            }
+                            eprintln!("Warning: {}", ScanError::UnknownGlobError);
+                            None
                         }
                     })
                     .flatten();
