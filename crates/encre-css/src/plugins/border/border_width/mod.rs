@@ -1,156 +1,49 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-fn width_can_handle(context: &ContextCanHandle) -> bool {
-    match context.modifier {
-        Modifier::Builtin { value, .. } => value.is_empty() || value.parse::<usize>().is_ok(),
-        Modifier::Arbitrary {
-            hint,
-            value,
-            prefix,
-        } => {
-            prefix.is_empty()
-                && (*hint == "length"
-                    || *hint == "line-width"
-                    || (hint.is_empty()
-                        && (is_matching_length(value) || is_matching_line_width(value))))
-        }
+const fn builtin_plugin(prop: PropertyName) -> Plugin {
+    Plugin::AnyNumber {
+        prop,
+        has_empty: true,
+        has_negative: false,
+        divide_by: 1.0,
+        template: "{}px",
     }
 }
 
-fn width_handle(css_properties: &[&str], context: &mut ContextHandle) {
-    match context.modifier {
-        Modifier::Builtin { value, .. } => {
-            for css_prop in css_properties {
-                context.buffer.line(format_args!(
-                    "{}: {}px;",
-                    css_prop,
-                    if value.is_empty() { "1" } else { value }
-                ));
-            }
-        }
-        Modifier::Arbitrary { value, .. } => {
-            for css_prop in css_properties {
-                context.buffer.line(format_args!("{css_prop}: {value};"));
-            }
-        }
+const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
+    Plugin::OnlyArbitrary {
+        prop,
+        hints: &[PluginArbitraryHint::Length, PluginArbitraryHint::LineWidth],
+        matcher: Or(&Length, &LineWidth),
     }
 }
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = builtin_plugin(SingleProp("border-width"));
+pub(crate) const PLUGIN_2: Plugin = arbitrary_plugin(SingleProp("border-width"));
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        width_can_handle(&context)
-    }
+pub(crate) const PLUGIN_X_1: Plugin = builtin_plugin(SingleProp("border-inline-width"));
+pub(crate) const PLUGIN_X_2: Plugin = arbitrary_plugin(SingleProp("border-inline-width"));
 
-    fn handle(&self, context: &mut ContextHandle) {
-        width_handle(&["border-width"], context);
-    }
-}
+pub(crate) const PLUGIN_Y_1: Plugin = builtin_plugin(SingleProp("border-block-width"));
+pub(crate) const PLUGIN_Y_2: Plugin = arbitrary_plugin(SingleProp("border-block-width"));
 
-#[derive(Debug)]
-pub(crate) struct PluginTopDefinition;
+pub(crate) const PLUGIN_START_1: Plugin = builtin_plugin(SingleProp("border-inline-start-width"));
+pub(crate) const PLUGIN_START_2: Plugin = arbitrary_plugin(SingleProp("border-inline-start-width"));
 
-impl Plugin for PluginTopDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        width_can_handle(&context)
-    }
+pub(crate) const PLUGIN_END_1: Plugin = builtin_plugin(SingleProp("border-inline-end-width"));
+pub(crate) const PLUGIN_END_2: Plugin = arbitrary_plugin(SingleProp("border-inline-end-width"));
 
-    fn handle(&self, context: &mut ContextHandle) {
-        width_handle(&["border-top-width"], context);
-    }
-}
+pub(crate) const PLUGIN_TOP_1: Plugin = builtin_plugin(SingleProp("border-top-width"));
+pub(crate) const PLUGIN_TOP_2: Plugin = arbitrary_plugin(SingleProp("border-top-width"));
 
-#[derive(Debug)]
-pub(crate) struct PluginBottomDefinition;
+pub(crate) const PLUGIN_BOTTOM_1: Plugin = builtin_plugin(SingleProp("border-bottom-width"));
+pub(crate) const PLUGIN_BOTTOM_2: Plugin = arbitrary_plugin(SingleProp("border-bottom-width"));
 
-impl Plugin for PluginBottomDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        width_can_handle(&context)
-    }
+pub(crate) const PLUGIN_LEFT_1: Plugin = builtin_plugin(SingleProp("border-left-width"));
+pub(crate) const PLUGIN_LEFT_2: Plugin = arbitrary_plugin(SingleProp("border-left-width"));
 
-    fn handle(&self, context: &mut ContextHandle) {
-        width_handle(&["border-bottom-width"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginLeftDefinition;
-
-impl Plugin for PluginLeftDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        width_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        width_handle(&["border-left-width"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginRightDefinition;
-
-impl Plugin for PluginRightDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        width_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        width_handle(&["border-right-width"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginStartDefinition;
-
-impl Plugin for PluginStartDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        width_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        width_handle(&["border-inline-start-width"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginEndDefinition;
-
-impl Plugin for PluginEndDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        width_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        width_handle(&["border-inline-end-width"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginXDefinition;
-
-impl Plugin for PluginXDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        width_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        width_handle(&["border-inline-width"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginYDefinition;
-
-impl Plugin for PluginYDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        width_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        width_handle(&["border-block-width"], context);
-    }
-}
+pub(crate) const PLUGIN_RIGHT_1: Plugin = builtin_plugin(SingleProp("border-right-width"));
+pub(crate) const PLUGIN_RIGHT_2: Plugin = arbitrary_plugin(SingleProp("border-right-width"));

@@ -283,7 +283,7 @@ pub(crate) struct Selector<'a> {
     pub(crate) modifier: Modifier<'a>,
     pub(crate) variants: Vec<Variant<'a>>,
     pub(crate) is_important: bool,
-    pub(crate) plugin: &'static (dyn Plugin + Sync + Send),
+    pub(crate) plugin: &'static Plugin,
 }
 
 impl PartialEq for Selector<'_> {

@@ -1,38 +1,18 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::AnyNumber {
+    prop: SingleProp("outline-width"),
+    has_empty: true,
+    has_negative: false,
+    divide_by: 1.0,
+    template: "{}px",
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => value.parse::<usize>().is_ok(),
-            Modifier::Arbitrary {
-                hint,
-                value,
-                prefix,
-            } => {
-                prefix.is_empty()
-                    && (*hint == "length"
-                        || *hint == "line-width"
-                        || (hint.is_empty()
-                            && (is_matching_length(value) || is_matching_line_width(value))))
-            }
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("outline-width: {value}px;"));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context.buffer.line(format_args!("outline-width: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+    prop: SingleProp("outline-width"),
+    hints: &[PluginArbitraryHint::Length],
+    matcher: Or(&Length, &LineWidth),
+};

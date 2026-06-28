@@ -181,6 +181,20 @@ const NAMED_COLORS: [&str; 150] = [
     "yellow",
     "yellowgreen",
 ];
+const GENERIC_FONT_FAMILIES: &[&str] = &[
+    "serif",
+    "sans-serif",
+    "monospace",
+    "cursive",
+    "fantasy",
+    "system-ui",
+    "ui-serif",
+    "ui-sans-serif",
+    "ui-monospace",
+    "ui-rounded",
+    "math",
+    "fangsong",
+];
 
 fn is_matching_base(value: &str) -> bool {
     is_matching_var(value)
@@ -441,6 +455,25 @@ pub fn is_matching_image(value: &str) -> bool {
             .iter()
             .any(|e| value.starts_with(e))
         || is_matching_base(value)
+}
+
+/// Returns whether the CSS value is a font family name.
+///
+/// A font family name does not have a dedicated CSS type but it's a mix of
+/// `<generic-font-family>`, a string, or a custom identifier, and can be used in properties like
+/// `font-family`.
+///
+/// # Example
+///
+/// ```
+/// use encre_css::utils::value_matchers::is_matching_font_family_name;
+/// assert!(is_matching_font_family_name("sans-serif"));
+/// assert!(is_matching_font_family_name("'Open Sans'"));
+/// assert!(!is_matching_font_family_name("12px"));
+/// ```
+pub fn is_matching_font_family_name(value: &str) -> bool {
+    GENERIC_FONT_FAMILIES.contains(&value)
+        || value.chars().next().is_some_and(|ch| !ch.is_ascii_digit())
 }
 
 #[cfg(test)]

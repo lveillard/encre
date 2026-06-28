@@ -2,23 +2,13 @@
 #![doc(alias = "flexbox")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "auto" | "start" | "center" | "end" | "stretch",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        if let Modifier::Builtin { value, .. } = context.modifier {
-            context.buffer.line(format_args!("place-self: {value};"));
-        }
-    }
-}
+pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
+    prop: SingleProp("place-self"),
+    values: phf_map! {
+        "auto" => "auto",
+        "start" => "flex-start",
+        "center" => "center",
+        "end" => "flex-end",
+        "stretch" => "stretch",
+    },
+};

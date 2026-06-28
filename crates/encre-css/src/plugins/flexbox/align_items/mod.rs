@@ -2,31 +2,13 @@
 #![doc(alias = "flexbox")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "stretch" | "start" | "center" | "end" | "baseline",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => match *value {
-                "stretch" => context.buffer.line("align-items: stretch;"),
-                "start" => context.buffer.line("align-items: flex-start;"),
-                "center" => context.buffer.line("align-items: center;"),
-                "end" => context.buffer.line("align-items: flex-end;"),
-                "baseline" => context.buffer.line("align-items: baseline;"),
-                _ => unreachable!(),
-            },
-            Modifier::Arbitrary { .. } => unreachable!(),
-        }
-    }
-}
+pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
+    prop: SingleProp("align-items"),
+    values: phf_map! {
+        "stretch" => "stretch",
+        "start" => "flex-start",
+        "center" => "center",
+        "end" => "flex-end",
+        "baseline" => "baseline",
+    },
+};

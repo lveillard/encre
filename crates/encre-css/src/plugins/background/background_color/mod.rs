@@ -1,36 +1,14 @@
 #![doc = include_str!("README.md")]
 #![doc(alias("background", "bg"))]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::Color {
+    prop: SingleProp("background-color"),
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                color::is_matching_builtin_color(context.config, value)
-            }
-            Modifier::Arbitrary { hint, value, .. } => {
-                *hint == "color" || (hint.is_empty() && is_matching_color(value))
-            }
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                let color = color::get(context.config, value).unwrap();
-
-                context
-                    .buffer
-                    .line(format_args!("background-color: {color};"));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("background-color: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+    prop: SingleProp("background-color"),
+    hints: &[PluginArbitraryHint::Color],
+    matcher: Color,
+};

@@ -2,30 +2,9 @@
 #![doc(alias = "interactivity")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "start" | "end" | "center" | "align-none",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => match *value {
-                "start" => context.buffer.line("scroll-snap-align: start;"),
-                "end" => context.buffer.line("scroll-snap-align: end;"),
-                "center" => context.buffer.line("scroll-snap-align: center;"),
-                "align-none" => context.buffer.line("scroll-snap-align: none;"),
-                _ => unreachable!(),
-            },
-            Modifier::Arbitrary { .. } => unreachable!(),
-        }
-    }
-}
+pub(crate) const PLUGIN: Plugin = Plugin::ListValues { prop: SingleProp("scroll-snap-align"), values: phf_map! {
+    "start" => "start",
+    "end" => "end",
+    "center" => "center",
+    "align-none" => "none",
+} };

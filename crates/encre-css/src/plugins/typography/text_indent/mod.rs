@@ -1,29 +1,16 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::Spacing {
+    prop: SingleProp("text-indent"),
+    has_auto: false,
+    has_full: false,
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => spacing::is_matching_builtin_spacing(value),
-            Modifier::Arbitrary { value, .. } => is_matching_length(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { is_negative, value } => {
-                context.buffer.line(format_args!(
-                    "text-indent: {};",
-                    spacing::get(value, *is_negative).unwrap(),
-                ));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context.buffer.line(format_args!("text-indent: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+    prop: SingleProp("text-indent"),
+    hints: &[],
+    matcher: Length,
+};

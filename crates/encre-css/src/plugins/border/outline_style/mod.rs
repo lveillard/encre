@@ -2,35 +2,16 @@
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::SamePropValues {
+    prop: SingleProp("outline-style"),
+    values: &["dashed", "dotted", "double"],
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "" | "dashed" | "dotted" | "double" | "hidden" | "none",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => match *value {
-                "" => context.buffer.line("outline-style: solid;"),
-                "none" => context.buffer.line("outline-style: none;"),
-                "hidden" => {
-                    context.buffer.line("outline: 2px solid transparent;");
-                    context.buffer.line("outline-offset: 2px;");
-                }
-                "dashed" => context.buffer.line("outline-style: dashed;"),
-                "dotted" => context.buffer.line("outline-style: dotted;"),
-                "double" => context.buffer.line("outline-style: double;"),
-                _ => unreachable!(),
-            },
-            Modifier::Arbitrary { .. } => unreachable!(),
-        }
-    }
-}
+pub(crate) const PLUGIN_2: Plugin = Plugin::ListCases {
+    cases: phf_map! {
+        "hidden" => &[
+            "outline: 2px solid transparent;",
+            "outline-offset: 2px;"
+        ],
+    },
+};

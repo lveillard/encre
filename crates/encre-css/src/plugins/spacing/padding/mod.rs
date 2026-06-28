@@ -1,156 +1,47 @@
 #![doc = include_str!("README.md")]
 #![doc(alias("spacing", "space"))]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-use std::borrow::Cow;
-
-fn padding_can_handle(context: &ContextCanHandle) -> bool {
-    match context.modifier {
-        Modifier::Builtin { value, .. } => {
-            *value == "auto" || spacing::is_matching_builtin_spacing(value)
-        }
-        Modifier::Arbitrary { value, prefix, .. } => {
-            prefix.is_empty() && (is_matching_length(value) || is_matching_percentage(value))
-        }
+const fn builtin_plugin(prop: PropertyName) -> Plugin {
+    Plugin::Spacing {
+        prop,
+        has_auto: true,
+        has_full: false,
     }
 }
 
-fn padding_handle(css_properties: &[&str], context: &mut ContextHandle) {
-    match context.modifier {
-        Modifier::Builtin { is_negative, value } => {
-            for css_prop in css_properties {
-                context.buffer.line(format_args!(
-                    "{}: {};",
-                    css_prop,
-                    if *value == "auto" {
-                        Cow::from("auto")
-                    } else {
-                        spacing::get(value, *is_negative).unwrap()
-                    },
-                ));
-            }
-        }
-        Modifier::Arbitrary { value, .. } => {
-            for css_prop in css_properties {
-                context.buffer.line(format_args!("{css_prop}: {value};"));
-            }
-        }
+const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
+    Plugin::OnlyArbitrary {
+        prop,
+        hints: &[PluginArbitraryHint::Length, PluginArbitraryHint::Percentage],
+        matcher: Or(&Length, &Percentage),
     }
 }
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = builtin_plugin(SingleProp("padding"));
+pub(crate) const PLUGIN_2: Plugin = arbitrary_plugin(SingleProp("padding"));
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        padding_can_handle(&context)
-    }
+pub(crate) const PLUGIN_X_1: Plugin = builtin_plugin(SingleProp("padding-inline"));
+pub(crate) const PLUGIN_X_2: Plugin = arbitrary_plugin(SingleProp("padding-inline"));
 
-    fn handle(&self, context: &mut ContextHandle) {
-        padding_handle(&["padding"], context);
-    }
-}
+pub(crate) const PLUGIN_Y_1: Plugin = builtin_plugin(SingleProp("padding-block"));
+pub(crate) const PLUGIN_Y_2: Plugin = arbitrary_plugin(SingleProp("padding-block"));
 
-#[derive(Debug)]
-pub(crate) struct PluginXDefinition;
+pub(crate) const PLUGIN_START_1: Plugin = builtin_plugin(SingleProp("padding-inline-start"));
+pub(crate) const PLUGIN_START_2: Plugin = arbitrary_plugin(SingleProp("padding-inline-start"));
 
-impl Plugin for PluginXDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        padding_can_handle(&context)
-    }
+pub(crate) const PLUGIN_END_1: Plugin = builtin_plugin(SingleProp("padding-inline-end"));
+pub(crate) const PLUGIN_END_2: Plugin = arbitrary_plugin(SingleProp("padding-inline-end"));
 
-    fn handle(&self, context: &mut ContextHandle) {
-        padding_handle(&["padding-inline"], context);
-    }
-}
+pub(crate) const PLUGIN_TOP_1: Plugin = builtin_plugin(SingleProp("padding-top"));
+pub(crate) const PLUGIN_TOP_2: Plugin = arbitrary_plugin(SingleProp("padding-top"));
 
-#[derive(Debug)]
-pub(crate) struct PluginYDefinition;
+pub(crate) const PLUGIN_BOTTOM_1: Plugin = builtin_plugin(SingleProp("padding-bottom"));
+pub(crate) const PLUGIN_BOTTOM_2: Plugin = arbitrary_plugin(SingleProp("padding-bottom"));
 
-impl Plugin for PluginYDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        padding_can_handle(&context)
-    }
+pub(crate) const PLUGIN_LEFT_1: Plugin = builtin_plugin(SingleProp("padding-left"));
+pub(crate) const PLUGIN_LEFT_2: Plugin = arbitrary_plugin(SingleProp("padding-left"));
 
-    fn handle(&self, context: &mut ContextHandle) {
-        padding_handle(&["padding-block"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginStartDefinition;
-
-impl Plugin for PluginStartDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        padding_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        padding_handle(&["padding-inline-start"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginEndDefinition;
-
-impl Plugin for PluginEndDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        padding_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        padding_handle(&["padding-inline-end"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginTopDefinition;
-
-impl Plugin for PluginTopDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        padding_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        padding_handle(&["padding-top"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginBottomDefinition;
-
-impl Plugin for PluginBottomDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        padding_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        padding_handle(&["padding-bottom"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginLeftDefinition;
-
-impl Plugin for PluginLeftDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        padding_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        padding_handle(&["padding-left"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginRightDefinition;
-
-impl Plugin for PluginRightDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        padding_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        padding_handle(&["padding-right"], context);
-    }
-}
+pub(crate) const PLUGIN_RIGHT_1: Plugin = builtin_plugin(SingleProp("padding-right"));
+pub(crate) const PLUGIN_RIGHT_2: Plugin = arbitrary_plugin(SingleProp("padding-right"));

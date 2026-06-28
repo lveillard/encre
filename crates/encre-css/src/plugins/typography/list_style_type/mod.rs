@@ -1,30 +1,15 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::SamePropValues {
+    prop: SingleProp("list-style-type"),
+    values: &["disc", "decimal", "none"],
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => ["disc", "decimal", "none"].contains(&&**value),
-            Modifier::Arbitrary { value, .. } => is_matching_all(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("list-style-type: {value};"));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("list-style-type: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+    prop: SingleProp("list-style-type"),
+    hints: &[],
+    matcher: All,
+};

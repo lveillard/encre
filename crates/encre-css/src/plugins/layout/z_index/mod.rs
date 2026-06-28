@@ -2,20 +2,15 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::SamePropValues {
+    prop: SingleProp("z-index"),
+    values: &["auto"],
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(context.modifier, Modifier::Builtin { value, .. } if value.parse::<usize>().is_ok() || *value == "auto")
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        if let Modifier::Builtin { value, is_negative } = context.modifier {
-            context.buffer.line(format_args!(
-                "z-index: {}{value};",
-                format_negative(is_negative)
-            ));
-        }
-    }
-}
+pub(crate) const PLUGIN_2: Plugin = Plugin::AnyNumber {
+    prop: SingleProp("z-index"),
+    has_empty: false,
+    has_negative: true,
+    divide_by: 1.0,
+    template: "{}",
+};

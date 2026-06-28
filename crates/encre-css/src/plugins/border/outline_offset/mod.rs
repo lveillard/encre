@@ -1,32 +1,18 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::AnyNumber {
+    prop: SingleProp("outline-offset"),
+    has_empty: false,
+    has_negative: false,
+    divide_by: 1.0,
+    template: "{}px",
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => value.parse::<usize>().is_ok(),
-            Modifier::Arbitrary { hint, value, .. } => {
-                *hint == "length" || (hint.is_empty() && is_matching_length(value))
-            }
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("outline-offset: {value}px;"));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("outline-offset: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+    prop: SingleProp("outline-offset"),
+    hints: &[PluginArbitraryHint::Length],
+    matcher: Length,
+};

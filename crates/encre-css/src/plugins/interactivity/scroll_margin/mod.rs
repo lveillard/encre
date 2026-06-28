@@ -1,146 +1,47 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "interactivity")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-fn scroll_margin_can_handle(context: &ContextCanHandle) -> bool {
-    match context.modifier {
-        Modifier::Builtin { value, .. } => spacing::is_matching_builtin_spacing(value),
-        Modifier::Arbitrary { value, prefix, .. } => prefix.is_empty() && is_matching_length(value),
+const fn builtin_plugin(prop: PropertyName) -> Plugin {
+    Plugin::Spacing {
+        prop,
+        has_auto: false,
+        has_full: false,
     }
 }
 
-fn scroll_margin_handle(css_properties: &[&str], context: &mut ContextHandle) {
-    match context.modifier {
-        Modifier::Builtin { is_negative, value } => {
-            for css_prop in css_properties {
-                context.buffer.line(format_args!(
-                    "{}: {};",
-                    css_prop,
-                    spacing::get(value, *is_negative).unwrap(),
-                ));
-            }
-        }
-        Modifier::Arbitrary { value, .. } => {
-            for css_prop in css_properties {
-                context.buffer.line(format_args!("{css_prop}: {value};"));
-            }
-        }
+const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
+    Plugin::OnlyArbitrary {
+        prop,
+        hints: &[],
+        matcher: Length,
     }
 }
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = builtin_plugin(SingleProp("scroll-margin"));
+pub(crate) const PLUGIN_2: Plugin = arbitrary_plugin(SingleProp("scroll-margin"));
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
+pub(crate) const PLUGIN_X_1: Plugin = builtin_plugin(SingleProp("scroll-margin-inline"));
+pub(crate) const PLUGIN_X_2: Plugin = arbitrary_plugin(SingleProp("scroll-margin-inline"));
 
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin"], context);
-    }
-}
+pub(crate) const PLUGIN_Y_1: Plugin = builtin_plugin(SingleProp("scroll-margin-block"));
+pub(crate) const PLUGIN_Y_2: Plugin = arbitrary_plugin(SingleProp("scroll-margin-block"));
 
-#[derive(Debug)]
-pub(crate) struct PluginXDefinition;
+pub(crate) const PLUGIN_START_1: Plugin = builtin_plugin(SingleProp("scroll-margin-inline-start"));
+pub(crate) const PLUGIN_START_2: Plugin = arbitrary_plugin(SingleProp("scroll-margin-inline-start"));
 
-impl Plugin for PluginXDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
+pub(crate) const PLUGIN_END_1: Plugin = builtin_plugin(SingleProp("scroll-margin-inline-end"));
+pub(crate) const PLUGIN_END_2: Plugin = arbitrary_plugin(SingleProp("scroll-margin-inline-end"));
 
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-inline"], context);
-    }
-}
+pub(crate) const PLUGIN_TOP_1: Plugin = builtin_plugin(SingleProp("scroll-margin-top"));
+pub(crate) const PLUGIN_TOP_2: Plugin = arbitrary_plugin(SingleProp("scroll-margin-top"));
 
-#[derive(Debug)]
-pub(crate) struct PluginYDefinition;
+pub(crate) const PLUGIN_BOTTOM_1: Plugin = builtin_plugin(SingleProp("scroll-margin-bottom"));
+pub(crate) const PLUGIN_BOTTOM_2: Plugin = arbitrary_plugin(SingleProp("scroll-margin-bottom"));
 
-impl Plugin for PluginYDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
+pub(crate) const PLUGIN_LEFT_1: Plugin = builtin_plugin(SingleProp("scroll-margin-left"));
+pub(crate) const PLUGIN_LEFT_2: Plugin = arbitrary_plugin(SingleProp("scroll-margin-left"));
 
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-block"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginStartDefinition;
-
-impl Plugin for PluginStartDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-inline-start"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginEndDefinition;
-
-impl Plugin for PluginEndDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-inline-end"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginLeftDefinition;
-
-impl Plugin for PluginLeftDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-left"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginRightDefinition;
-
-impl Plugin for PluginRightDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-right"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginTopDefinition;
-
-impl Plugin for PluginTopDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-top"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginBottomDefinition;
-
-impl Plugin for PluginBottomDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-bottom"], context);
-    }
-}
+pub(crate) const PLUGIN_RIGHT_1: Plugin = builtin_plugin(SingleProp("scroll-margin-right"));
+pub(crate) const PLUGIN_RIGHT_2: Plugin = arbitrary_plugin(SingleProp("scroll-margin-right"));

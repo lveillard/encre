@@ -2,20 +2,10 @@
 #![doc(alias = "flexbox")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(context.modifier, Modifier::Builtin { value, .. } if value.is_empty() || value.parse::<usize>().is_ok())
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        if let Modifier::Builtin { value, .. } = context.modifier {
-            match *value {
-                "" => context.buffer.line("flex-shrink: 1;"),
-                _ => context.buffer.line(format_args!("flex-shrink: {value};")),
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN: Plugin = Plugin::AnyNumber {
+    prop: SingleProp("flex-shrink"),
+    has_empty: true,
+    has_negative: false,
+    divide_by: 1.0,
+    template: "{}",
+};

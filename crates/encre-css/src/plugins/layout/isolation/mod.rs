@@ -2,29 +2,10 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "isolate" | "isolation-auto",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        if let Modifier::Builtin { value, .. } = context.modifier {
-            context.buffer.line(format_args!(
-                "isolation: {};",
-                match *value {
-                    "isolation-auto" => "auto",
-                    _ => value,
-                }
-            ));
-        }
-    }
-}
+pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
+    prop: SingleProp("isolation"),
+    values: phf_map! {
+        "isolate" => "isolate",
+        "isolation-auto" => "auto",
+    },
+};

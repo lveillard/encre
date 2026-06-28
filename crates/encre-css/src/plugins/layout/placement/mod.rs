@@ -1,161 +1,47 @@
 #![doc = include_str!("README.md")]
 #![doc(alias("layout", "inset"))]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-use std::borrow::Cow;
-
-fn placement_can_handle(context: &ContextCanHandle) -> bool {
-    match context.modifier {
-        Modifier::Builtin { value, .. } => {
-            spacing::is_matching_builtin_spacing(value) || *value == "auto" || *value == "full"
-        }
-        Modifier::Arbitrary { value, prefix, .. } => {
-            prefix.is_empty()
-                && (is_matching_length(value) || is_matching_percentage(value) || *value == "auto")
-        }
+const fn builtin_plugin(prop: PropertyName) -> Plugin {
+    Plugin::Spacing {
+        prop,
+        has_auto: true,
+        has_full: true,
     }
 }
 
-fn placement_handle(css_properties: &[&str], context: &mut ContextHandle) {
-    match context.modifier {
-        Modifier::Builtin { is_negative, value } => {
-            for css_prop in css_properties {
-                context.buffer.line(format_args!(
-                    "{}: {};",
-                    css_prop,
-                    if *value == "auto" {
-                        Cow::from("auto")
-                    } else if *value == "full" && *is_negative {
-                        Cow::from("-100%")
-                    } else if *value == "full" {
-                        Cow::from("100%")
-                    } else {
-                        spacing::get(value, *is_negative).unwrap()
-                    },
-                ));
-            }
-        }
-        Modifier::Arbitrary { value, .. } => {
-            for css_prop in css_properties {
-                context.buffer.line(format_args!("{css_prop}: {value};"));
-            }
-        }
+const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
+    Plugin::OnlyArbitrary {
+        prop,
+        hints: &[],
+        matcher: OrMultiple(&[&Length, &Percentage, &Custom("auto")]),
     }
 }
 
-#[derive(Debug)]
-pub(crate) struct PluginInsetDefinition;
+pub(crate) const PLUGIN_1: Plugin = builtin_plugin(SingleProp("inset"));
+pub(crate) const PLUGIN_2: Plugin = arbitrary_plugin(SingleProp("inset"));
 
-impl Plugin for PluginInsetDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        placement_can_handle(&context)
-    }
+pub(crate) const PLUGIN_X_1: Plugin = builtin_plugin(SingleProp("inset-inline"));
+pub(crate) const PLUGIN_X_2: Plugin = arbitrary_plugin(SingleProp("inset-inline"));
 
-    fn handle(&self, context: &mut ContextHandle) {
-        placement_handle(&["inset"], context);
-    }
-}
+pub(crate) const PLUGIN_Y_1: Plugin = builtin_plugin(SingleProp("inset-block"));
+pub(crate) const PLUGIN_Y_2: Plugin = arbitrary_plugin(SingleProp("inset-block"));
 
-#[derive(Debug)]
-pub(crate) struct PluginInsetXDefinition;
+pub(crate) const PLUGIN_START_1: Plugin = builtin_plugin(SingleProp("inset-inline-start"));
+pub(crate) const PLUGIN_START_2: Plugin = arbitrary_plugin(SingleProp("inset-inline-start"));
 
-impl Plugin for PluginInsetXDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        placement_can_handle(&context)
-    }
+pub(crate) const PLUGIN_END_1: Plugin = builtin_plugin(SingleProp("inset-inline-end"));
+pub(crate) const PLUGIN_END_2: Plugin = arbitrary_plugin(SingleProp("inset-inline-end"));
 
-    fn handle(&self, context: &mut ContextHandle) {
-        placement_handle(&["inset-inline"], context);
-    }
-}
+pub(crate) const PLUGIN_TOP_1: Plugin = builtin_plugin(SingleProp("top"));
+pub(crate) const PLUGIN_TOP_2: Plugin = arbitrary_plugin(SingleProp("top"));
 
-#[derive(Debug)]
-pub(crate) struct PluginInsetYDefinition;
+pub(crate) const PLUGIN_BOTTOM_1: Plugin = builtin_plugin(SingleProp("bottom"));
+pub(crate) const PLUGIN_BOTTOM_2: Plugin = arbitrary_plugin(SingleProp("bottom"));
 
-impl Plugin for PluginInsetYDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        placement_can_handle(&context)
-    }
+pub(crate) const PLUGIN_LEFT_1: Plugin = builtin_plugin(SingleProp("left"));
+pub(crate) const PLUGIN_LEFT_2: Plugin = arbitrary_plugin(SingleProp("left"));
 
-    fn handle(&self, context: &mut ContextHandle) {
-        placement_handle(&["inset-block"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginStartDefinition;
-
-impl Plugin for PluginStartDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        placement_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        placement_handle(&["inset-inline-start"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginEndDefinition;
-
-impl Plugin for PluginEndDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        placement_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        placement_handle(&["inset-inline-end"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginTopDefinition;
-
-impl Plugin for PluginTopDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        placement_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        placement_handle(&["top"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginBottomDefinition;
-
-impl Plugin for PluginBottomDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        placement_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        placement_handle(&["bottom"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginLeftDefinition;
-
-impl Plugin for PluginLeftDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        placement_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        placement_handle(&["left"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginRightDefinition;
-
-impl Plugin for PluginRightDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        placement_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        placement_handle(&["right"], context);
-    }
-}
+pub(crate) const PLUGIN_RIGHT_1: Plugin = builtin_plugin(SingleProp("right"));
+pub(crate) const PLUGIN_RIGHT_2: Plugin = arbitrary_plugin(SingleProp("right"));

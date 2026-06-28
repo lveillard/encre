@@ -2,23 +2,7 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "static" | "fixed" | "absolute" | "relative" | "sticky",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        if let Modifier::Builtin { value, .. } = context.modifier {
-            context.buffer.line(format_args!("position: {value};"));
-        }
-    }
-}
+pub(crate) const PLUGIN: Plugin = Plugin::SamePropValues {
+    prop: SingleProp("position"),
+    values: &["static", "fixed", "absolute", "relative", "sticky"],
+};

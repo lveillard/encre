@@ -1,52 +1,30 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "transform")]
-use super::CSS_TRANSFORM;
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-fn skew_can_handle(context: &ContextCanHandle) -> bool {
-    match context.modifier {
-        Modifier::Builtin { value, .. } => value.parse::<usize>().is_ok_and(|v| v <= 360),
-        Modifier::Arbitrary { value, .. } => is_matching_angle(value),
+const fn builtin_plugin(prop: PropertyName) -> Plugin {
+    Plugin::AnyNumber {
+        prop,
+        has_empty: false,
+        has_negative: true,
+        divide_by: 1.0,
+        template: "{}deg",
     }
+    // TODO: extra_line CSS_TRANSFORM
 }
 
-fn skew_handle(css_prop: &str, context: &mut ContextHandle) {
-    match context.modifier {
-        Modifier::Builtin { is_negative, value } => context.buffer.line(format_args!(
-            "{}: {}{value}deg;",
-            css_prop,
-            format_negative(is_negative),
-        )),
-        Modifier::Arbitrary { value, .. } => {
-            context.buffer.line(format_args!("{css_prop}: {value};"));
-        }
+const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
+    Plugin::OnlyArbitrary {
+        prop,
+        hints: &[],
+        matcher: Angle,
     }
-
-    context.buffer.line(CSS_TRANSFORM);
+    // TODO: extra_line CSS_TRANSFORM
 }
 
-#[derive(Debug)]
-pub(crate) struct PluginXDefinition;
+pub(crate) const PLUGIN_X_1: Plugin = builtin_plugin(SingleProp("--en-skew-x"));
+pub(crate) const PLUGIN_X_2: Plugin = arbitrary_plugin(SingleProp("--en-skew-x"));
 
-impl Plugin for PluginXDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        skew_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        skew_handle("--en-skew-x", context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginYDefinition;
-
-impl Plugin for PluginYDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        skew_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        skew_handle("--en-skew-y", context);
-    }
-}
+pub(crate) const PLUGIN_Y_1: Plugin = builtin_plugin(SingleProp("--en-skew-y"));
+pub(crate) const PLUGIN_Y_2: Plugin = arbitrary_plugin(SingleProp("--en-skew-y"));

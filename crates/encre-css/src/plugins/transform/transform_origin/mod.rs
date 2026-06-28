@@ -1,41 +1,25 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "transform")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
+    prop: SingleProp("transform-origin"),
+    values: phf_map! {
+        "bottom" => "bottom",
+        "center" => "center",
+        "left" => "left",
+        "bottom-left" => "bottom left",
+        "top-left" => "top left",
+        "right" => "right",
+        "bottom-right" => "bottom right",
+        "top-right" => "top right",
+        "top" => "top",
+    },
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => [
-                "center",
-                "top",
-                "top-right",
-                "right",
-                "bottom-right",
-                "bottom",
-                "bottom-left",
-                "left",
-                "top-left",
-            ]
-            .contains(value),
-            Modifier::Arbitrary { value, .. } => is_matching_position(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("transform-origin: {};", value.replace('-', " ")));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("transform-origin: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+    prop: SingleProp("transform-origin"),
+    hints: &[],
+    matcher: Position,
+};

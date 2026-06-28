@@ -1,30 +1,18 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "transition")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::AnyNumber {
+    prop: SingleProp("transition-delay"),
+    has_empty: false,
+    has_negative: false,
+    divide_by: 1.0,
+    template: "{}ms",
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => value.parse::<usize>().is_ok(),
-            Modifier::Arbitrary { value, .. } => is_matching_time(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("transition-delay: {value}ms;"));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("transition-delay: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+    prop: SingleProp("transition-delay"),
+    hints: &[],
+    matcher: Time,
+};

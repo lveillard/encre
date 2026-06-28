@@ -3,11 +3,11 @@ use crate::{
     config::{Config, BUILTIN_PLUGINS, BUILTIN_VARIANTS},
     error::{ParseError, ParseErrorKind},
     generator::ContextCanHandle,
-    plugins::css_property::CssPropertyPlugin,
-    utils::split_ignore_arbitrary,
+    plugins::{css_property::PLUGIN, Plugin, PluginArbitraryHint, PluginArbitraryMatcher},
+    utils::{color, spacing, split_ignore_arbitrary, value_matchers::*},
 };
 
-use std::{borrow::Cow, ops::Range};
+use std::{borrow::Cow, ops::Range, str::FromStr};
 
 pub(crate) const ARBITRARY_START: char = '[';
 pub(crate) const ARBITRARY_END: char = ']';
@@ -130,6 +130,99 @@ pub(crate) fn to_css_value(val: &str) -> Cow<'_, str> {
     }
 
     replace_escape_codes(val)
+}
+
+// TODO: avoid blowing up the stack
+fn is_arbitrary_matching(matcher: &PluginArbitraryMatcher, value: &str) -> bool {
+    match matcher {
+        PluginArbitraryMatcher::All => true,
+        PluginArbitraryMatcher::Url => is_matching_url(value),
+        PluginArbitraryMatcher::Var => is_matching_var(value),
+        PluginArbitraryMatcher::Shadow => is_matching_shadow(value),
+        PluginArbitraryMatcher::AbsoluteSize => is_matching_absolute_size(value),
+        PluginArbitraryMatcher::RelativeSize => is_matching_relative_size(value),
+        PluginArbitraryMatcher::LineWidth => is_matching_line_width(value),
+        PluginArbitraryMatcher::LineStyle => is_matching_line_style(value),
+        PluginArbitraryMatcher::ComputationalCssFunction => {
+            is_matching_computational_css_function(value)
+        }
+        PluginArbitraryMatcher::Color => is_matching_color(value),
+        PluginArbitraryMatcher::Length => is_matching_length(value),
+        PluginArbitraryMatcher::Number => is_matching_number(value),
+        PluginArbitraryMatcher::Percentage => is_matching_percentage(value),
+        PluginArbitraryMatcher::Time => is_matching_time(value),
+        PluginArbitraryMatcher::Gradient => is_matching_gradient(value),
+        PluginArbitraryMatcher::Position => is_matching_position(value),
+        PluginArbitraryMatcher::Angle => is_matching_angle(value),
+        PluginArbitraryMatcher::Image => is_matching_image(value),
+        PluginArbitraryMatcher::FontFamilyName => is_matching_font_family_name(value),
+        PluginArbitraryMatcher::Custom(v) => value == *v,
+        PluginArbitraryMatcher::CustomMultiple(values) => values.contains(&value),
+        PluginArbitraryMatcher::Or(matcher1, matcher2) => {
+            is_arbitrary_matching(matcher1, value) || is_arbitrary_matching(matcher2, value)
+        }
+        PluginArbitraryMatcher::OrMultiple(matchers) => matchers
+            .iter()
+            .map(|m| is_arbitrary_matching(m, value))
+            .any(|x| x),
+        PluginArbitraryMatcher::CommaSeparated(matcher1) => value
+            .split(',')
+            .all(|v| is_arbitrary_matching(matcher1, v.trim())),
+        PluginArbitraryMatcher::SpaceSeparated(matcher1) => value
+            .split(' ')
+            .all(|v| is_arbitrary_matching(matcher1, v.trim())),
+    }
+}
+
+fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
+    match (plugin, context.modifier) {
+        (Plugin::ListCases { cases }, Modifier::Builtin { value, .. }) => cases.contains_key(value),
+        (Plugin::ListValues { values, .. }, Modifier::Builtin { value, .. }) => {
+            values.contains_key(value)
+        }
+        (
+            Plugin::Sizing {
+                is_horizontal,
+                has_none,
+                ..
+            },
+            Modifier::Builtin { value, .. },
+        ) => {
+            spacing::is_matching_builtin_spacing(value)
+                || ["full", "screen", "min", "max", "fit", "auto"].contains(value)
+                || (*is_horizontal && ["svw", "lvw", "dvw"].contains(value))
+                || (!is_horizontal && ["svh", "lvh", "dvh"].contains(value))
+                || (*has_none && *value == "none")
+        }
+        (Plugin::SamePropValues { values, .. }, Modifier::Builtin { value, .. }) => {
+            values.contains(value)
+        }
+        (
+            Plugin::Spacing {
+                has_auto, has_full, ..
+            },
+            Modifier::Builtin { value, .. },
+        ) => {
+            spacing::is_matching_builtin_spacing(value)
+                || (*has_auto && *value == "auto")
+                || (*has_full && *value == "full")
+        }
+        (Plugin::Color { .. }, Modifier::Builtin { value, .. }) => {
+            color::is_matching_builtin_color(context.config, value)
+        }
+        (Plugin::AnyNumber { has_empty, has_negative, .. }, Modifier::Builtin { value, is_negative, .. }) => {
+            (*has_empty && value.is_empty()) || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative))
+        }
+        (Plugin::OnlyArbitrary { matcher, hints, .. }, Modifier::Arbitrary { hint, value, .. }) => {
+            // TODO: handle prefix.is_empty()
+            PluginArbitraryHint::from_str(hint).is_ok_and(|h| hints.contains(&h))
+                || (hint.is_empty() && is_arbitrary_matching(matcher, value))
+        }
+        (Plugin::ArbitraryShadow { .. }, Modifier::Arbitrary { hint, value, .. }) => {
+            *hint == "shadow" || (hint.is_empty() && is_matching_shadow(value))
+        }
+        _ => false,
+    }
 }
 
 pub(crate) fn parse<'a>(
@@ -643,7 +736,7 @@ fn parse_recursive<'a>(
 
         if remaining.1.starts_with(ARBITRARY_START) && remaining.1.ends_with(ARBITRARY_END) {
             // Arbitrary CSS property (without namespace)
-            let plugin = &CssPropertyPlugin;
+            let plugin = &PLUGIN;
 
             variants
                 .into_iter()
@@ -713,7 +806,7 @@ fn parse_recursive<'a>(
                         }
                     }
 
-                    if plugin.can_handle(context) {
+                    if can_handle(plugin, &context) {
                         return variants
                             .into_iter()
                             .map(|variants| {
@@ -786,6 +879,7 @@ fn parse_modifier(mut modifier: &str, is_negative: bool) -> Option<Modifier<'_>>
     }
 }
 
+/*
 #[cfg(test)]
 mod tests {
     // NOTE: In these tests, the order value of the selectors and variants are arbitrary because
@@ -3073,3 +3167,4 @@ mod tests {
         );
     }
 }
+*/

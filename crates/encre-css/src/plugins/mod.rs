@@ -32,9 +32,8 @@
 //! If you want to write your own plugins, see [`Plugin`].
 //!
 //! [`Config`]: crate::Config
-use crate::generator::{ContextCanHandle, ContextHandle};
 
-use std::fmt;
+use std::str::FromStr;
 
 pub mod accessibility;
 pub mod background;
@@ -209,6 +208,7 @@ pub mod typography;
 /// [`generator::generate_at_rules`]: crate::generator::generate_at_rules
 /// [`generator::generate_class`]: crate::generator::generate_class
 /// [`generator::generate_wrapper`]: crate::generator::generate_wrapper
+/*
 pub trait Plugin: fmt::Debug {
     /// Returns whether the plugin can handle a specific modifier.
     fn can_handle(&self, _context: ContextCanHandle) -> bool;
@@ -230,4 +230,138 @@ pub trait Plugin: fmt::Debug {
     /// - Arbitrary values are already normalized (e.g. underscores are replaced by spaces);
     /// - This function is guaranteed to be called only once per selector.
     fn handle(&self, _context: &mut ContextHandle);
+}*/
+
+#[derive(Debug, PartialEq)]
+pub enum PluginArbitraryHint {
+    Shadow,
+    AbsoluteSize,
+    RelativeSize,
+    Url,
+    LineWidth,
+    LineStyle,
+    Color,
+    Length,
+    Percentage,
+    Number,
+    Position,
+    Image,
+    GenericName,
+    FamilyName,
+}
+
+impl FromStr for PluginArbitraryHint {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
+            "shadow" => Self::Shadow,
+            "absolute-size" => Self::AbsoluteSize,
+            "relative-size" => Self::RelativeSize,
+            "url" => Self::Url,
+            "line-width" => Self::LineWidth,
+            "line-style" => Self::LineStyle,
+            "color" => Self::Color,
+            "length" => Self::Length,
+            "percentage" => Self::Percentage,
+            "number" => Self::Number,
+            "position" => Self::Position,
+            "image" => Self::Image,
+            "generic-name" => Self::GenericName,
+            "family-name" => Self::FamilyName,
+            _ => return Err(()),
+        })
+    }
+}
+
+// TODO: Check if splitting by spaces in is_matching_length and is_matching_position is still needed
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+pub enum PluginArbitraryMatcher {
+    All,
+    Url,
+    Var,
+    Shadow,
+    AbsoluteSize,
+    RelativeSize,
+    LineWidth,
+    LineStyle,
+    ComputationalCssFunction,
+    Color,
+    Length,
+    Number,
+    Percentage,
+    Time,
+    Gradient,
+    Position,
+    Angle,
+    Image,
+    FontFamilyName,
+    Custom(&'static str),
+    CustomMultiple(&'static [&'static str]),
+
+    Or(
+        &'static PluginArbitraryMatcher,
+        &'static PluginArbitraryMatcher,
+    ),
+    OrMultiple(&'static [&'static PluginArbitraryMatcher]),
+    CommaSeparated(&'static PluginArbitraryMatcher),
+    SpaceSeparated(&'static PluginArbitraryMatcher),
+}
+
+#[derive(Debug, PartialEq)]
+pub enum PropertyName {
+    SingleProp(&'static str),
+    MultipleProps(&'static [&'static str]),
+}
+
+// TODO: Make a StaticPlugin/DynamicPlugin (with Strings and Vecs for ser/de)
+// TODO: Rename OnlyArbitrary -> Arbitrary and rename PLUGIN_1/PLUGIN_2 -> PLUGIN_BUILTIN/PLUGIN_ARBITRARY
+// TODO: Define prefix inside plugin with a structure (+ multiple rules per plugin?)
+// TODO: add PluginArbitraryMatcher::* to the prelude
+
+#[derive(Debug, PartialEq)]
+pub enum Plugin {
+    ListCases {
+        cases: phf::Map<&'static str, &'static [&'static str]>,
+    },
+    ListValues {
+        prop: PropertyName,
+        values: phf::Map<&'static str, &'static str>,
+    },
+    SamePropValues {
+        prop: PropertyName,
+        values: &'static [&'static str],
+    },
+
+    Sizing {
+        prop: PropertyName,
+        is_horizontal: bool,
+        has_none: bool,
+    },
+    Spacing {
+        prop: PropertyName,
+        has_auto: bool,
+        has_full: bool,
+    },
+    Color {
+        prop: PropertyName,
+    },
+    AnyNumber {
+        prop: PropertyName,
+        has_empty: bool,
+        has_negative: bool,
+        divide_by: f32,
+        template: &'static str,
+    },
+
+    OnlyArbitrary {
+        prop: PropertyName,
+        hints: &'static [PluginArbitraryHint],
+        matcher: PluginArbitraryMatcher,
+    },
+    ArbitraryShadow {
+        prop: PropertyName,
+        color_replacement: &'static str,
+        extra_line: &'static str,
+    }
 }

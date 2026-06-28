@@ -1,29 +1,19 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
+    prop: SingleProp("aspect-ratio"),
+    values: phf_map! {
+        "auto" => "auto",
+        "square" => "1 / 1",
+        "video" => "16 / 9",
+    },
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => ["auto", "square", "video"].contains(&&**value),
-            Modifier::Arbitrary { value, .. } => is_matching_all(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => match *value {
-                "auto" => context.buffer.line("aspect-ratio: auto;"),
-                "square" => context.buffer.line("aspect-ratio: 1 / 1;"),
-                "video" => context.buffer.line("aspect-ratio: 16 / 9;"),
-                _ => unreachable!(),
-            },
-            Modifier::Arbitrary { value, .. } => context
-                .buffer
-                .line(format_args!("aspect-ratio: {};", value.replace('/', " / "),)),
-        }
-    }
-}
+pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+    prop: SingleProp("aspect-ratio"),
+    hints: &[],
+    matcher: All,
+};

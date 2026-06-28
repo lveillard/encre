@@ -1,32 +1,20 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "grid")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
+    prop: SingleProp("grid-auto-rows"),
+    values: phf_map! {
+        "auto" => "auto",
+        "min" => "min-content",
+        "max" => "max-content",
+        "fr" => "minmax(0, 1fr)"
+    },
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => ["auto", "min", "max", "fr"].contains(&&**value),
-            Modifier::Arbitrary { value, .. } => is_matching_all(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => match *value {
-                "auto" => context.buffer.line("grid-auto-rows: auto;"),
-                "min" => context.buffer.line("grid-auto-rows: min-content;"),
-                "max" => context.buffer.line("grid-auto-rows: max-content;"),
-                "fr" => context.buffer.line("grid-auto-rows: minmax(0, 1fr);"),
-                _ => unreachable!(),
-            },
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("grid-auto-rows: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+    prop: SingleProp("grid-auto-rows"),
+    hints: &[],
+    matcher: All,
+};

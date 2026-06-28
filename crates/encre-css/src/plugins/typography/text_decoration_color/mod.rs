@@ -1,37 +1,14 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::Color {
+    prop: MultipleProps(&["-webkit-text-decoration-color", "text-decoration-color"]),
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                color::is_matching_builtin_color(context.config, value)
-            }
-            Modifier::Arbitrary { hint, value, .. } => {
-                *hint == "color" || (hint.is_empty() && is_matching_color(value))
-            }
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                let value = color::get(context.config, value).unwrap();
-                context.buffer.lines([
-                    format_args!("-webkit-text-decoration-color: {value};"),
-                    format_args!("text-decoration-color: {value};"),
-                ]);
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context.buffer.lines([
-                    format_args!("-webkit-text-decoration-color: {value};"),
-                    format_args!("text-decoration-color: {value};"),
-                ]);
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+    prop: MultipleProps(&["-webkit-text-decoration-color", "text-decoration-color"]),
+    hints: &[PluginArbitraryHint::Color],
+    matcher: Color,
+};

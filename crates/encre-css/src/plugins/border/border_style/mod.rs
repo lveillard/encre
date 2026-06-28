@@ -1,26 +1,18 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::SamePropValues {
+    prop: SingleProp("border-style"),
+    values: &[
+        "solid", "dashed", "dotted", "double", "groove", "ridge", "inset", "outset", "hidden",
+        "none",
+    ],
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => is_matching_line_style(value),
-            Modifier::Arbitrary { value, .. } => value.split(' ').all(is_matching_line_style),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                context.buffer.line(format_args!("border-style: {value};"));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context.buffer.line(format_args!("border-style: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+    prop: SingleProp("border-style"),
+    hints: &[],
+    matcher: SpaceSeparated(&LineStyle),
+};

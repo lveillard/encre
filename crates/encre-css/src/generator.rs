@@ -1,9 +1,10 @@
 //! Define the main [`generate`] function used to scan content and to generate CSS styles.
 use crate::{
     config::{Config, MaxShortcutDepth},
+    plugins::{Plugin, PropertyName},
     preflight::Preflight,
     selector::{parse, Modifier, Selector, Variant},
-    utils::buffer::Buffer,
+    utils::{buffer::Buffer, color, format_negative, shadow, spacing},
 };
 
 use std::{borrow::Cow, collections::BTreeSet};
@@ -36,6 +37,151 @@ pub struct ContextHandle<'a, 'b, 'c, 'd, 'e> {
 
     // Private fields used in `generate_class` and `generate_at_rules`
     selector: &'e Selector<'e>,
+}
+
+fn push_css_lines(prop: &PropertyName, value: &str, context: &mut ContextHandle) {
+    match prop {
+        PropertyName::SingleProp(prop) => {
+            context.buffer.line(format_args!("{prop}: {value};"));
+        }
+        PropertyName::MultipleProps(props) => {
+            for prop in *props {
+                context.buffer.line(format_args!("{prop}: {value};"));
+            }
+        }
+    }
+}
+
+fn handle(plugin: &Plugin, context: &mut ContextHandle) {
+    match (plugin, context.modifier) {
+        (Plugin::ListCases { cases }, Modifier::Builtin { value, .. }) => {
+            generate_wrapper(context, |context| {
+                context.buffer.lines(
+                    *cases.get(value)
+                        .expect("key existence was checked in can_handle"),
+                )
+            });
+        }
+        (Plugin::ListValues { prop, values }, Modifier::Builtin { value, .. }) => {
+            generate_wrapper(context, |context| {
+                push_css_lines(
+                    prop,
+                    *values
+                        .get(value)
+                        .expect("key existence was checked in can_handle"),
+                        context,
+                )
+            });
+        }
+        (Plugin::SamePropValues { prop, .. }, Modifier::Builtin { value, .. }) => {
+            generate_wrapper(context, |context| {
+                push_css_lines(prop, value, context);
+            });
+        }
+        (
+            Plugin::Sizing {
+                prop,
+                is_horizontal,
+                has_none,
+            },
+            Modifier::Builtin {
+                value, is_negative, ..
+            },
+        ) => {
+            generate_wrapper(context, |context| {
+                let value = match *value {
+                    "none" if *has_none => Cow::Borrowed("none"),
+                    "auto" => Cow::Borrowed("auto"),
+                    "full" => Cow::Borrowed("100%"),
+                    "screen" if *is_horizontal => Cow::Borrowed("100vw"),
+                    "screen" if !is_horizontal => Cow::Borrowed("100vh"),
+                    "min" => Cow::Borrowed("min-content"),
+                    "max" => Cow::Borrowed("max-content"),
+                    "fit" => Cow::Borrowed("fit-content"),
+                    "svw" if *is_horizontal => Cow::Borrowed("100svw"),
+                    "lvw" if *is_horizontal => Cow::Borrowed("100lvw"),
+                    "dvw" if *is_horizontal => Cow::Borrowed("100dvw"),
+                    "svh" if !is_horizontal => Cow::Borrowed("100svh"),
+                    "lvh" if !is_horizontal => Cow::Borrowed("100lvh"),
+                    "dvh" if !is_horizontal => Cow::Borrowed("100dvh"),
+                    _ => spacing::get(value, *is_negative).unwrap(),
+                };
+                push_css_lines(prop, &*value, context);
+            });
+        }
+        (
+            Plugin::Spacing { prop, has_auto, has_full },
+            Modifier::Builtin {
+                value, is_negative, ..
+            },
+        ) => {
+            generate_wrapper(context, |context| {
+                let value = if *has_auto && *value == "auto" {
+                    Cow::Borrowed("auto")
+                } else if *has_full && *value == "full" {
+                    if *is_negative {
+                        Cow::Borrowed("-100%")
+                    } else {
+                        Cow::Borrowed("100%")
+                    }
+                } else {
+                    spacing::get(value, *is_negative).unwrap()
+                };
+                push_css_lines(prop, &*value, context);
+            });
+        }
+        (
+            Plugin::Color { prop },
+            Modifier::Builtin {
+                value, ..
+            },
+        ) => {
+            generate_wrapper(context, |context| {
+                let value = color::get(context.config, value).unwrap();
+                push_css_lines(prop, &*value, context);
+            });
+        }
+        (
+            Plugin::AnyNumber { prop, has_negative, has_empty, divide_by, template, .. },
+            Modifier::Builtin {
+                value, is_negative
+            },
+        ) => {
+            generate_wrapper(context, |context| {
+                let value = if *has_empty && value.is_empty() { 1.0 / divide_by } else { value.parse::<usize>().unwrap() as f32 / divide_by };
+                let value = format!(
+                    "{}{}",
+                    if *has_negative { format_negative(is_negative) } else { "" },
+                    template.replace("{}", &value.to_string()),
+                );
+                push_css_lines(prop, &*value, context);
+            });
+        }
+        (
+            Plugin::Sizing { prop, .. } | Plugin::Spacing { prop, .. } | Plugin::Color { prop, .. } | Plugin::OnlyArbitrary { prop, .. },
+            Modifier::Arbitrary { value, .. },
+        ) => {
+            generate_wrapper(context, |context| {
+                push_css_lines(prop, value, context);
+            });
+        }
+        (
+            Plugin::ArbitraryShadow { prop, extra_line, color_replacement },
+            Modifier::Arbitrary { value, .. },
+        ) => {
+            generate_wrapper(context, |context| {
+                let mut shadow = shadow::ShadowList::parse(value).unwrap();
+                shadow.replace_all_colors(color_replacement);
+
+                push_css_lines(prop, &shadow.to_string(), context);
+
+                if !extra_line.is_empty() {
+                    context.buffer.line(extra_line);
+                }
+            });
+        }
+        _ => unreachable!("Only plugins which can be handled are supposed to be handled. However {plugin:?} cannot handle {:?} but passed can_handle check. This is a bug in encre-css, please report it.", context.modifier),
+    }
 }
 
 /// Generate the needed CSS at-rules (e.g @media).
@@ -315,11 +461,12 @@ pub fn generate<'a>(sources: impl IntoIterator<Item = &'a str>, config: &Config)
             selector: &selector,
         };
 
-        if selector.plugin.needs_wrapping() {
-            generate_wrapper(&mut context, |context| selector.plugin.handle(context));
-        } else {
-            selector.plugin.handle(&mut context);
-        }
+        // if selector.plugin.needs_wrapping() {
+        //     generate_wrapper(&mut context, |context| selector.plugin.handle(context));
+        // } else {
+        //     selector.plugin.handle(&mut context);
+        // }
+        handle(selector.plugin, &mut context);
     }
 
     buffer.into_inner()
@@ -871,14 +1018,12 @@ mod tests {
             )
         );
 
-        let generated = generate(
-            ["(bg-blue-100,bg-blue-200,bg-blue-300)"],
-            &base_config(),
-        );
+        let generated = generate(["(bg-blue-100,bg-blue-200,bg-blue-300)"], &base_config());
 
         assert_eq!(
             generated,
-            String::from(r".\(bg-blue-100\,bg-blue-200\,bg-blue-300\) {
+            String::from(
+                r".\(bg-blue-100\,bg-blue-200\,bg-blue-300\) {
   background-color: oklch(93.2% .032 255.585);
 }
 
@@ -888,7 +1033,8 @@ mod tests {
 
 .\(bg-blue-100\,bg-blue-200\,bg-blue-300\) {
   background-color: oklch(80.9% .105 251.813);
-}"),
+}"
+            ),
         );
     }
 
@@ -1163,7 +1309,11 @@ mod tests {
     #[test]
     fn named_group_and_peer() {
         let generated = generate(
-            ["group-checked/item:block peer-checked/item:block peer-not-checked/item:block", "peer-[:focus-within]/item:block", "peer-[:nth-of-type(3)_&]/item:block"],
+            [
+                "group-checked/item:block peer-checked/item:block peer-not-checked/item:block",
+                "peer-[:focus-within]/item:block",
+                "peer-[:nth-of-type(3)_&]/item:block",
+            ],
             &base_config(),
         );
 

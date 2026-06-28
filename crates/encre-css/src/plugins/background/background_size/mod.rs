@@ -1,42 +1,19 @@
 #![doc = include_str!("README.md")]
 #![doc(alias("background", "bg"))]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::SamePropValues {
+    prop: SingleProp("background-size"),
+    values: &["auto", "cover", "contain"],
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => ["contain", "cover", "auto"].contains(value),
-            Modifier::Arbitrary { hint, value, .. } => {
-                *hint == "length"
-                    || *hint == "percentage"
-                    || (hint.is_empty()
-                        && value.split(',').all(|v| {
-                            v.split(' ').all(|v| {
-                                is_matching_length(v)
-                                    || is_matching_percentage(v)
-                                    || ["contain", "cover", "auto"].contains(&v)
-                            })
-                        }))
-            }
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => match *value {
-                "auto" => context.buffer.line("background-size: auto;"),
-                "cover" => context.buffer.line("background-size: cover;"),
-                "contain" => context.buffer.line("background-size: contain;"),
-                _ => unreachable!(),
-            },
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("background-size: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+    prop: SingleProp("background-size"),
+    hints: &[PluginArbitraryHint::Length, PluginArbitraryHint::Percentage],
+    matcher: CommaSeparated(&OrMultiple(&[
+        &SpaceSeparated(&OrMultiple(&[&Length, &Percentage, &Custom("auto")])),
+        &Custom("cover"),
+        &Custom("contain"),
+    ])),
+};

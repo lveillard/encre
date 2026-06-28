@@ -1,90 +1,38 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "transform")]
-use super::CSS_TRANSFORM;
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-fn scale_can_handle(context: &ContextCanHandle) -> bool {
-    match context.modifier {
-        Modifier::Builtin { value, .. } => value.parse::<usize>().is_ok(),
-        Modifier::Arbitrary { value, .. } => {
-            is_matching_percentage(value) || is_matching_number(value)
-        }
+const fn builtin_plugin(prop: PropertyName) -> Plugin {
+    Plugin::AnyNumber {
+        prop,
+        has_empty: false,
+        has_negative: true,
+        divide_by: 100.0,
+        template: "{}",
     }
+    // TODO: extra_line CSS_TRANSFORM
 }
 
-fn scale_handle(css_properties: &[&str], context: &mut ContextHandle) {
-    match context.modifier {
-        Modifier::Builtin { is_negative, value } => {
-            for css_prop in css_properties {
-                #[allow(clippy::cast_precision_loss)]
-                context.buffer.line(format_args!(
-                    "{}: {}{};",
-                    css_prop,
-                    format_negative(is_negative),
-                    value.parse::<usize>().unwrap() as f32 / 100.,
-                ));
-            }
-        }
-        Modifier::Arbitrary { value, .. } => {
-            for css_prop in css_properties {
-                context
-                    .buffer
-                    .line(format_args!("{css_prop}: {value};"));
-            }
-        }
+const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
+    Plugin::OnlyArbitrary {
+        prop,
+        hints: &[],
+        matcher: Or(&Percentage, &Number),
     }
-
-    context.buffer.line(CSS_TRANSFORM);
+    // TODO: extra_line CSS_TRANSFORM
 }
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin =
+    builtin_plugin(MultipleProps(&["--en-scale-x", "--en-scale-y"]));
+pub(crate) const PLUGIN_2: Plugin =
+    arbitrary_plugin(MultipleProps(&["--en-scale-x", "--en-scale-y"]));
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scale_can_handle(&context)
-    }
+pub(crate) const PLUGIN_X_1: Plugin = builtin_plugin(SingleProp("--en-scale-x"));
+pub(crate) const PLUGIN_X_2: Plugin = arbitrary_plugin(SingleProp("--en-scale-x"));
 
-    fn handle(&self, context: &mut ContextHandle) {
-        scale_handle(&["--en-scale-x", "--en-scale-y"], context);
-    }
-}
+pub(crate) const PLUGIN_Y_1: Plugin = builtin_plugin(SingleProp("--en-scale-y"));
+pub(crate) const PLUGIN_Y_2: Plugin = arbitrary_plugin(SingleProp("--en-scale-y"));
 
-#[derive(Debug)]
-pub(crate) struct PluginXDefinition;
-
-impl Plugin for PluginXDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scale_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scale_handle(&["--en-scale-x"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginYDefinition;
-
-impl Plugin for PluginYDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scale_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scale_handle(&["--en-scale-y"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginZDefinition;
-
-impl Plugin for PluginZDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scale_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scale_handle(&["--en-scale-z"], context);
-    }
-}
+pub(crate) const PLUGIN_Z_1: Plugin = builtin_plugin(SingleProp("--en-scale-z"));
+pub(crate) const PLUGIN_Z_2: Plugin = arbitrary_plugin(SingleProp("--en-scale-z"));

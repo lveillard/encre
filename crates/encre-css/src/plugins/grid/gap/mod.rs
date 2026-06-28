@@ -1,77 +1,29 @@
 #![doc = include_str!("README.md")]
 #![doc(alias("grid", "flexbox"))]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => spacing::is_matching_builtin_spacing(value),
-            Modifier::Arbitrary { prefix, value, .. } => {
-                prefix.is_empty() && is_matching_length(value)
-            }
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { is_negative, value } => context.buffer.line(format_args!(
-                "gap: {};",
-                spacing::get(value, *is_negative).unwrap()
-            )),
-            Modifier::Arbitrary { value, .. } => {
-                context.buffer.line(format_args!("gap: {value};"));
-            }
-        }
+const fn builtin_plugin(prop: PropertyName) -> Plugin {
+    Plugin::Spacing {
+        prop,
+        has_auto: false,
+        has_full: false,
     }
 }
 
-#[derive(Debug)]
-pub(crate) struct PluginXDefinition;
-
-impl Plugin for PluginXDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => spacing::is_matching_builtin_spacing(value),
-            Modifier::Arbitrary { value, .. } => is_matching_length(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { is_negative, value } => context.buffer.line(format_args!(
-                "column-gap: {};",
-                spacing::get(value, *is_negative).unwrap()
-            )),
-            Modifier::Arbitrary { value, .. } => {
-                context.buffer.line(format_args!("column-gap: {value};"));
-            }
-        }
+const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
+    Plugin::OnlyArbitrary {
+        prop,
+        hints: &[],
+        matcher: Length,
     }
 }
 
-#[derive(Debug)]
-pub(crate) struct PluginYDefinition;
+pub(crate) const PLUGIN_1: Plugin = builtin_plugin(SingleProp("gap"));
+pub(crate) const PLUGIN_2: Plugin = arbitrary_plugin(SingleProp("gap"));
 
-impl Plugin for PluginYDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => spacing::is_matching_builtin_spacing(value),
-            Modifier::Arbitrary { value, .. } => is_matching_length(value),
-        }
-    }
+pub(crate) const PLUGIN_X_1: Plugin = builtin_plugin(SingleProp("column-gap"));
+pub(crate) const PLUGIN_X_2: Plugin = arbitrary_plugin(SingleProp("column-gap"));
 
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { is_negative, value } => context.buffer.line(format_args!(
-                "row-gap: {};",
-                spacing::get(value, *is_negative).unwrap()
-            )),
-            Modifier::Arbitrary { value, .. } => {
-                context.buffer.line(format_args!("row-gap: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_Y_1: Plugin = builtin_plugin(SingleProp("row-gap"));
+pub(crate) const PLUGIN_Y_2: Plugin = arbitrary_plugin(SingleProp("row-gap"));

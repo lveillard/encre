@@ -7,7 +7,7 @@ pub mod font_style;
 pub mod font_variant_numeric;
 pub mod font_weight;
 pub mod letter_spacing;
-pub mod line_clamp;
+// pub mod line_clamp;
 pub mod line_height;
 pub mod list_style_position;
 pub mod list_style_type;

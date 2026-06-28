@@ -247,10 +247,11 @@ pub mod prelude {
         pub use crate::{
             generator::{generate_at_rules, generate_class, generate_wrapper},
             generator::{ContextCanHandle, ContextHandle},
-            plugins::Plugin,
+            plugins::{Plugin, PluginArbitraryHint, PluginArbitraryMatcher, PropertyName, PropertyName::*},
             selector::Modifier,
             utils::{buffer::Buffer, color, format_negative, shadow, spacing, value_matchers::*},
         };
         pub use std::fmt::{self, Write};
+        pub use phf::{self, phf_map};
     }
 }

@@ -1,63 +1,24 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "effect")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::Color {
+    prop: SingleProp("--en-shadow-color"),
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                color::is_matching_builtin_color(context.config, value)
-            }
-            Modifier::Arbitrary { hint, value, .. } => {
-                *hint == "color" || (hint.is_empty() && is_matching_color(value))
-            }
-        }
-    }
+pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+    prop: SingleProp("--en-shadow-color"),
+    hints: &[PluginArbitraryHint::Color],
+    matcher: Color,
+};
 
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => context.buffer.line(format_args!(
-                "--en-shadow-color: {};",
-                color::get(context.config, value).unwrap()
-            )),
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("--en-shadow-color: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_INSET_1: Plugin = Plugin::Color {
+    prop: SingleProp("--en-inset-shadow-color"),
+};
 
-#[derive(Debug)]
-pub(crate) struct PluginInsetDefinition;
-
-impl Plugin for PluginInsetDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                color::is_matching_builtin_color(context.config, value)
-            }
-            Modifier::Arbitrary { hint, value, .. } => {
-                *hint == "color" || (hint.is_empty() && is_matching_color(value))
-            }
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => context.buffer.line(format_args!(
-                "--en-inset-shadow-color: {};",
-                color::get(context.config, value).unwrap()
-            )),
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("--en-inset-shadow-color: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_INSET_2: Plugin = Plugin::OnlyArbitrary {
+    prop: SingleProp("--en-inset-shadow-color"),
+    hints: &[PluginArbitraryHint::Color],
+    matcher: Color,
+};

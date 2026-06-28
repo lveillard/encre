@@ -822,267 +822,444 @@ pub const BUILTIN_VARIANTS: phf::OrderedMap<&'static str, Variant> = {
 ///
 /// Sorted following [Tailwind's order](https://github.com/tailwindlabs/tailwindcss/blob/master/src/corePlugins.js).
 #[rustfmt::skip]
-pub const BUILTIN_PLUGINS: &[(Cow<'static, str>, &'static (dyn Plugin + Send + Sync))] = &[
-    (Cow::Borrowed("container"), &layout::container::PluginDefinition),
-    (Cow::Borrowed(""), &accessibility::screen_reader::PluginDefinition),
-    (Cow::Borrowed("pointer-events"), &interactivity::pointer_events::PluginDefinition),
-    (Cow::Borrowed(""), &layout::visibility::PluginDefinition),
-    (Cow::Borrowed(""), &layout::position::PluginDefinition),
-    (Cow::Borrowed("inset"), &layout::placement::PluginInsetDefinition),
-    (Cow::Borrowed("inset-x"), &layout::placement::PluginInsetXDefinition),
-    (Cow::Borrowed("inset-y"), &layout::placement::PluginInsetYDefinition),
-    (Cow::Borrowed("start"), &layout::placement::PluginStartDefinition),
-    (Cow::Borrowed("end"), &layout::placement::PluginEndDefinition),
-    (Cow::Borrowed("top"), &layout::placement::PluginTopDefinition),
-    (Cow::Borrowed("right"), &layout::placement::PluginRightDefinition),
-    (Cow::Borrowed("bottom"), &layout::placement::PluginBottomDefinition),
-    (Cow::Borrowed("left"), &layout::placement::PluginLeftDefinition),
-    (Cow::Borrowed(""), &layout::isolation::PluginDefinition),
-    (Cow::Borrowed("z"), &layout::z_index::PluginDefinition),
-    (Cow::Borrowed("order"), &flexbox::order::PluginDefinition),
-    (Cow::Borrowed("col"), &grid::grid_column::PluginDefinition),
-    (Cow::Borrowed("row"), &grid::grid_row::PluginDefinition),
-    (Cow::Borrowed("float"), &layout::floats::PluginDefinition),
-    (Cow::Borrowed("clear"), &layout::clear::PluginDefinition),
-    (Cow::Borrowed("m"), &spacing::margin::PluginDefinition),
-    (Cow::Borrowed("mx"), &spacing::margin::PluginXDefinition),
-    (Cow::Borrowed("my"), &spacing::margin::PluginYDefinition),
-    (Cow::Borrowed("ms"), &spacing::margin::PluginStartDefinition),
-    (Cow::Borrowed("me"), &spacing::margin::PluginEndDefinition),
-    (Cow::Borrowed("mt"), &spacing::margin::PluginTopDefinition),
-    (Cow::Borrowed("mr"), &spacing::margin::PluginRightDefinition),
-    (Cow::Borrowed("mb"), &spacing::margin::PluginBottomDefinition),
-    (Cow::Borrowed("ml"), &spacing::margin::PluginLeftDefinition),
-    (Cow::Borrowed("box"), &layout::box_sizing::PluginDefinition),
-    (Cow::Borrowed(""), &layout::display::PluginDefinition),
-    (Cow::Borrowed("aspect"), &layout::aspect_ratio::PluginDefinition),
-    (Cow::Borrowed("h"), &sizing::height::PluginDefinition),
-    (Cow::Borrowed("max-h"), &sizing::max_height::PluginDefinition),
-    (Cow::Borrowed("min-h"), &sizing::min_height::PluginDefinition),
-    (Cow::Borrowed("w"), &sizing::width::PluginDefinition),
-    (Cow::Borrowed("min-w"), &sizing::min_width::PluginDefinition),
-    (Cow::Borrowed("max-w"), &sizing::max_width::PluginDefinition),
-    (Cow::Borrowed("flex"), &flexbox::flex::PluginDefinition),
-    (Cow::Borrowed("shrink"), &flexbox::flex_shrink::PluginDefinition),
-    (Cow::Borrowed("grow"), &flexbox::flex_grow::PluginDefinition),
-    (Cow::Borrowed("basis"), &flexbox::flex_basis::PluginDefinition),
-    (Cow::Borrowed("table"), &table::table_layout::PluginDefinition),
-    (Cow::Borrowed("caption"), &table::caption_side::PluginDefinition),
-    (Cow::Borrowed("border"), &table::border_collapse::PluginDefinition),
-    (Cow::Borrowed("border-spacing"), &table::border_spacing::PluginDefinition),
-    (Cow::Borrowed("border-spacing-x"), &table::border_spacing::PluginXDefinition),
-    (Cow::Borrowed("border-spacing-y"), &table::border_spacing::PluginYDefinition),
-    (Cow::Borrowed("origin"), &transform::transform_origin::PluginDefinition),
-    (Cow::Borrowed("perspective-origin"), &transform::perspective_origin::PluginDefinition),
-    (Cow::Borrowed("perspective"), &transform::perspective::PluginDefinition),
-    (Cow::Borrowed("translate-x"), &transform::translate::PluginXDefinition),
-    (Cow::Borrowed("translate-y"), &transform::translate::PluginYDefinition),
-    (Cow::Borrowed("translate-z"), &transform::translate::PluginZDefinition),
-    (Cow::Borrowed("rotate"), &transform::rotate::PluginDefinition),
-    (Cow::Borrowed("rotate-x"), &transform::rotate::PluginXDefinition),
-    (Cow::Borrowed("rotate-y"), &transform::rotate::PluginYDefinition),
-    (Cow::Borrowed("rotate-z"), &transform::rotate::PluginZDefinition),
-    (Cow::Borrowed("skew-x"), &transform::skew::PluginXDefinition),
-    (Cow::Borrowed("skew-y"), &transform::skew::PluginYDefinition),
-    (Cow::Borrowed("scale"), &transform::scale::PluginDefinition),
-    (Cow::Borrowed("scale-x"), &transform::scale::PluginXDefinition),
-    (Cow::Borrowed("scale-y"), &transform::scale::PluginYDefinition),
-    (Cow::Borrowed("scale-z"), &transform::scale::PluginZDefinition),
-    (Cow::Borrowed("transform"), &transform::transform_type::PluginDefinition),
-    (Cow::Borrowed("animate"), &transition::animation::PluginDefinition),
-    (Cow::Borrowed("cursor"), &interactivity::cursor::PluginDefinition),
-    (Cow::Borrowed("touch"), &interactivity::touch_action::PluginDefinition),
-    (Cow::Borrowed("select"), &interactivity::user_select::PluginDefinition),
-    (Cow::Borrowed("resize"), &interactivity::resize::PluginDefinition),
-    (Cow::Borrowed("snap"), &interactivity::scroll_snap_type::PluginDefinition),
-    (Cow::Borrowed("snap"), &interactivity::scroll_snap_align::PluginDefinition),
-    (Cow::Borrowed("snap"), &interactivity::scroll_snap_stop::PluginDefinition),
-    (Cow::Borrowed("scroll-m"), &interactivity::scroll_margin::PluginDefinition),
-    (Cow::Borrowed("scroll-mx"), &interactivity::scroll_margin::PluginXDefinition),
-    (Cow::Borrowed("scroll-my"), &interactivity::scroll_margin::PluginYDefinition),
-    (Cow::Borrowed("scroll-ms"), &interactivity::scroll_margin::PluginStartDefinition),
-    (Cow::Borrowed("scroll-me"), &interactivity::scroll_margin::PluginEndDefinition),
-    (Cow::Borrowed("scroll-mt"), &interactivity::scroll_margin::PluginTopDefinition),
-    (Cow::Borrowed("scroll-mr"), &interactivity::scroll_margin::PluginRightDefinition),
-    (Cow::Borrowed("scroll-mb"), &interactivity::scroll_margin::PluginBottomDefinition),
-    (Cow::Borrowed("scroll-ml"), &interactivity::scroll_margin::PluginLeftDefinition),
-    (Cow::Borrowed("scroll-p"), &interactivity::scroll_padding::PluginDefinition),
-    (Cow::Borrowed("scroll-px"), &interactivity::scroll_padding::PluginXDefinition),
-    (Cow::Borrowed("scroll-py"), &interactivity::scroll_padding::PluginYDefinition),
-    (Cow::Borrowed("scroll-ps"), &interactivity::scroll_padding::PluginStartDefinition),
-    (Cow::Borrowed("scroll-pe"), &interactivity::scroll_padding::PluginEndDefinition),
-    (Cow::Borrowed("scroll-pt"), &interactivity::scroll_padding::PluginTopDefinition),
-    (Cow::Borrowed("scroll-pr"), &interactivity::scroll_padding::PluginRightDefinition),
-    (Cow::Borrowed("scroll-pb"), &interactivity::scroll_padding::PluginBottomDefinition),
-    (Cow::Borrowed("scroll-pl"), &interactivity::scroll_padding::PluginLeftDefinition),
-    (Cow::Borrowed("list"), &typography::list_style_position::PluginDefinition),
-    (Cow::Borrowed("list"), &typography::list_style_type::PluginDefinition),
-    (Cow::Borrowed("appearance"), &interactivity::appearance::PluginDefinition),
-    (Cow::Borrowed("columns"), &layout::columns::PluginDefinition),
-    (Cow::Borrowed("break-before"), &layout::break_before::PluginDefinition),
-    (Cow::Borrowed("break-inside"), &layout::break_inside::PluginDefinition),
-    (Cow::Borrowed("break-after"), &layout::break_after::PluginDefinition),
-    (Cow::Borrowed("auto-cols"), &grid::grid_auto_columns::PluginDefinition),
-    (Cow::Borrowed("grid-flow"), &grid::grid_auto_flow::PluginDefinition),
-    (Cow::Borrowed("auto-rows"), &grid::grid_auto_rows::PluginDefinition),
-    (Cow::Borrowed("grid-cols"), &grid::grid_template_columns::PluginDefinition),
-    (Cow::Borrowed("grid-rows"), &grid::grid_template_rows::PluginDefinition),
-    (Cow::Borrowed("flex"), &flexbox::flex_direction::PluginDefinition),
-    (Cow::Borrowed("flex"), &flexbox::flex_wrap::PluginDefinition),
-    (Cow::Borrowed("place-content"), &flexbox::place_content::PluginDefinition),
-    (Cow::Borrowed("place-items"), &flexbox::place_items::PluginDefinition),
-    (Cow::Borrowed("content"), &flexbox::align_content::PluginDefinition),
-    (Cow::Borrowed("items"), &flexbox::align_items::PluginDefinition),
-    (Cow::Borrowed("justify"), &flexbox::justify_content::PluginDefinition),
-    (Cow::Borrowed("justify-items"), &flexbox::justify_items::PluginDefinition),
-    (Cow::Borrowed("gap"), &grid::gap::PluginDefinition),
-    (Cow::Borrowed("gap-x"), &grid::gap::PluginXDefinition),
-    (Cow::Borrowed("gap-y"), &grid::gap::PluginYDefinition),
-    (Cow::Borrowed("space-x"), &spacing::space_between::PluginXDefinition),
-    (Cow::Borrowed("space-y"), &spacing::space_between::PluginYDefinition),
-    (Cow::Borrowed("divide-x"), &border::divide_width::PluginXDefinition),
-    (Cow::Borrowed("divide-y"), &border::divide_width::PluginYDefinition),
-    (Cow::Borrowed("divide"), &border::divide_style::PluginDefinition),
-    (Cow::Borrowed("divide"), &border::divide_color::PluginDefinition),
-    (Cow::Borrowed("place-self"), &flexbox::place_self::PluginDefinition),
-    (Cow::Borrowed("self"), &flexbox::align_self::PluginDefinition),
-    (Cow::Borrowed("justify-self"), &flexbox::justify_self::PluginDefinition),
-    (Cow::Borrowed("overflow"), &layout::overflow::PluginDefinition),
-    (Cow::Borrowed("overscroll"), &layout::overscroll_behavior::PluginDefinition),
-    (Cow::Borrowed("scroll"), &interactivity::scroll_behavior::PluginDefinition),
-    (Cow::Borrowed(""), &typography::text_overflow::PluginDefinition),
-    (Cow::Borrowed("whitespace"), &typography::whitespace::PluginDefinition),
-    (Cow::Borrowed("text"), &typography::text_wrap::PluginDefinition),
-    (Cow::Borrowed("break"), &typography::word_break::PluginDefinition),
-    (Cow::Borrowed("rounded"), &border::border_radius::PluginDefinition),
-    (Cow::Borrowed("rounded-s"), &border::border_radius::PluginStartDefinition),
-    (Cow::Borrowed("rounded-e"), &border::border_radius::PluginEndDefinition),
-    (Cow::Borrowed("rounded-t"), &border::border_radius::PluginTopDefinition),
-    (Cow::Borrowed("rounded-r"), &border::border_radius::PluginRightDefinition),
-    (Cow::Borrowed("rounded-b"), &border::border_radius::PluginBottomDefinition),
-    (Cow::Borrowed("rounded-l"), &border::border_radius::PluginLeftDefinition),
-    (Cow::Borrowed("rounded-ss"), &border::border_radius::PluginStartStartDefinition),
-    (Cow::Borrowed("rounded-se"), &border::border_radius::PluginStartEndDefinition),
-    (Cow::Borrowed("rounded-ee"), &border::border_radius::PluginEndEndDefinition),
-    (Cow::Borrowed("rounded-es"), &border::border_radius::PluginEndStartDefinition),
-    (Cow::Borrowed("rounded-tr"), &border::border_radius::PluginTopRightDefinition),
-    (Cow::Borrowed("rounded-tl"), &border::border_radius::PluginTopLeftDefinition),
-    (Cow::Borrowed("rounded-br"), &border::border_radius::PluginBottomRightDefinition),
-    (Cow::Borrowed("rounded-bl"), &border::border_radius::PluginBottomLeftDefinition),
-    (Cow::Borrowed("border"), &border::border_width::PluginDefinition),
-    (Cow::Borrowed("border-x"), &border::border_width::PluginXDefinition),
-    (Cow::Borrowed("border-y"), &border::border_width::PluginYDefinition),
-    (Cow::Borrowed("border-s"), &border::border_width::PluginStartDefinition),
-    (Cow::Borrowed("border-e"), &border::border_width::PluginEndDefinition),
-    (Cow::Borrowed("border-t"), &border::border_width::PluginTopDefinition),
-    (Cow::Borrowed("border-r"), &border::border_width::PluginRightDefinition),
-    (Cow::Borrowed("border-b"), &border::border_width::PluginBottomDefinition),
-    (Cow::Borrowed("border-l"), &border::border_width::PluginLeftDefinition),
-    (Cow::Borrowed("border"), &border::border_style::PluginDefinition),
-    (Cow::Borrowed("border"), &border::border_color::PluginDefinition),
-    (Cow::Borrowed("border-x"), &border::border_color::PluginXDefinition),
-    (Cow::Borrowed("border-y"), &border::border_color::PluginYDefinition),
-    (Cow::Borrowed("border-s"), &border::border_color::PluginStartDefinition),
-    (Cow::Borrowed("border-e"), &border::border_color::PluginEndDefinition),
-    (Cow::Borrowed("border-t"), &border::border_color::PluginTopDefinition),
-    (Cow::Borrowed("border-r"), &border::border_color::PluginRightDefinition),
-    (Cow::Borrowed("border-b"), &border::border_color::PluginBottomDefinition),
-    (Cow::Borrowed("border-l"), &border::border_color::PluginLeftDefinition),
-    (Cow::Borrowed("bg"), &background::background_color::PluginDefinition),
-    (Cow::Borrowed("bg"), &background::background_image::PluginDefinition),
-    (Cow::Borrowed("bg-linear"), &background::background_image::PluginLinearDefinition),
-    (Cow::Borrowed("bg-radial"), &background::background_image::PluginRadialDefinition),
-    (Cow::Borrowed("bg-conic"), &background::background_image::PluginConicDefinition),
-    (Cow::Borrowed("from"), &background::gradient_color_stops::PluginFromDefinition),
-    (Cow::Borrowed("via"), &background::gradient_color_stops::PluginViaDefinition),
-    (Cow::Borrowed("to"), &background::gradient_color_stops::PluginToDefinition),
-    (Cow::Borrowed("box-decoration"), &layout::box_decoration_break::PluginDefinition),
-    (Cow::Borrowed("bg"), &background::background_size::PluginDefinition),
-    (Cow::Borrowed("bg"), &background::background_attachment::PluginDefinition),
-    (Cow::Borrowed("bg-clip"), &background::background_clip::PluginDefinition),
-    (Cow::Borrowed("bg"), &background::background_position::PluginDefinition),
-    (Cow::Borrowed("bg"), &background::background_repeat::PluginDefinition),
-    (Cow::Borrowed("bg-origin"), &background::background_origin::PluginDefinition),
-    (Cow::Borrowed("fill"), &svg::fill::PluginDefinition),
-    (Cow::Borrowed("stroke"), &svg::stroke::PluginDefinition),
-    (Cow::Borrowed("stroke"), &svg::stroke_width::PluginDefinition),
-    (Cow::Borrowed("object"), &layout::object_fit::PluginDefinition),
-    (Cow::Borrowed("object"), &layout::object_position::PluginDefinition),
-    (Cow::Borrowed("p"), &spacing::padding::PluginDefinition),
-    (Cow::Borrowed("px"), &spacing::padding::PluginXDefinition),
-    (Cow::Borrowed("py"), &spacing::padding::PluginYDefinition),
-    (Cow::Borrowed("ps"), &spacing::padding::PluginStartDefinition),
-    (Cow::Borrowed("pe"), &spacing::padding::PluginEndDefinition),
-    (Cow::Borrowed("pt"), &spacing::padding::PluginTopDefinition),
-    (Cow::Borrowed("pr"), &spacing::padding::PluginRightDefinition),
-    (Cow::Borrowed("pb"), &spacing::padding::PluginBottomDefinition),
-    (Cow::Borrowed("pl"), &spacing::padding::PluginLeftDefinition),
-    (Cow::Borrowed("text"), &typography::text_align::PluginDefinition),
-    (Cow::Borrowed("indent"), &typography::text_indent::PluginDefinition),
-    (Cow::Borrowed("align"), &typography::vertical_align::PluginDefinition),
-    (Cow::Borrowed("font"), &typography::font_family::PluginDefinition),
-    (Cow::Borrowed("text"), &typography::font_size::PluginDefinition),
-    (Cow::Borrowed("font"), &typography::font_weight::PluginDefinition),
-    (Cow::Borrowed(""), &typography::text_transform::PluginDefinition),
-    (Cow::Borrowed(""), &typography::font_style::PluginDefinition),
-    (Cow::Borrowed(""), &typography::font_variant_numeric::PluginDefinition),
-    (Cow::Borrowed("tracking"), &typography::letter_spacing::PluginDefinition),
-    (Cow::Borrowed("leading"), &typography::line_height::PluginDefinition),
-    (Cow::Borrowed("text"), &typography::text_color::PluginDefinition),
-    (Cow::Borrowed(""), &typography::text_decoration::PluginDefinition),
-    (Cow::Borrowed("decoration"), &typography::text_decoration_color::PluginDefinition),
-    (Cow::Borrowed("decoration"), &typography::text_decoration_style::PluginDefinition),
-    (Cow::Borrowed("decoration"), &typography::text_decoration_thickness::PluginDefinition),
-    (Cow::Borrowed("underline-offset"), &typography::text_underline_offset::PluginDefinition),
-    (Cow::Borrowed(""), &typography::font_smoothing::PluginDefinition),
-    (Cow::Borrowed("caret"), &interactivity::caret_color::PluginDefinition),
-    (Cow::Borrowed("accent"), &interactivity::accent_color::PluginDefinition),
-    (Cow::Borrowed("opacity"), &effect::opacity::PluginDefinition),
-    (Cow::Borrowed("bg-blend"), &effect::background_blend_mode::PluginDefinition),
-    (Cow::Borrowed("mix-blend"), &effect::mix_blend_mode::PluginDefinition),
-    (Cow::Borrowed("text-shadow"), &effect::text_shadow::PluginDefinition),
-    (Cow::Borrowed("text-shadow"), &effect::text_shadow_color::PluginDefinition),
-    (Cow::Borrowed("shadow"), &effect::box_shadow::PluginDefinition),
-    (Cow::Borrowed("shadow"), &effect::box_shadow_color::PluginDefinition),
-    (Cow::Borrowed("inset-shadow"), &effect::box_shadow::PluginInsetDefinition),
-    (Cow::Borrowed("inset-shadow"), &effect::box_shadow_color::PluginInsetDefinition),
-    (Cow::Borrowed("outline"), &border::outline_style::PluginDefinition),
-    (Cow::Borrowed("outline"), &border::outline_width::PluginDefinition),
-    (Cow::Borrowed("outline-offset"), &border::outline_offset::PluginDefinition),
-    (Cow::Borrowed("outline"), &border::outline_color::PluginDefinition),
-    (Cow::Borrowed("ring"), &border::ring_width::PluginDefinition),
-    (Cow::Borrowed("ring"), &border::ring_color::PluginDefinition),
-    (Cow::Borrowed("inset-ring"), &border::ring_width::PluginInsetDefinition),
-    (Cow::Borrowed("inset-ring"), &border::ring_color::PluginInsetDefinition),
-    (Cow::Borrowed("ring-offset"), &border::ring_offset_width::PluginDefinition),
-    (Cow::Borrowed("ring-offset"), &border::ring_offset_color::PluginDefinition),
-    (Cow::Borrowed("blur"), &filter::blur::PluginDefinition),
-    (Cow::Borrowed("brightness"), &filter::brightness::PluginDefinition),
-    (Cow::Borrowed("contrast"), &filter::contrast::PluginDefinition),
-    (Cow::Borrowed("drop-shadow"), &filter::drop_shadow::PluginDefinition),
-    (Cow::Borrowed("grayscale"), &filter::grayscale::PluginDefinition),
-    (Cow::Borrowed("hue-rotate"), &filter::hue_rotate::PluginDefinition),
-    (Cow::Borrowed("invert"), &filter::invert::PluginDefinition),
-    (Cow::Borrowed("saturate"), &filter::saturate::PluginDefinition),
-    (Cow::Borrowed("sepia"), &filter::sepia::PluginDefinition),
-    (Cow::Borrowed("filter"), &filter::filter_type::PluginDefinition),
-    (Cow::Borrowed("backdrop-blur"), &filter::backdrop_blur::PluginDefinition),
-    (Cow::Borrowed("backdrop-brightness"), &filter::backdrop_brightness::PluginDefinition),
-    (Cow::Borrowed("backdrop-contrast"), &filter::backdrop_contrast::PluginDefinition),
-    (Cow::Borrowed("backdrop-grayscale"), &filter::backdrop_grayscale::PluginDefinition),
-    (Cow::Borrowed("backdrop-hue-rotate"), &filter::backdrop_hue_rotate::PluginDefinition),
-    (Cow::Borrowed("backdrop-invert"), &filter::backdrop_invert::PluginDefinition),
-    (Cow::Borrowed("backdrop-saturate"), &filter::backdrop_saturate::PluginDefinition),
-    (Cow::Borrowed("backdrop-sepia"), &filter::backdrop_sepia::PluginDefinition),
-    (Cow::Borrowed("backdrop-filter"), &filter::backdrop_filter::PluginDefinition),
-    (Cow::Borrowed("transition"), &transition::transition_property::PluginDefinition),
-    (Cow::Borrowed("delay"), &transition::transition_delay::PluginDefinition),
-    (Cow::Borrowed("duration"), &transition::transition_duration::PluginDefinition),
-    (Cow::Borrowed("ease"), &transition::transition_timing_function::PluginDefinition),
-    (Cow::Borrowed("will-change"), &interactivity::will_change::PluginDefinition),
-    (Cow::Borrowed("content"), &typography::content::PluginDefinition),
-    (Cow::Borrowed("line-clamp"), &typography::line_clamp::PluginDefinition),
-    (Cow::Borrowed("@container"), &layout::at_container::PluginDefinition),
+pub const BUILTIN_PLUGINS: &[(Cow<'static, str>, &'static Plugin)] = &[
+    // (Cow::Borrowed("container"), &layout::container::PluginDefinition),
+    (Cow::Borrowed(""), &accessibility::screen_reader::PLUGIN),
+    (Cow::Borrowed("pointer-events"), &interactivity::pointer_events::PLUGIN),
+    (Cow::Borrowed(""), &layout::visibility::PLUGIN),
+    (Cow::Borrowed(""), &layout::position::PLUGIN),
+    (Cow::Borrowed("inset"), &layout::placement::PLUGIN_1),
+    (Cow::Borrowed("inset"), &layout::placement::PLUGIN_2),
+    (Cow::Borrowed("inset-x"), &layout::placement::PLUGIN_X_1),
+    (Cow::Borrowed("inset-x"), &layout::placement::PLUGIN_X_2),
+    (Cow::Borrowed("inset-y"), &layout::placement::PLUGIN_Y_1),
+    (Cow::Borrowed("inset-y"), &layout::placement::PLUGIN_Y_2),
+    (Cow::Borrowed("start"), &layout::placement::PLUGIN_START_1),
+    (Cow::Borrowed("start"), &layout::placement::PLUGIN_START_2),
+    (Cow::Borrowed("end"), &layout::placement::PLUGIN_END_1),
+    (Cow::Borrowed("end"), &layout::placement::PLUGIN_END_2),
+    (Cow::Borrowed("top"), &layout::placement::PLUGIN_TOP_1),
+    (Cow::Borrowed("top"), &layout::placement::PLUGIN_TOP_2),
+    (Cow::Borrowed("right"), &layout::placement::PLUGIN_RIGHT_1),
+    (Cow::Borrowed("right"), &layout::placement::PLUGIN_RIGHT_2),
+    (Cow::Borrowed("bottom"), &layout::placement::PLUGIN_BOTTOM_1),
+    (Cow::Borrowed("bottom"), &layout::placement::PLUGIN_BOTTOM_2),
+    (Cow::Borrowed("left"), &layout::placement::PLUGIN_LEFT_1),
+    (Cow::Borrowed("left"), &layout::placement::PLUGIN_LEFT_2),
+    (Cow::Borrowed(""), &layout::isolation::PLUGIN),
+    (Cow::Borrowed("z"), &layout::z_index::PLUGIN_1),
+    (Cow::Borrowed("z"), &layout::z_index::PLUGIN_2),
+    (Cow::Borrowed("order"), &flexbox::order::PLUGIN_1),
+    (Cow::Borrowed("order"), &flexbox::order::PLUGIN_2),
+    (Cow::Borrowed("col"), &grid::grid_column::PLUGIN_1),
+    (Cow::Borrowed("col"), &grid::grid_column::PLUGIN_2),
+    (Cow::Borrowed("col-span"), &grid::grid_column::PLUGIN_SPAN_1),
+    (Cow::Borrowed("col-span"), &grid::grid_column::PLUGIN_SPAN_2),
+    (Cow::Borrowed("col-start"), &grid::grid_column::PLUGIN_START_1),
+    (Cow::Borrowed("col-start"), &grid::grid_column::PLUGIN_START_2),
+    (Cow::Borrowed("col-end"), &grid::grid_column::PLUGIN_END_1),
+    (Cow::Borrowed("col-end"), &grid::grid_column::PLUGIN_END_2),
+    (Cow::Borrowed("row"), &grid::grid_row::PLUGIN_1),
+    (Cow::Borrowed("row"), &grid::grid_row::PLUGIN_2),
+    (Cow::Borrowed("row-span"), &grid::grid_row::PLUGIN_SPAN_1),
+    (Cow::Borrowed("row-span"), &grid::grid_row::PLUGIN_SPAN_2),
+    (Cow::Borrowed("row-start"), &grid::grid_row::PLUGIN_START_1),
+    (Cow::Borrowed("row-start"), &grid::grid_row::PLUGIN_START_2),
+    (Cow::Borrowed("row-end"), &grid::grid_row::PLUGIN_END_1),
+    (Cow::Borrowed("row-end"), &grid::grid_row::PLUGIN_END_2),
+    (Cow::Borrowed("float"), &layout::floats::PLUGIN),
+    (Cow::Borrowed("clear"), &layout::clear::PLUGIN),
+    (Cow::Borrowed("m"), &spacing::margin::PLUGIN_1),
+    (Cow::Borrowed("m"), &spacing::margin::PLUGIN_2),
+    (Cow::Borrowed("mx"), &spacing::margin::PLUGIN_X_1),
+    (Cow::Borrowed("mx"), &spacing::margin::PLUGIN_X_2),
+    (Cow::Borrowed("my"), &spacing::margin::PLUGIN_Y_1),
+    (Cow::Borrowed("my"), &spacing::margin::PLUGIN_Y_2),
+    (Cow::Borrowed("ms"), &spacing::margin::PLUGIN_START_1),
+    (Cow::Borrowed("ms"), &spacing::margin::PLUGIN_START_2),
+    (Cow::Borrowed("me"), &spacing::margin::PLUGIN_END_1),
+    (Cow::Borrowed("me"), &spacing::margin::PLUGIN_END_2),
+    (Cow::Borrowed("mt"), &spacing::margin::PLUGIN_TOP_1),
+    (Cow::Borrowed("mt"), &spacing::margin::PLUGIN_TOP_2),
+    (Cow::Borrowed("mr"), &spacing::margin::PLUGIN_RIGHT_1),
+    (Cow::Borrowed("mr"), &spacing::margin::PLUGIN_RIGHT_2),
+    (Cow::Borrowed("mb"), &spacing::margin::PLUGIN_BOTTOM_1),
+    (Cow::Borrowed("mb"), &spacing::margin::PLUGIN_BOTTOM_2),
+    (Cow::Borrowed("ml"), &spacing::margin::PLUGIN_LEFT_1),
+    (Cow::Borrowed("ml"), &spacing::margin::PLUGIN_LEFT_2),
+    (Cow::Borrowed("box"), &layout::box_sizing::PLUGIN),
+    (Cow::Borrowed(""), &layout::display::PLUGIN),
+    (Cow::Borrowed("aspect"), &layout::aspect_ratio::PLUGIN_1),
+    (Cow::Borrowed("aspect"), &layout::aspect_ratio::PLUGIN_2),
+    (Cow::Borrowed("h"), &sizing::height::PLUGIN_1),
+    (Cow::Borrowed("h"), &sizing::height::PLUGIN_2),
+    (Cow::Borrowed("max-h"), &sizing::max_height::PLUGIN_1),
+    (Cow::Borrowed("max-h"), &sizing::max_height::PLUGIN_2),
+    (Cow::Borrowed("min-h"), &sizing::min_height::PLUGIN_1),
+    (Cow::Borrowed("min-h"), &sizing::min_height::PLUGIN_2),
+    (Cow::Borrowed("w"), &sizing::width::PLUGIN_1),
+    (Cow::Borrowed("w"), &sizing::width::PLUGIN_2),
+    (Cow::Borrowed("min-w"), &sizing::min_width::PLUGIN_1),
+    (Cow::Borrowed("min-w"), &sizing::min_width::PLUGIN_2),
+    (Cow::Borrowed("max-w"), &sizing::max_width::PLUGIN_1),
+    (Cow::Borrowed("max-w"), &sizing::max_width::PLUGIN_2),
+    (Cow::Borrowed("max-w"), &sizing::max_width::PLUGIN_3),
+    (Cow::Borrowed("flex"), &flexbox::flex::PLUGIN_1),
+    (Cow::Borrowed("flex"), &flexbox::flex::PLUGIN_2),
+    (Cow::Borrowed("shrink"), &flexbox::flex_shrink::PLUGIN),
+    (Cow::Borrowed("grow"), &flexbox::flex_grow::PLUGIN),
+    (Cow::Borrowed("basis"), &flexbox::flex_basis::PLUGIN_1),
+    (Cow::Borrowed("basis"), &flexbox::flex_basis::PLUGIN_2),
+    (Cow::Borrowed("table"), &table::table_layout::PLUGIN),
+    (Cow::Borrowed("caption"), &table::caption_side::PLUGIN),
+    (Cow::Borrowed("border"), &table::border_collapse::PLUGIN),
+    (Cow::Borrowed("border-spacing"), &table::border_spacing::PLUGIN_1),
+    (Cow::Borrowed("border-spacing"), &table::border_spacing::PLUGIN_2),
+    (Cow::Borrowed("border-spacing-x"), &table::border_spacing::PLUGIN_X_1),
+    (Cow::Borrowed("border-spacing-x"), &table::border_spacing::PLUGIN_X_2),
+    (Cow::Borrowed("border-spacing-y"), &table::border_spacing::PLUGIN_Y_1),
+    (Cow::Borrowed("border-spacing-y"), &table::border_spacing::PLUGIN_Y_2),
+    (Cow::Borrowed("origin"), &transform::transform_origin::PLUGIN_1),
+    (Cow::Borrowed("origin"), &transform::transform_origin::PLUGIN_2),
+    (Cow::Borrowed("perspective-origin"), &transform::perspective_origin::PLUGIN_1),
+    (Cow::Borrowed("perspective-origin"), &transform::perspective_origin::PLUGIN_2),
+    (Cow::Borrowed("perspective"), &transform::perspective::PLUGIN_1),
+    (Cow::Borrowed("perspective"), &transform::perspective::PLUGIN_2),
+    (Cow::Borrowed("translate-x"), &transform::translate::PLUGIN_X_1),
+    (Cow::Borrowed("translate-x"), &transform::translate::PLUGIN_X_2),
+    (Cow::Borrowed("translate-y"), &transform::translate::PLUGIN_Y_1),
+    (Cow::Borrowed("translate-y"), &transform::translate::PLUGIN_Y_2),
+    (Cow::Borrowed("translate-z"), &transform::translate::PLUGIN_Z_1),
+    (Cow::Borrowed("translate-z"), &transform::translate::PLUGIN_Z_2),
+    (Cow::Borrowed("rotate"), &transform::rotate::PLUGIN_1),
+    (Cow::Borrowed("rotate"), &transform::rotate::PLUGIN_2),
+    (Cow::Borrowed("rotate-x"), &transform::rotate::PLUGIN_X_1),
+    (Cow::Borrowed("rotate-x"), &transform::rotate::PLUGIN_X_2),
+    (Cow::Borrowed("rotate-y"), &transform::rotate::PLUGIN_Y_1),
+    (Cow::Borrowed("rotate-y"), &transform::rotate::PLUGIN_Y_2),
+    (Cow::Borrowed("rotate-z"), &transform::rotate::PLUGIN_Z_1),
+    (Cow::Borrowed("rotate-z"), &transform::rotate::PLUGIN_Z_2),
+    (Cow::Borrowed("skew-x"), &transform::skew::PLUGIN_X_1),
+    (Cow::Borrowed("skew-x"), &transform::skew::PLUGIN_X_2),
+    (Cow::Borrowed("skew-y"), &transform::skew::PLUGIN_Y_1),
+    (Cow::Borrowed("skew-y"), &transform::skew::PLUGIN_Y_2),
+    (Cow::Borrowed("scale"), &transform::scale::PLUGIN_1),
+    (Cow::Borrowed("scale"), &transform::scale::PLUGIN_2),
+    (Cow::Borrowed("scale-x"), &transform::scale::PLUGIN_X_1),
+    (Cow::Borrowed("scale-x"), &transform::scale::PLUGIN_X_2),
+    (Cow::Borrowed("scale-y"), &transform::scale::PLUGIN_Y_1),
+    (Cow::Borrowed("scale-y"), &transform::scale::PLUGIN_Y_2),
+    (Cow::Borrowed("scale-z"), &transform::scale::PLUGIN_Z_1),
+    (Cow::Borrowed("scale-z"), &transform::scale::PLUGIN_Z_2),
+    (Cow::Borrowed("transform"), &transform::transform_type::PLUGIN),
+    // (Cow::Borrowed("animate"), &transition::animation::PluginDefinition),
+    (Cow::Borrowed("cursor"), &interactivity::cursor::PLUGIN_1),
+    (Cow::Borrowed("cursor"), &interactivity::cursor::PLUGIN_2),
+    (Cow::Borrowed("touch"), &interactivity::touch_action::PLUGIN),
+    (Cow::Borrowed("select"), &interactivity::user_select::PLUGIN),
+    (Cow::Borrowed("resize"), &interactivity::resize::PLUGIN),
+    (Cow::Borrowed("snap"), &interactivity::scroll_snap_type::PLUGIN),
+    (Cow::Borrowed("snap"), &interactivity::scroll_snap_align::PLUGIN),
+    (Cow::Borrowed("snap"), &interactivity::scroll_snap_stop::PLUGIN),
+
+    (Cow::Borrowed("scroll-m"), &interactivity::scroll_margin::PLUGIN_1),
+    (Cow::Borrowed("scroll-m"), &interactivity::scroll_margin::PLUGIN_2),
+    (Cow::Borrowed("scroll-mx"), &interactivity::scroll_margin::PLUGIN_X_1),
+    (Cow::Borrowed("scroll-mx"), &interactivity::scroll_margin::PLUGIN_X_2),
+    (Cow::Borrowed("scroll-my"), &interactivity::scroll_margin::PLUGIN_Y_1),
+    (Cow::Borrowed("scroll-my"), &interactivity::scroll_margin::PLUGIN_Y_2),
+    (Cow::Borrowed("scroll-ms"), &interactivity::scroll_margin::PLUGIN_START_1),
+    (Cow::Borrowed("scroll-ms"), &interactivity::scroll_margin::PLUGIN_START_2),
+    (Cow::Borrowed("scroll-me"), &interactivity::scroll_margin::PLUGIN_END_1),
+    (Cow::Borrowed("scroll-me"), &interactivity::scroll_margin::PLUGIN_END_2),
+    (Cow::Borrowed("scroll-mt"), &interactivity::scroll_margin::PLUGIN_TOP_1),
+    (Cow::Borrowed("scroll-mt"), &interactivity::scroll_margin::PLUGIN_TOP_2),
+    (Cow::Borrowed("scroll-mr"), &interactivity::scroll_margin::PLUGIN_RIGHT_1),
+    (Cow::Borrowed("scroll-mr"), &interactivity::scroll_margin::PLUGIN_RIGHT_2),
+    (Cow::Borrowed("scroll-mb"), &interactivity::scroll_margin::PLUGIN_BOTTOM_1),
+    (Cow::Borrowed("scroll-mb"), &interactivity::scroll_margin::PLUGIN_BOTTOM_2),
+    (Cow::Borrowed("scroll-ml"), &interactivity::scroll_margin::PLUGIN_LEFT_1),
+    (Cow::Borrowed("scroll-ml"), &interactivity::scroll_margin::PLUGIN_LEFT_2),
+    (Cow::Borrowed("scroll-p"), &interactivity::scroll_padding::PLUGIN_1),
+    (Cow::Borrowed("scroll-p"), &interactivity::scroll_padding::PLUGIN_2),
+    (Cow::Borrowed("scroll-px"), &interactivity::scroll_padding::PLUGIN_X_1),
+    (Cow::Borrowed("scroll-px"), &interactivity::scroll_padding::PLUGIN_X_2),
+    (Cow::Borrowed("scroll-py"), &interactivity::scroll_padding::PLUGIN_Y_1),
+    (Cow::Borrowed("scroll-py"), &interactivity::scroll_padding::PLUGIN_Y_2),
+    (Cow::Borrowed("scroll-ps"), &interactivity::scroll_padding::PLUGIN_START_1),
+    (Cow::Borrowed("scroll-ps"), &interactivity::scroll_padding::PLUGIN_START_2),
+    (Cow::Borrowed("scroll-pe"), &interactivity::scroll_padding::PLUGIN_END_1),
+    (Cow::Borrowed("scroll-pe"), &interactivity::scroll_padding::PLUGIN_END_2),
+    (Cow::Borrowed("scroll-pt"), &interactivity::scroll_padding::PLUGIN_TOP_1),
+    (Cow::Borrowed("scroll-pt"), &interactivity::scroll_padding::PLUGIN_TOP_2),
+    (Cow::Borrowed("scroll-pr"), &interactivity::scroll_padding::PLUGIN_RIGHT_1),
+    (Cow::Borrowed("scroll-pr"), &interactivity::scroll_padding::PLUGIN_RIGHT_2),
+    (Cow::Borrowed("scroll-pb"), &interactivity::scroll_padding::PLUGIN_BOTTOM_1),
+    (Cow::Borrowed("scroll-pb"), &interactivity::scroll_padding::PLUGIN_BOTTOM_2),
+    (Cow::Borrowed("scroll-pl"), &interactivity::scroll_padding::PLUGIN_LEFT_1),
+    (Cow::Borrowed("scroll-pl"), &interactivity::scroll_padding::PLUGIN_LEFT_2),
+    (Cow::Borrowed("list"), &typography::list_style_position::PLUGIN),
+    (Cow::Borrowed("list"), &typography::list_style_type::PLUGIN_1),
+    (Cow::Borrowed("list"), &typography::list_style_type::PLUGIN_2),
+    (Cow::Borrowed("appearance"), &interactivity::appearance::PLUGIN),
+    (Cow::Borrowed("columns"), &layout::columns::PLUGIN),
+    (Cow::Borrowed("break-before"), &layout::break_before::PLUGIN),
+    (Cow::Borrowed("break-inside"), &layout::break_inside::PLUGIN),
+    (Cow::Borrowed("break-after"), &layout::break_after::PLUGIN),
+    (Cow::Borrowed("auto-cols"), &grid::grid_auto_columns::PLUGIN_1),
+    (Cow::Borrowed("auto-cols"), &grid::grid_auto_columns::PLUGIN_2),
+    (Cow::Borrowed("grid-flow"), &grid::grid_auto_flow::PLUGIN),
+    (Cow::Borrowed("auto-rows"), &grid::grid_auto_rows::PLUGIN_1),
+    (Cow::Borrowed("auto-rows"), &grid::grid_auto_rows::PLUGIN_2),
+    (Cow::Borrowed("grid-cols"), &grid::grid_template_columns::PLUGIN_1),
+    (Cow::Borrowed("grid-cols"), &grid::grid_template_columns::PLUGIN_2),
+    (Cow::Borrowed("grid-cols"), &grid::grid_template_columns::PLUGIN_3),
+    (Cow::Borrowed("grid-rows"), &grid::grid_template_rows::PLUGIN_1),
+    (Cow::Borrowed("grid-rows"), &grid::grid_template_rows::PLUGIN_2),
+    (Cow::Borrowed("grid-rows"), &grid::grid_template_rows::PLUGIN_3),
+    (Cow::Borrowed("flex"), &flexbox::flex_direction::PLUGIN),
+    (Cow::Borrowed("flex"), &flexbox::flex_wrap::PLUGIN),
+    (Cow::Borrowed("place-content"), &flexbox::place_content::PLUGIN),
+    (Cow::Borrowed("place-items"), &flexbox::place_items::PLUGIN),
+    (Cow::Borrowed("content"), &flexbox::align_content::PLUGIN),
+    (Cow::Borrowed("items"), &flexbox::align_items::PLUGIN),
+    (Cow::Borrowed("justify"), &flexbox::justify_content::PLUGIN),
+    (Cow::Borrowed("justify-items"), &flexbox::justify_items::PLUGIN),
+    (Cow::Borrowed("gap"), &grid::gap::PLUGIN_1),
+    (Cow::Borrowed("gap"), &grid::gap::PLUGIN_2),
+    (Cow::Borrowed("gap-x"), &grid::gap::PLUGIN_X_1),
+    (Cow::Borrowed("gap-x"), &grid::gap::PLUGIN_X_2),
+    (Cow::Borrowed("gap-y"), &grid::gap::PLUGIN_Y_1),
+    (Cow::Borrowed("gap-y"), &grid::gap::PLUGIN_Y_2),
+    // (Cow::Borrowed("space-x"), &spacing::space_between::PluginXDefinition),
+    // (Cow::Borrowed("space-y"), &spacing::space_between::PluginYDefinition),
+    // (Cow::Borrowed("divide-x"), &border::divide_width::PluginXDefinition),
+    // (Cow::Borrowed("divide-y"), &border::divide_width::PluginYDefinition),
+    // (Cow::Borrowed("divide"), &border::divide_style::PluginDefinition),
+    // (Cow::Borrowed("divide"), &border::divide_color::PluginDefinition),
+    (Cow::Borrowed("place-self"), &flexbox::place_self::PLUGIN),
+    (Cow::Borrowed("self"), &flexbox::align_self::PLUGIN),
+    (Cow::Borrowed("justify-self"), &flexbox::justify_self::PLUGIN),
+    (Cow::Borrowed("overflow"), &layout::overflow::PLUGIN),
+    (Cow::Borrowed("overscroll"), &layout::overscroll_behavior::PLUGIN),
+    (Cow::Borrowed("scroll"), &interactivity::scroll_behavior::PLUGIN),
+    (Cow::Borrowed(""), &typography::text_overflow::PLUGIN),
+    (Cow::Borrowed("whitespace"), &typography::whitespace::PLUGIN),
+    (Cow::Borrowed("text"), &typography::text_wrap::PLUGIN),
+    (Cow::Borrowed(""), &typography::word_break::PLUGIN),
+    (Cow::Borrowed("rounded"), &border::border_radius::PLUGIN_1),
+    (Cow::Borrowed("rounded"), &border::border_radius::PLUGIN_2),
+    (Cow::Borrowed("rounded-s"), &border::border_radius::PLUGIN_START_1),
+    (Cow::Borrowed("rounded-s"), &border::border_radius::PLUGIN_START_2),
+    (Cow::Borrowed("rounded-e"), &border::border_radius::PLUGIN_END_1),
+    (Cow::Borrowed("rounded-e"), &border::border_radius::PLUGIN_END_2),
+    (Cow::Borrowed("rounded-t"), &border::border_radius::PLUGIN_TOP_1),
+    (Cow::Borrowed("rounded-t"), &border::border_radius::PLUGIN_TOP_2),
+    (Cow::Borrowed("rounded-r"), &border::border_radius::PLUGIN_RIGHT_1),
+    (Cow::Borrowed("rounded-r"), &border::border_radius::PLUGIN_RIGHT_2),
+    (Cow::Borrowed("rounded-b"), &border::border_radius::PLUGIN_BOTTOM_1),
+    (Cow::Borrowed("rounded-b"), &border::border_radius::PLUGIN_BOTTOM_2),
+    (Cow::Borrowed("rounded-l"), &border::border_radius::PLUGIN_LEFT_1),
+    (Cow::Borrowed("rounded-l"), &border::border_radius::PLUGIN_LEFT_2),
+    (Cow::Borrowed("rounded-ss"), &border::border_radius::PLUGIN_START_START_1),
+    (Cow::Borrowed("rounded-ss"), &border::border_radius::PLUGIN_START_START_2),
+    (Cow::Borrowed("rounded-se"), &border::border_radius::PLUGIN_START_END_1),
+    (Cow::Borrowed("rounded-se"), &border::border_radius::PLUGIN_START_END_2),
+    (Cow::Borrowed("rounded-ee"), &border::border_radius::PLUGIN_END_END_1),
+    (Cow::Borrowed("rounded-ee"), &border::border_radius::PLUGIN_END_END_2),
+    (Cow::Borrowed("rounded-es"), &border::border_radius::PLUGIN_END_START_1),
+    (Cow::Borrowed("rounded-es"), &border::border_radius::PLUGIN_END_START_2),
+    (Cow::Borrowed("rounded-tr"), &border::border_radius::PLUGIN_TOP_RIGHT_1),
+    (Cow::Borrowed("rounded-tr"), &border::border_radius::PLUGIN_TOP_RIGHT_2),
+    (Cow::Borrowed("rounded-tl"), &border::border_radius::PLUGIN_TOP_LEFT_1),
+    (Cow::Borrowed("rounded-tl"), &border::border_radius::PLUGIN_TOP_LEFT_2),
+    (Cow::Borrowed("rounded-br"), &border::border_radius::PLUGIN_BOTTOM_RIGHT_1),
+    (Cow::Borrowed("rounded-br"), &border::border_radius::PLUGIN_BOTTOM_RIGHT_2),
+    (Cow::Borrowed("rounded-bl"), &border::border_radius::PLUGIN_BOTTOM_LEFT_1),
+    (Cow::Borrowed("rounded-bl"), &border::border_radius::PLUGIN_BOTTOM_LEFT_2),
+    (Cow::Borrowed("border"), &border::border_width::PLUGIN_1),
+    (Cow::Borrowed("border"), &border::border_width::PLUGIN_2),
+    (Cow::Borrowed("border-x"), &border::border_width::PLUGIN_X_1),
+    (Cow::Borrowed("border-x"), &border::border_width::PLUGIN_X_2),
+    (Cow::Borrowed("border-y"), &border::border_width::PLUGIN_Y_1),
+    (Cow::Borrowed("border-y"), &border::border_width::PLUGIN_Y_2),
+    (Cow::Borrowed("border-s"), &border::border_width::PLUGIN_START_1),
+    (Cow::Borrowed("border-s"), &border::border_width::PLUGIN_START_2),
+    (Cow::Borrowed("border-e"), &border::border_width::PLUGIN_END_1),
+    (Cow::Borrowed("border-e"), &border::border_width::PLUGIN_END_2),
+    (Cow::Borrowed("border-t"), &border::border_width::PLUGIN_TOP_1),
+    (Cow::Borrowed("border-t"), &border::border_width::PLUGIN_TOP_2),
+    (Cow::Borrowed("border-r"), &border::border_width::PLUGIN_RIGHT_1),
+    (Cow::Borrowed("border-r"), &border::border_width::PLUGIN_RIGHT_2),
+    (Cow::Borrowed("border-b"), &border::border_width::PLUGIN_BOTTOM_1),
+    (Cow::Borrowed("border-b"), &border::border_width::PLUGIN_BOTTOM_2),
+    (Cow::Borrowed("border-l"), &border::border_width::PLUGIN_LEFT_1),
+    (Cow::Borrowed("border-l"), &border::border_width::PLUGIN_LEFT_2),
+    (Cow::Borrowed("border"), &border::border_style::PLUGIN_1),
+    (Cow::Borrowed("border"), &border::border_style::PLUGIN_2),
+    (Cow::Borrowed("border"), &border::border_color::PLUGIN_1),
+    (Cow::Borrowed("border"), &border::border_color::PLUGIN_2),
+    (Cow::Borrowed("border-x"), &border::border_color::PLUGIN_X_1),
+    (Cow::Borrowed("border-x"), &border::border_color::PLUGIN_X_2),
+    (Cow::Borrowed("border-y"), &border::border_color::PLUGIN_Y_1),
+    (Cow::Borrowed("border-y"), &border::border_color::PLUGIN_Y_2),
+    (Cow::Borrowed("border-s"), &border::border_color::PLUGIN_START_1),
+    (Cow::Borrowed("border-s"), &border::border_color::PLUGIN_START_2),
+    (Cow::Borrowed("border-e"), &border::border_color::PLUGIN_END_1),
+    (Cow::Borrowed("border-e"), &border::border_color::PLUGIN_END_2),
+    (Cow::Borrowed("border-t"), &border::border_color::PLUGIN_TOP_1),
+    (Cow::Borrowed("border-t"), &border::border_color::PLUGIN_TOP_2),
+    (Cow::Borrowed("border-r"), &border::border_color::PLUGIN_RIGHT_1),
+    (Cow::Borrowed("border-r"), &border::border_color::PLUGIN_RIGHT_2),
+    (Cow::Borrowed("border-b"), &border::border_color::PLUGIN_BOTTOM_1),
+    (Cow::Borrowed("border-b"), &border::border_color::PLUGIN_BOTTOM_2),
+    (Cow::Borrowed("border-l"), &border::border_color::PLUGIN_LEFT_1),
+    (Cow::Borrowed("border-l"), &border::border_color::PLUGIN_LEFT_2),
+    (Cow::Borrowed("bg"), &background::background_color::PLUGIN_1),
+    (Cow::Borrowed("bg"), &background::background_color::PLUGIN_2),
+    // (Cow::Borrowed("bg"), &background::background_image::PluginDefinition),
+    // (Cow::Borrowed("bg-linear"), &background::background_image::PluginLinearDefinition),
+    // (Cow::Borrowed("bg-radial"), &background::background_image::PluginRadialDefinition),
+    // (Cow::Borrowed("bg-conic"), &background::background_image::PluginConicDefinition),
+    // (Cow::Borrowed("from"), &background::gradient_color_stops::PluginFromDefinition),
+    // (Cow::Borrowed("via"), &background::gradient_color_stops::PluginViaDefinition),
+    // (Cow::Borrowed("to"), &background::gradient_color_stops::PluginToDefinition),
+    (Cow::Borrowed("box-decoration"), &layout::box_decoration_break::PLUGIN),
+    (Cow::Borrowed("bg"), &background::background_size::PLUGIN_1),
+    (Cow::Borrowed("bg"), &background::background_size::PLUGIN_2),
+    (Cow::Borrowed("bg"), &background::background_attachment::PLUGIN),
+    (Cow::Borrowed("bg-clip"), &background::background_clip::PLUGIN),
+    (Cow::Borrowed("bg"), &background::background_position::PLUGIN_1),
+    (Cow::Borrowed("bg"), &background::background_position::PLUGIN_2),
+    (Cow::Borrowed("bg"), &background::background_repeat::PLUGIN),
+    (Cow::Borrowed("bg-origin"), &background::background_origin::PLUGIN),
+    (Cow::Borrowed("fill"), &svg::fill::PLUGIN_1),
+    (Cow::Borrowed("fill"), &svg::fill::PLUGIN_2),
+    (Cow::Borrowed("stroke"), &svg::stroke::PLUGIN_1),
+    (Cow::Borrowed("stroke"), &svg::stroke::PLUGIN_2),
+    (Cow::Borrowed("stroke"), &svg::stroke_width::PLUGIN_1),
+    (Cow::Borrowed("stroke"), &svg::stroke_width::PLUGIN_2),
+    (Cow::Borrowed("object"), &layout::object_fit::PLUGIN),
+    (Cow::Borrowed("object"), &layout::object_position::PLUGIN_1),
+    (Cow::Borrowed("object"), &layout::object_position::PLUGIN_2),
+    (Cow::Borrowed("p"), &spacing::padding::PLUGIN_1),
+    (Cow::Borrowed("p"), &spacing::padding::PLUGIN_2),
+    (Cow::Borrowed("px"), &spacing::padding::PLUGIN_X_1),
+    (Cow::Borrowed("px"), &spacing::padding::PLUGIN_X_2),
+    (Cow::Borrowed("py"), &spacing::padding::PLUGIN_Y_1),
+    (Cow::Borrowed("py"), &spacing::padding::PLUGIN_Y_2),
+    (Cow::Borrowed("ps"), &spacing::padding::PLUGIN_START_1),
+    (Cow::Borrowed("ps"), &spacing::padding::PLUGIN_START_2),
+    (Cow::Borrowed("pe"), &spacing::padding::PLUGIN_END_1),
+    (Cow::Borrowed("pe"), &spacing::padding::PLUGIN_END_2),
+    (Cow::Borrowed("pt"), &spacing::padding::PLUGIN_TOP_1),
+    (Cow::Borrowed("pt"), &spacing::padding::PLUGIN_TOP_2),
+    (Cow::Borrowed("pr"), &spacing::padding::PLUGIN_RIGHT_1),
+    (Cow::Borrowed("pr"), &spacing::padding::PLUGIN_RIGHT_2),
+    (Cow::Borrowed("pb"), &spacing::padding::PLUGIN_BOTTOM_1),
+    (Cow::Borrowed("pb"), &spacing::padding::PLUGIN_BOTTOM_2),
+    (Cow::Borrowed("pl"), &spacing::padding::PLUGIN_LEFT_1),
+    (Cow::Borrowed("pl"), &spacing::padding::PLUGIN_LEFT_2),
+    (Cow::Borrowed("text"), &typography::text_align::PLUGIN),
+    (Cow::Borrowed("indent"), &typography::text_indent::PLUGIN_1),
+    (Cow::Borrowed("indent"), &typography::text_indent::PLUGIN_2),
+    (Cow::Borrowed("align"), &typography::vertical_align::PLUGIN),
+    (Cow::Borrowed("font"), &typography::font_family::PLUGIN_1),
+    (Cow::Borrowed("font"), &typography::font_family::PLUGIN_2),
+    (Cow::Borrowed("text"), &typography::font_size::PLUGIN_1),
+    (Cow::Borrowed("text"), &typography::font_size::PLUGIN_2),
+    (Cow::Borrowed("font"), &typography::font_weight::PLUGIN_1),
+    (Cow::Borrowed("font"), &typography::font_weight::PLUGIN_2),
+    (Cow::Borrowed(""), &typography::text_transform::PLUGIN),
+    (Cow::Borrowed(""), &typography::font_style::PLUGIN),
+    (Cow::Borrowed(""), &typography::font_variant_numeric::PLUGIN),
+    (Cow::Borrowed("tracking"), &typography::letter_spacing::PLUGIN_1),
+    (Cow::Borrowed("tracking"), &typography::letter_spacing::PLUGIN_2),
+    (Cow::Borrowed("leading"), &typography::line_height::PLUGIN_1),
+    (Cow::Borrowed("leading"), &typography::line_height::PLUGIN_2),
+    (Cow::Borrowed("leading"), &typography::line_height::PLUGIN_3),
+    (Cow::Borrowed("text"), &typography::text_color::PLUGIN_1),
+    (Cow::Borrowed("text"), &typography::text_color::PLUGIN_2),
+    (Cow::Borrowed(""), &typography::text_decoration::PLUGIN),
+    (Cow::Borrowed("decoration"), &typography::text_decoration_color::PLUGIN_1),
+    (Cow::Borrowed("decoration"), &typography::text_decoration_color::PLUGIN_2),
+    (Cow::Borrowed("decoration"), &typography::text_decoration_style::PLUGIN),
+    (Cow::Borrowed("decoration"), &typography::text_decoration_thickness::PLUGIN_1),
+    (Cow::Borrowed("decoration"), &typography::text_decoration_thickness::PLUGIN_2),
+    (Cow::Borrowed("decoration"), &typography::text_decoration_thickness::PLUGIN_3),
+    (Cow::Borrowed("underline-offset"), &typography::text_underline_offset::PLUGIN_1),
+    (Cow::Borrowed("underline-offset"), &typography::text_underline_offset::PLUGIN_2),
+    (Cow::Borrowed("underline-offset"), &typography::text_underline_offset::PLUGIN_3),
+    (Cow::Borrowed(""), &typography::font_smoothing::PLUGIN),
+    (Cow::Borrowed("caret"), &interactivity::caret_color::PLUGIN_1),
+    (Cow::Borrowed("caret"), &interactivity::caret_color::PLUGIN_2),
+    (Cow::Borrowed("accent"), &interactivity::accent_color::PLUGIN_1),
+    (Cow::Borrowed("accent"), &interactivity::accent_color::PLUGIN_2),
+    (Cow::Borrowed("opacity"), &effect::opacity::PLUGIN),
+    (Cow::Borrowed("bg-blend"), &effect::background_blend_mode::PLUGIN),
+    (Cow::Borrowed("mix-blend"), &effect::mix_blend_mode::PLUGIN),
+    (Cow::Borrowed("text-shadow"), &effect::text_shadow::PLUGIN_1),
+    (Cow::Borrowed("text-shadow"), &effect::text_shadow::PLUGIN_2),
+    (Cow::Borrowed("text-shadow"), &effect::text_shadow_color::PLUGIN_1),
+    (Cow::Borrowed("text-shadow"), &effect::text_shadow_color::PLUGIN_2),
+    (Cow::Borrowed("shadow"), &effect::box_shadow::PLUGIN_1),
+    (Cow::Borrowed("shadow"), &effect::box_shadow::PLUGIN_2),
+    (Cow::Borrowed("shadow"), &effect::box_shadow_color::PLUGIN_1),
+    (Cow::Borrowed("shadow"), &effect::box_shadow_color::PLUGIN_2),
+    (Cow::Borrowed("inset-shadow"), &effect::box_shadow::PLUGIN_INSET_1),
+    (Cow::Borrowed("inset-shadow"), &effect::box_shadow::PLUGIN_INSET_2),
+    (Cow::Borrowed("inset-shadow"), &effect::box_shadow_color::PLUGIN_INSET_1),
+    (Cow::Borrowed("inset-shadow"), &effect::box_shadow_color::PLUGIN_INSET_2),
+    (Cow::Borrowed("outline"), &border::outline_style::PLUGIN_1),
+    (Cow::Borrowed("outline"), &border::outline_style::PLUGIN_2),
+    (Cow::Borrowed("outline"), &border::outline_width::PLUGIN_1),
+    (Cow::Borrowed("outline"), &border::outline_width::PLUGIN_2),
+    (Cow::Borrowed("outline-offset"), &border::outline_offset::PLUGIN_1),
+    (Cow::Borrowed("outline-offset"), &border::outline_offset::PLUGIN_2),
+    (Cow::Borrowed("outline"), &border::outline_color::PLUGIN_1),
+    (Cow::Borrowed("outline"), &border::outline_color::PLUGIN_2),
+    // (Cow::Borrowed("ring"), &border::ring_width::PluginDefinition),
+    (Cow::Borrowed("ring"), &border::ring_color::PLUGIN_1),
+    (Cow::Borrowed("ring"), &border::ring_color::PLUGIN_2),
+    // (Cow::Borrowed("inset-ring"), &border::ring_width::PluginInsetDefinition),
+    (Cow::Borrowed("inset-ring"), &border::ring_color::PLUGIN_INSET_1),
+    (Cow::Borrowed("inset-ring"), &border::ring_color::PLUGIN_INSET_2),
+    // (Cow::Borrowed("ring-offset"), &border::ring_offset_width::PluginDefinition),
+    // (Cow::Borrowed("ring-offset"), &border::ring_offset_color::PluginDefinition),
+    // (Cow::Borrowed("blur"), &filter::blur::PluginDefinition),
+    // (Cow::Borrowed("brightness"), &filter::brightness::PluginDefinition),
+    // (Cow::Borrowed("contrast"), &filter::contrast::PluginDefinition),
+    // (Cow::Borrowed("drop-shadow"), &filter::drop_shadow::PluginDefinition),
+    // (Cow::Borrowed("grayscale"), &filter::grayscale::PluginDefinition),
+    // (Cow::Borrowed("hue-rotate"), &filter::hue_rotate::PluginDefinition),
+    // (Cow::Borrowed("invert"), &filter::invert::PluginDefinition),
+    // (Cow::Borrowed("saturate"), &filter::saturate::PluginDefinition),
+    // (Cow::Borrowed("sepia"), &filter::sepia::PluginDefinition),
+    // (Cow::Borrowed("filter"), &filter::filter_type::PluginDefinition),
+    // (Cow::Borrowed("backdrop-blur"), &filter::backdrop_blur::PluginDefinition),
+    // (Cow::Borrowed("backdrop-brightness"), &filter::backdrop_brightness::PluginDefinition),
+    // (Cow::Borrowed("backdrop-contrast"), &filter::backdrop_contrast::PluginDefinition),
+    // (Cow::Borrowed("backdrop-grayscale"), &filter::backdrop_grayscale::PluginDefinition),
+    // (Cow::Borrowed("backdrop-hue-rotate"), &filter::backdrop_hue_rotate::PluginDefinition),
+    // (Cow::Borrowed("backdrop-invert"), &filter::backdrop_invert::PluginDefinition),
+    // (Cow::Borrowed("backdrop-saturate"), &filter::backdrop_saturate::PluginDefinition),
+    // (Cow::Borrowed("backdrop-sepia"), &filter::backdrop_sepia::PluginDefinition),
+    // (Cow::Borrowed("backdrop-filter"), &filter::backdrop_filter::PluginDefinition),
+    (Cow::Borrowed("transition"), &transition::transition_property::PLUGIN_1),
+    (Cow::Borrowed("transition"), &transition::transition_property::PLUGIN_2),
+    (Cow::Borrowed("delay"), &transition::transition_delay::PLUGIN_1),
+    (Cow::Borrowed("delay"), &transition::transition_delay::PLUGIN_2),
+    (Cow::Borrowed("duration"), &transition::transition_duration::PLUGIN_1),
+    (Cow::Borrowed("duration"), &transition::transition_duration::PLUGIN_2),
+    (Cow::Borrowed("ease"), &transition::transition_timing_function::PLUGIN_1),
+    (Cow::Borrowed("ease"), &transition::transition_timing_function::PLUGIN_2),
+    (Cow::Borrowed("will-change"), &interactivity::will_change::PLUGIN_1),
+    (Cow::Borrowed("will-change"), &interactivity::will_change::PLUGIN_2),
+    (Cow::Borrowed("content"), &typography::content::PLUGIN_1),
+    (Cow::Borrowed("content"), &typography::content::PLUGIN_2),
+    // (Cow::Borrowed("line-clamp"), &typography::line_clamp::PluginDefinition),
+    (Cow::Borrowed("@container"), &layout::at_container::PLUGIN_1),
+    (Cow::Borrowed("@container"), &layout::at_container::PLUGIN_2),
 ];
 
 /// Configuration for the [`Theme::dark_mode`] field.
@@ -1720,7 +1897,7 @@ pub struct Config {
     ///
     /// This field is skipped when deserializing from a [TOML](https://toml.io) file.
     #[serde(skip)]
-    pub(crate) custom_plugins: Vec<(Cow<'static, str>, &'static (dyn Plugin + Send + Sync))>,
+    pub(crate) custom_plugins: Vec<(Cow<'static, str>, &'static Plugin)>,
 
     /// A list of custom variants.
     ///
@@ -1942,13 +2119,13 @@ impl Config {
     ///   color: #eee;
     /// }"));
     /// ```
-    pub fn register_plugin<T: Into<Cow<'static, str>>>(
-        &mut self,
-        namespace: T,
-        plugin: &'static (dyn Plugin + Send + Sync),
-    ) {
-        self.custom_plugins.push((namespace.into(), plugin));
-    }
+    // pub fn register_plugin<T: Into<Cow<'static, str>>>(
+    //     &mut self,
+    //     namespace: T,
+    //     plugin: &'static (dyn Plugin + Send + Sync),
+    // ) {
+    //     self.custom_plugins.push((namespace.into(), plugin));
+    // }
 
     /// Register a custom variant which will be used during CSS generation.
     ///
@@ -2227,100 +2404,100 @@ mod tests {
         );
     }
 
-    #[test]
-    fn gen_css_with_custom_plugin_and_extra_fields() {
-        use crate::prelude::build_plugin::*;
-        use std::collections::HashMap;
+//     #[test]
+//     fn gen_css_with_custom_plugin_and_extra_fields() {
+//         use crate::prelude::build_plugin::*;
+//         use std::collections::HashMap;
+//
+//         #[derive(Debug)]
+//         struct EmojiPlugin;
+//
+//         impl Plugin for EmojiPlugin {
+//             fn can_handle(&self, context: ContextCanHandle) -> bool {
+//                 matches!(context.modifier, Modifier::Builtin { value, .. } if context.config.extra.get("emojis").map_or(false, |val| val.as_table().map_or(false, |table| table.contains_key(*value))))
+//             }
+//
+//             fn handle(&self, context: &mut ContextHandle) {
+//                 if let Modifier::Builtin { value, .. } = context.modifier {
+//                     context.buffer.line(format_args!(
+//                         r#"content: {};"#,
+//                         context
+//                             .config
+//                             .extra
+//                             .get("emojis")
+//                             .unwrap()
+//                             .as_table()
+//                             .unwrap()
+//                             .get(*value)
+//                             .unwrap()
+//                     ));
+//                 }
+//             }
+//         }
+//
+//         let mut config = base_config();
+//         config.register_plugin("emoji", &EmojiPlugin);
+//         config.extra.add(
+//             "emojis",
+//             HashMap::from_iter([("tada", "\u{1f389}"), ("rocket", "\u{1f680}")]),
+//         );
+//
+//         let generated = generate(["emoji-tada"], &config);
+//
+//         assert_eq!(
+//             generated,
+//             String::from(
+//                 ".emoji-tada {
+//   content: \"\u{1f389}\";
+// }"
+//             )
+//         );
+//     }
 
-        #[derive(Debug)]
-        struct EmojiPlugin;
-
-        impl Plugin for EmojiPlugin {
-            fn can_handle(&self, context: ContextCanHandle) -> bool {
-                matches!(context.modifier, Modifier::Builtin { value, .. } if context.config.extra.get("emojis").map_or(false, |val| val.as_table().map_or(false, |table| table.contains_key(*value))))
-            }
-
-            fn handle(&self, context: &mut ContextHandle) {
-                if let Modifier::Builtin { value, .. } = context.modifier {
-                    context.buffer.line(format_args!(
-                        r#"content: {};"#,
-                        context
-                            .config
-                            .extra
-                            .get("emojis")
-                            .unwrap()
-                            .as_table()
-                            .unwrap()
-                            .get(*value)
-                            .unwrap()
-                    ));
-                }
-            }
-        }
-
-        let mut config = base_config();
-        config.register_plugin("emoji", &EmojiPlugin);
-        config.extra.add(
-            "emojis",
-            HashMap::from_iter([("tada", "\u{1f389}"), ("rocket", "\u{1f680}")]),
-        );
-
-        let generated = generate(["emoji-tada"], &config);
-
-        assert_eq!(
-            generated,
-            String::from(
-                ".emoji-tada {
-  content: \"\u{1f389}\";
-}"
-            )
-        );
-    }
-
-    #[test]
-    fn gen_css_with_custom_plugin_extra_fields_and_parsed_config() {
-        use crate::prelude::build_plugin::*;
-
-        #[derive(Debug)]
-        struct EmojiPlugin;
-
-        impl Plugin for EmojiPlugin {
-            fn can_handle(&self, context: ContextCanHandle) -> bool {
-                matches!(context.modifier, Modifier::Builtin { value, .. } if context.config.extra.get("emojis").map_or(false, |val| val.as_table().map_or(false, |table| table.contains_key(*value))))
-            }
-
-            fn handle(&self, context: &mut ContextHandle) {
-                if let Modifier::Builtin { value, .. } = context.modifier {
-                    context.buffer.line(format_args!(
-                        r#"content: {};"#,
-                        context
-                            .config
-                            .extra
-                            .get("emojis")
-                            .unwrap()
-                            .as_table()
-                            .unwrap()
-                            .get(*value)
-                            .unwrap()
-                    ));
-                }
-            }
-        }
-
-        let mut config = Config::from_file("tests/fixtures/extra-fields-config.toml").unwrap();
-        config.register_plugin("emoji", &EmojiPlugin);
-
-        let generated = generate(["emoji-tada"], &config);
-
-        assert_eq!(
-            generated,
-            String::from(
-                ".emoji-tada {
-  content: \"\u{1f389}\";
-}"
-            )
-        );
-    }
+//     #[test]
+//     fn gen_css_with_custom_plugin_extra_fields_and_parsed_config() {
+//         use crate::prelude::build_plugin::*;
+//
+//         #[derive(Debug)]
+//         struct EmojiPlugin;
+//
+//         impl Plugin for EmojiPlugin {
+//             fn can_handle(&self, context: ContextCanHandle) -> bool {
+//                 matches!(context.modifier, Modifier::Builtin { value, .. } if context.config.extra.get("emojis").map_or(false, |val| val.as_table().map_or(false, |table| table.contains_key(*value))))
+//             }
+//
+//             fn handle(&self, context: &mut ContextHandle) {
+//                 if let Modifier::Builtin { value, .. } = context.modifier {
+//                     context.buffer.line(format_args!(
+//                         r#"content: {};"#,
+//                         context
+//                             .config
+//                             .extra
+//                             .get("emojis")
+//                             .unwrap()
+//                             .as_table()
+//                             .unwrap()
+//                             .get(*value)
+//                             .unwrap()
+//                     ));
+//                 }
+//             }
+//         }
+//
+//         let mut config = Config::from_file("tests/fixtures/extra-fields-config.toml").unwrap();
+//         config.register_plugin("emoji", &EmojiPlugin);
+//
+//         let generated = generate(["emoji-tada"], &config);
+//
+//         assert_eq!(
+//             generated,
+//             String::from(
+//                 ".emoji-tada {
+//   content: \"\u{1f389}\";
+// }"
+//             )
+//         );
+//     }
 
     #[test]
     fn config_is_extended_and_overridden() {

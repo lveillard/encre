@@ -2,37 +2,34 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(context.modifier, Modifier::Builtin { value, .. } if value.parse::<usize>().is_ok_and(|v| v <= 12)
-            || [
-                "auto", "3xs", "2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl",
-                "5xl", "6xl", "7xl",
-            ]
-            .contains(value))
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        if let Modifier::Builtin { value, .. } = context.modifier {
-            match *value {
-                "3xs" => context.buffer.line("columns: 16rem;"),
-                "2xs" => context.buffer.line("columns: 18rem;"),
-                "xs" => context.buffer.line("columns: 20rem;"),
-                "sm" => context.buffer.line("columns: 24rem;"),
-                "md" => context.buffer.line("columns: 28rem;"),
-                "lg" => context.buffer.line("columns: 32rem;"),
-                "xl" => context.buffer.line("columns: 36rem;"),
-                "2xl" => context.buffer.line("columns: 42rem;"),
-                "3xl" => context.buffer.line("columns: 48rem;"),
-                "4xl" => context.buffer.line("columns: 56rem;"),
-                "5xl" => context.buffer.line("columns: 64rem;"),
-                "6xl" => context.buffer.line("columns: 72rem;"),
-                "7xl" => context.buffer.line("columns: 80rem;"),
-                _ => context.buffer.line(format_args!("columns: {value};")),
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
+    prop: SingleProp("columns"),
+    values: phf_map! {
+        "1" => "1",
+        "2" => "2",
+        "3" => "3",
+        "4" => "4",
+        "5" => "5",
+        "6" => "6",
+        "7" => "7",
+        "8" => "8",
+        "9" => "9",
+        "10" => "10",
+        "11" => "11",
+        "12" => "12",
+        "auto" => "auto",
+        "3xs" => "16rem",
+        "2xs" => "18rem",
+        "xs" => "20rem",
+        "sm" => "24rem",
+        "md" => "28rem",
+        "lg" => "32rem",
+        "xl" => "36rem",
+        "2xl" => "42rem",
+        "3xl" => "48rem",
+        "4xl" => "56rem",
+        "5xl" => "64rem",
+        "6xl" => "72rem",
+        "7xl" => "80rem",
+    },
+};

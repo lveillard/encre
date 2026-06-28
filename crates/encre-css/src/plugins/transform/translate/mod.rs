@@ -1,79 +1,31 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "transform")]
-use super::CSS_TRANSFORM;
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-use std::borrow::Cow;
-
-fn translate_can_handle(context: &ContextCanHandle) -> bool {
-    match context.modifier {
-        Modifier::Builtin { value, .. } => {
-            spacing::is_matching_builtin_spacing(value) || *value == "auto" || *value == "full"
-        }
-        Modifier::Arbitrary { value, .. } => {
-            is_matching_length(value) || is_matching_percentage(value)
-        }
+const fn builtin_plugin(prop: PropertyName) -> Plugin {
+    Plugin::Spacing {
+        prop,
+        has_auto: true,
+        has_full: true,
     }
+    // TODO: extra_line CSS_TRANSFORM
 }
 
-fn translate_handle(css_prop: &str, context: &mut ContextHandle) {
-    match context.modifier {
-        Modifier::Builtin { is_negative, value } => context.buffer.line(format_args!(
-            "{}: {};",
-            css_prop,
-            if *value == "auto" {
-                Cow::from("auto")
-            } else if *value == "full" && *is_negative {
-                Cow::from("-100%")
-            } else if *value == "full" {
-                Cow::from("100%")
-            } else {
-                spacing::get(value, *is_negative).unwrap()
-            },
-        )),
-        Modifier::Arbitrary { value, .. } => {
-            context.buffer.line(format_args!("{css_prop}: {value};"));
-        }
+const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
+    Plugin::OnlyArbitrary {
+        prop,
+        hints: &[],
+        matcher: Or(&Length, &Percentage),
     }
-
-    context.buffer.line(CSS_TRANSFORM);
+    // TODO: extra_line CSS_TRANSFORM
 }
 
-#[derive(Debug)]
-pub(crate) struct PluginXDefinition;
+pub(crate) const PLUGIN_X_1: Plugin = builtin_plugin(SingleProp("--en-translate-x"));
+pub(crate) const PLUGIN_X_2: Plugin = arbitrary_plugin(SingleProp("--en-translate-x"));
 
-impl Plugin for PluginXDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        translate_can_handle(&context)
-    }
+pub(crate) const PLUGIN_Y_1: Plugin = builtin_plugin(SingleProp("--en-translate-y"));
+pub(crate) const PLUGIN_Y_2: Plugin = arbitrary_plugin(SingleProp("--en-translate-y"));
 
-    fn handle(&self, context: &mut ContextHandle) {
-        translate_handle("--en-translate-x", context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginYDefinition;
-
-impl Plugin for PluginYDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        translate_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        translate_handle("--en-translate-y", context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginZDefinition;
-
-impl Plugin for PluginZDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        translate_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        translate_handle("--en-translate-z", context);
-    }
-}
+pub(crate) const PLUGIN_Z_1: Plugin = builtin_plugin(SingleProp("--en-translate-z"));
+pub(crate) const PLUGIN_Z_2: Plugin = arbitrary_plugin(SingleProp("--en-translate-z"));

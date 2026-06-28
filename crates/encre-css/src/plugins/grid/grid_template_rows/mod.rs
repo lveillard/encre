@@ -1,36 +1,23 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "grid")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::AnyNumber {
+    prop: SingleProp("grid-template-rows"),
+    has_empty: false,
+    has_negative: false,
+    divide_by: 1.0,
+    template: "repeat({}, minmax(0, 1fr))",
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => value.parse::<usize>().is_ok() || *value == "none",
-            Modifier::Arbitrary { value, .. } => is_matching_all(value),
-        }
-    }
+pub(crate) const PLUGIN_2: Plugin = Plugin::SamePropValues {
+    prop: SingleProp("grid-template-rows"),
+    values: &["none"],
+};
 
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                if *value == "none" {
-                    context.buffer.line("grid-template-rows: none;");
-                    return;
-                }
-
-                context.buffer.line(format_args!(
-                    "grid-template-rows: repeat({}, minmax(0, 1fr));",
-                    value.parse::<usize>().unwrap(),
-                ));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("grid-template-rows: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_3: Plugin = Plugin::OnlyArbitrary {
+    prop: SingleProp("grid-template-rows"),
+    hints: &[],
+    matcher: All,
+};

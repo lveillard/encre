@@ -1,45 +1,27 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::AnyNumber {
+    prop: SingleProp("text-decoration-thickness"),
+    has_empty: false,
+    has_negative: false,
+    divide_by: 1.0,
+    template: "{}px",
+};
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                ["auto", "from-font"].contains(&&**value) || value.parse::<usize>().is_ok()
-            }
-            Modifier::Arbitrary { hint, value, .. } => {
-                *hint == "length"
-                    || *hint == "percentage"
-                    || (hint.is_empty()
-                        && (["auto", "from-font"].contains(&&**value)
-                            || is_matching_length(value)
-                            || is_matching_percentage(value)))
-            }
-        }
-    }
+pub(crate) const PLUGIN_2: Plugin = Plugin::SamePropValues {
+    prop: SingleProp("text-decoration-thickness"),
+    values: &["auto", "from-font"],
+};
 
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                if ["auto", "from-font"].contains(&&**value) {
-                    return context
-                        .buffer
-                        .line(format_args!("text-decoration-thickness: {value};"));
-                }
-
-                context
-                    .buffer
-                    .line(format_args!("text-decoration-thickness: {value}px;"));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("text-decoration-thickness: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_3: Plugin = Plugin::OnlyArbitrary {
+    prop: SingleProp("text-decoration-thickness"),
+    hints: &[PluginArbitraryHint::Length, PluginArbitraryHint::Percentage],
+    matcher: OrMultiple(&[
+        &Length,
+        &Percentage,
+        &CustomMultiple(&["auto", "from-font"]),
+    ]),
+};
