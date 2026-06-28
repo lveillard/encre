@@ -7,7 +7,7 @@ pub mod font_style;
 pub mod font_variant_numeric;
 pub mod font_weight;
 pub mod letter_spacing;
-// pub mod line_clamp;
+pub mod line_clamp;
 pub mod line_height;
 pub mod list_style_position;
 pub mod list_style_type;
@@ -427,10 +427,10 @@ mod tests {
         assert_eq!(
             generate(["line-clamp-12"], &base_config()),
             ".line-clamp-12 {
+  -webkit-line-clamp: 12;
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 12;
 }"
         );
     }

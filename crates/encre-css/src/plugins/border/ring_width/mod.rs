@@ -1,67 +1,38 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prop: SingleProp("--en-ring-shadow"),
+    has_empty: true,
+    has_negative: false,
+    divide_by: 1.0,
+}).extra_lines(&[
+    "box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow), var(--en-shadow, 0 0 #0000);",
+]).template("0 0 0 calc({}px + var(--en-ring-offset-width)) var(--en-ring-color)");
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                value.is_empty() || value.parse::<usize>().is_ok()
-            }
-            Modifier::Arbitrary {
-                hint,
-                value,
-                prefix,
-            } => {
-                prefix.is_empty()
-                    && (*hint == "length" || (hint.is_empty() && is_matching_length(value)))
-            }
-        }
-    }
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+    prop: SingleProp("--en-ring-shadow"),
+    hints: &[PluginArbitraryHint::Length],
+    matcher: Length,
+}).extra_lines(&[
+    "box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow), var(--en-shadow, 0 0 #0000);",
+]).template("var(--en-ring-inset) 0 0 0 calc({} + var(--en-ring-offset-width)) var(--en-ring-color)");
 
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                context.buffer.line(format_args!("--en-ring-shadow: 0 0 0 calc({}px + var(--en-ring-offset-width)) var(--en-ring-color);", if value.is_empty() { "1" } else { value }));
-            }
-            Modifier::Arbitrary { value, .. } => context.buffer.line(format_args!("--en-ring-shadow: var(--en-ring-inset) 0 0 0 calc({value} + var(--en-ring-offset-width)) var(--en-ring-color);")),
-        }
+pub(crate) const PLUGIN_INSET_1: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prop: SingleProp("--en-inset-ring-shadow"),
+    has_empty: true,
+    has_negative: false,
+    divide_by: 1.0,
+}).extra_lines(&[
+    "box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow, 0 0 #0000);"
+]).template("inset 0 0 0 calc({}px + var(--en-ring-offset-width)) var(--en-ring-color)");
 
-        context.buffer.line("box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow), var(--en-shadow, 0 0 #0000);");
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginInsetDefinition;
-
-impl Plugin for PluginInsetDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                value.is_empty() || value.parse::<usize>().is_ok()
-            }
-            Modifier::Arbitrary {
-                hint,
-                value,
-                prefix,
-            } => {
-                prefix.is_empty()
-                    && (*hint == "length" || (hint.is_empty() && is_matching_length(value)))
-            }
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                context.buffer.line(format_args!("--en-inset-ring-shadow: inset 0 0 0 calc({}px + var(--en-ring-offset-width)) var(--en-ring-color);", if value.is_empty() { "1" } else { value }));
-            }
-            Modifier::Arbitrary { value, .. } => context.buffer.line(format_args!("--en-inset-ring-shadow: inset 0 0 0 calc({value} + var(--en-ring-offset-width)) var(--en-ring-color);")),
-        }
-
-        context.buffer.line("box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow, 0 0 #0000);");
-    }
-}
+pub(crate) const PLUGIN_INSET_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+    prop: SingleProp("--en-inset-ring-shadow"),
+    hints: &[PluginArbitraryHint::Length],
+    matcher: Length,
+}).extra_lines(&[
+    "box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow, 0 0 #0000);"
+]).template("inset 0 0 0 calc({value} + var(--en-ring-offset-width)) var(--en-ring-color)");

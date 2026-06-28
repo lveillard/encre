@@ -2,7 +2,7 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::ListCases {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
         "auto" => &["overflow: auto;"],
         "x-auto" => &["overflow-x: auto;"],
@@ -17,4 +17,4 @@ pub(crate) const PLUGIN: Plugin = Plugin::ListCases {
         "x-scroll" => &["overflow-x: scroll;"],
         "y-scroll" => &["overflow-y: scroll;"],
     },
-};
+});

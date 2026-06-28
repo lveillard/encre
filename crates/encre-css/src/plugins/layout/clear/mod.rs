@@ -2,7 +2,7 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("clear"),
     values: phf_map! {
         "start" => "inline-start",
@@ -12,4 +12,4 @@ pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
         "both" => "both",
         "none" => "none",
     },
-};
+});

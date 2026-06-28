@@ -1,10 +1,6 @@
 use super::{Modifier, Selector, Variant};
 use crate::{
-    config::{Config, BUILTIN_PLUGINS, BUILTIN_VARIANTS},
-    error::{ParseError, ParseErrorKind},
-    generator::ContextCanHandle,
-    plugins::{css_property::PLUGIN, Plugin, PluginArbitraryHint, PluginArbitraryMatcher},
-    utils::{color, spacing, split_ignore_arbitrary, value_matchers::*},
+    config::{BUILTIN_PLUGINS, BUILTIN_VARIANTS, Config}, error::{ParseError, ParseErrorKind}, generator::ContextCanHandle, plugins::{Plugin, PluginArbitraryHint, PluginArbitraryMatcher, PluginKind, css_property::PLUGIN}, utils::{color, spacing, split_ignore_arbitrary, value_matchers::*},
 };
 
 use std::{borrow::Cow, ops::Range, str::FromStr};
@@ -175,13 +171,13 @@ fn is_arbitrary_matching(matcher: &PluginArbitraryMatcher, value: &str) -> bool 
 }
 
 fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
-    match (plugin, context.modifier) {
-        (Plugin::ListCases { cases }, Modifier::Builtin { value, .. }) => cases.contains_key(value),
-        (Plugin::ListValues { values, .. }, Modifier::Builtin { value, .. }) => {
+    match (&plugin.kind, context.modifier) {
+        (PluginKind::ListCases { cases }, Modifier::Builtin { value, .. }) => cases.contains_key(value),
+        (PluginKind::ListValues { values, .. }, Modifier::Builtin { value, .. }) => {
             values.contains_key(value)
         }
         (
-            Plugin::Sizing {
+            PluginKind::Sizing {
                 is_horizontal,
                 has_none,
                 ..
@@ -194,11 +190,11 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
                 || (!is_horizontal && ["svh", "lvh", "dvh"].contains(value))
                 || (*has_none && *value == "none")
         }
-        (Plugin::SamePropValues { values, .. }, Modifier::Builtin { value, .. }) => {
+        (PluginKind::SamePropValues { values, .. }, Modifier::Builtin { value, .. }) => {
             values.contains(value)
         }
         (
-            Plugin::Spacing {
+            PluginKind::Spacing {
                 has_auto, has_full, ..
             },
             Modifier::Builtin { value, .. },
@@ -207,18 +203,18 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
                 || (*has_auto && *value == "auto")
                 || (*has_full && *value == "full")
         }
-        (Plugin::Color { .. }, Modifier::Builtin { value, .. }) => {
+        (PluginKind::Color { .. }, Modifier::Builtin { value, .. }) => {
             color::is_matching_builtin_color(context.config, value)
         }
-        (Plugin::AnyNumber { has_empty, has_negative, .. }, Modifier::Builtin { value, is_negative, .. }) => {
+        (PluginKind::AnyNumber { has_empty, has_negative, .. }, Modifier::Builtin { value, is_negative, .. }) => {
             (*has_empty && value.is_empty()) || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative))
         }
-        (Plugin::OnlyArbitrary { matcher, hints, .. }, Modifier::Arbitrary { hint, value, .. }) => {
+        (PluginKind::OnlyArbitrary { matcher, hints, .. }, Modifier::Arbitrary { hint, value, .. }) => {
             // TODO: handle prefix.is_empty()
             PluginArbitraryHint::from_str(hint).is_ok_and(|h| hints.contains(&h))
                 || (hint.is_empty() && is_arbitrary_matching(matcher, value))
         }
-        (Plugin::ArbitraryShadow { .. }, Modifier::Arbitrary { hint, value, .. }) => {
+        (PluginKind::ArbitraryShadow { .. }, Modifier::Arbitrary { hint, value, .. }) => {
             *hint == "shadow" || (hint.is_empty() && is_matching_shadow(value))
         }
         _ => false,

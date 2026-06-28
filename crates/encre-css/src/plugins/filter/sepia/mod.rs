@@ -3,26 +3,9 @@
 use super::CSS_FILTER;
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(context.modifier, Modifier::Builtin { value, .. } if value.is_empty() || value.parse::<usize>().is_ok())
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        if let Modifier::Builtin { value, .. } = context.modifier {
-            #[allow(clippy::cast_precision_loss)]
-            match *value {
-                "" => context.buffer.line("--en-sepia: sepia(100%);"),
-                _ => context.buffer.line(format_args!(
-                    "--en-sepia: sepia({});",
-                    value.parse::<usize>().unwrap() as f32 / 100.
-                )),
-            }
-
-            context.buffer.line(CSS_FILTER);
-        }
-    }
-}
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prop: SingleProp("--en-sepia"),
+    has_empty: true,
+    has_negative: false,
+    divide_by: 100.0,
+}).extra_lines(&[CSS_FILTER]).template("sepia({})");

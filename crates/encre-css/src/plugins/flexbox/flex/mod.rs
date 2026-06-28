@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("flex"),
     values: phf_map! {
         "1" => "1 1 0%",
@@ -11,10 +11,10 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
         "initial" => "0 1 auto",
         "none" => "none",
     },
-};
+});
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
     prop: SingleProp("flex"),
     hints: &[],
     matcher: All,
-};
+});

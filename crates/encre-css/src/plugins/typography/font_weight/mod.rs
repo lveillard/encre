@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("font-weight"),
     values: phf_map! {
         "thin" => "100",
@@ -16,9 +16,9 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
         "extrabold" => "800",
         "black" => "900",
     },
-};
+});
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
     prop: SingleProp("font-weight"),
     hints: &[PluginArbitraryHint::Number],
     matcher: OrMultiple(&[
@@ -26,4 +26,4 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
         &Number,
         &Var,
     ]),
-};
+});

@@ -3,12 +3,12 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::Color {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Color {
     prop: MultipleProps(&["-webkit-text-decoration-color", "text-decoration-color"]),
-};
+});
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
     prop: MultipleProps(&["-webkit-text-decoration-color", "text-decoration-color"]),
     hints: &[PluginArbitraryHint::Color],
     matcher: Color,
-};
+});

@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("object-position"),
     values: phf_map! {
         "bottom" => "bottom",
@@ -16,10 +16,10 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
         "top-right" => "top right",
         "top" => "top",
     },
-};
+});
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
     prop: SingleProp("object-position"),
     hints: &[PluginArbitraryHint::Position],
     matcher: Position,
-};
+});

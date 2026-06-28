@@ -11,9 +11,9 @@ pub mod outline_offset;
 pub mod outline_style;
 pub mod outline_width;
 pub mod ring_color;
-// pub mod ring_offset_color;
-// pub mod ring_offset_width;
-// pub mod ring_width;
+pub mod ring_offset_color;
+pub mod ring_offset_width;
+pub mod ring_width;
 
 #[cfg(test)]
 mod tests {
@@ -414,15 +414,15 @@ mod tests {
         assert_eq!(
             generate(["ring-offset-13"], &base_config()),
             ".ring-offset-13 {
-  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
   --en-ring-offset-width: 13px;
+  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
 }"
         );
         assert_eq!(
             generate(["ring-offset-[13em]"], &base_config()),
             r".ring-offset-\[13em\] {
-  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
   --en-ring-offset-width: 13em;
+  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
 }"
         );
     }
@@ -432,15 +432,15 @@ mod tests {
         assert_eq!(
             generate(["ring-offset-red-400"], &base_config()),
             ".ring-offset-red-400 {
-  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
   --en-ring-offset-color: oklch(70.4% .191 22.216);
+  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
 }"
         );
         assert_eq!(
             generate(["ring-offset-[rgb(12,12,12)]"], &base_config()),
             r".ring-offset-\[rgb\(12\,12\,12\)\] {
-  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
   --en-ring-offset-color: rgb(12,12,12);
+  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
 }"
         );
     }

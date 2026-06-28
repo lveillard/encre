@@ -4,21 +4,20 @@ use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
 const fn builtin_plugin(prop: PropertyName) -> Plugin {
-    Plugin::AnyNumber {
+    Plugin::new(PluginKind::AnyNumber {
         prop,
         has_empty: true,
         has_negative: false,
         divide_by: 1.0,
-        template: "{}px",
-    }
+    }).template("{}px")
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
-    Plugin::OnlyArbitrary {
+    Plugin::new(PluginKind::OnlyArbitrary {
         prop,
         hints: &[PluginArbitraryHint::Length, PluginArbitraryHint::LineWidth],
         matcher: Or(&Length, &LineWidth),
-    }
+    })
 }
 
 pub(crate) const PLUGIN_1: Plugin = builtin_plugin(SingleProp("border-width"));

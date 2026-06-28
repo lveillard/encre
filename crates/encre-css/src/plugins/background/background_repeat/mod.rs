@@ -2,7 +2,7 @@
 #![doc(alias("background", "bg"))]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-repeat"),
     values: phf_map! {
         "repeat" => "repeat",
@@ -12,4 +12,4 @@ pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
         "repeat-round" => "round",
         "repeat-space" => "space",
     },
-};
+});

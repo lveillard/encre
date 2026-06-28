@@ -1,24 +1,22 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "transform")]
-use crate::prelude::build_plugin::*;
+use crate::{plugins::transform::CSS_TRANSFORM, prelude::build_plugin::*};
 use PluginArbitraryMatcher::*;
 
 const fn builtin_plugin(prop: PropertyName) -> Plugin {
-    Plugin::Spacing {
+    Plugin::new(PluginKind::Spacing {
         prop,
         has_auto: true,
         has_full: true,
-    }
-    // TODO: extra_line CSS_TRANSFORM
+    }).extra_lines(&[CSS_TRANSFORM])
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
-    Plugin::OnlyArbitrary {
+    Plugin::new(PluginKind::OnlyArbitrary {
         prop,
         hints: &[],
         matcher: Or(&Length, &Percentage),
-    }
-    // TODO: extra_line CSS_TRANSFORM
+    }).extra_lines(&[CSS_TRANSFORM])
 }
 
 pub(crate) const PLUGIN_X_1: Plugin = builtin_plugin(SingleProp("--en-translate-x"));

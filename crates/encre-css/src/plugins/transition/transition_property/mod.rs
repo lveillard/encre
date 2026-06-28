@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::ListCases {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
         "" => &[
             "transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;",
@@ -37,10 +37,10 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::ListCases {
             "transition-duration: 150ms;",
         ],
     },
-};
+});
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
     prop: SingleProp("transition-property"),
     hints: &[],
     matcher: All,
-};
+});

@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("line-height"),
     values: phf_map! {
         "none" => "1",
@@ -13,16 +13,16 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
         "relaxed" => "1.625",
         "loose" => "2",
     },
-};
+});
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::Spacing {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Spacing {
     prop: SingleProp("line-height"),
     has_auto: false,
     has_full: false,
-};
+});
 
-pub(crate) const PLUGIN_3: Plugin = Plugin::OnlyArbitrary {
+pub(crate) const PLUGIN_3: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
     prop: SingleProp("line-height"),
     hints: &[],
     matcher: OrMultiple(&[&Custom("normal"), &Number, &Length, &Percentage]),
-};
+});

@@ -3,14 +3,14 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::Spacing {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Spacing {
     prop: SingleProp("text-indent"),
     has_auto: false,
     has_full: false,
-};
+});
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
     prop: SingleProp("text-indent"),
     hints: &[],
     matcher: Length,
-};
+});

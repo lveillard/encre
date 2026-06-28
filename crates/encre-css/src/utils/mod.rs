@@ -19,15 +19,6 @@ pub mod value_matchers;
 #[cfg(test)]
 pub(crate) mod testing;
 
-/// Quickly format a negative value (returns "-" if true or "" otherwise).
-pub fn format_negative(is_negative: &bool) -> &'static str {
-    if *is_negative {
-        "-"
-    } else {
-        ""
-    }
-}
-
 /// While <https://github.com/rust-lang/rust/issues/27721> is pending we need to define
 /// our own minimal [`Pattern`] trait.
 ///

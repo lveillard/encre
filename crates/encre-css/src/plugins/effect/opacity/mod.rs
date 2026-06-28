@@ -2,10 +2,9 @@
 #![doc(alias = "effect")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::AnyNumber {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::AnyNumber {
     prop: SingleProp("opacity"),
     has_empty: false,
     has_negative: false,
     divide_by: 100.0,
-    template: "{}",
-};
+});

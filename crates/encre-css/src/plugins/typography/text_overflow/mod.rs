@@ -2,7 +2,7 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::ListCases {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
         "truncate" => &[
             "overflow: hidden;",
@@ -16,4 +16,4 @@ pub(crate) const PLUGIN: Plugin = Plugin::ListCases {
             "text-overflow: clip;"
         ],
     },
-};
+});

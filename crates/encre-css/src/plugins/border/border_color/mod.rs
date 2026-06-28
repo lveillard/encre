@@ -4,17 +4,17 @@ use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
 const fn builtin_plugin(prop: PropertyName) -> Plugin {
-    Plugin::Color {
+    Plugin::new(PluginKind::Color {
         prop,
-    }
+    })
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
-    Plugin::OnlyArbitrary {
+    Plugin::new(PluginKind::OnlyArbitrary {
         prop,
         hints: &[PluginArbitraryHint::Color],
         matcher: Color,
-    }
+    })
 }
 
 pub(crate) const PLUGIN_1: Plugin = builtin_plugin(SingleProp("border-color"));

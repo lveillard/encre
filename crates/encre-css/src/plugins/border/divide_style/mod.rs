@@ -20,7 +20,7 @@ impl Plugin for PluginDefinition {
                 context,
                 |context| match context.modifier {
                     Modifier::Builtin { value, .. } => {
-                        context.buffer.line(format_args!("border-style: {value};"));
+                        context.buffer.line(format_args!("border-style: {value});"));
                     }
                     Modifier::Arbitrary { .. } => unreachable!(),
                 },

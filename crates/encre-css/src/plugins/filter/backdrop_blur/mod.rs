@@ -1,9 +1,9 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "filter")]
-use crate::prelude::build_plugin::*;
+use crate::{plugins::filter::CSS_BACKDROP_FILTER, prelude::build_plugin::*};
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("--en-backdrop-blur"),
     values: phf_map! {
         "xs" => "blur(4px)",
@@ -15,13 +15,10 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
         "3xl" => "blur(64px)",
         "none" => "blur(0)",
     },
-};
-// TODO: extra_line CSS_BACKDROP_FILTER
+}).extra_lines(&CSS_BACKDROP_FILTER);
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
     prop: SingleProp("--en-backdrop-blur"),
     hints: &[],
     matcher: Length,
-};
-// TODO: template blur({})
-// TODO: extra_line CSS_BACKDROP_FILTER
+}).extra_lines(&CSS_BACKDROP_FILTER).template("blur({})");

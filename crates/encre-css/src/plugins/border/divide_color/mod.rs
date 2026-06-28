@@ -30,10 +30,10 @@ impl Plugin for PluginDefinition {
                         let color =
                             color::get(context.config, value).unwrap();
 
-                        context.buffer.line(format_args!("border-color: {color};"));
+                        context.buffer.line(format_args!("border-color: {color});"));
                     }
                     Modifier::Arbitrary { value, .. } => {
-                        context.buffer.line(format_args!("border-color: {value};"));
+                        context.buffer.line(format_args!("border-color: {value});"));
                     }
                 },
                 " > :not([hidden]) ~ :not([hidden])",

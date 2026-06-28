@@ -2,7 +2,7 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::ListCases {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
         "normal-nums" => &[
             "font-variant-numeric: normal;",
@@ -40,4 +40,4 @@ pub(crate) const PLUGIN: Plugin = Plugin::ListCases {
             "font-variant-numeric: var(--en-ordinal) var(--en-slashed-zero) var(--en-numeric-figure) var(--en-numeric-spacing) var(--en-numeric-fraction);",
         ],
     },
-};
+});

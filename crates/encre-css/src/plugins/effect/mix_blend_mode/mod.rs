@@ -2,7 +2,7 @@
 #![doc(alias = "effect")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
     prop: SingleProp("mix-blend-mode"),
     values: &[
         "normal",
@@ -23,4 +23,4 @@ pub(crate) const PLUGIN: Plugin = Plugin::SamePropValues {
         "luminosity",
         "plus-lighter",
     ],
-};
+});

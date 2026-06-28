@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("grid-auto-columns"),
     values: phf_map! {
         "auto" => "auto",
@@ -11,10 +11,10 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
         "max" => "max-content",
         "fr" => "minmax(0, 1fr)"
     },
-};
+});
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
     prop: SingleProp("grid-auto-columns"),
     hints: &[],
     matcher: All,
-};
+});

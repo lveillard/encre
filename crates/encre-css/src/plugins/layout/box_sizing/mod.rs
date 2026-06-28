@@ -2,10 +2,10 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("box-sizing"),
     values: phf_map! {
         "border" => "border-box",
         "content" => "content-box",
     },
-};
+});

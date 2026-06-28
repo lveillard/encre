@@ -2,7 +2,7 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: MultipleProps(&["-webkit-text-decoration-line", "text-decoration-line"]),
     values: phf_map! {
         "underline" => "underline",
@@ -10,4 +10,4 @@ pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
         "line-through" => "line-through",
         "no-underline" => "none",
     },
-};
+});

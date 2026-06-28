@@ -1,26 +1,23 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "transform")]
-use crate::prelude::build_plugin::*;
+use crate::{plugins::transform::CSS_TRANSFORM, prelude::build_plugin::*};
 use PluginArbitraryMatcher::*;
 
 const fn builtin_plugin(prop: PropertyName) -> Plugin {
-    Plugin::AnyNumber {
+    Plugin::new(PluginKind::AnyNumber {
         prop,
         has_empty: false,
         has_negative: true,
         divide_by: 1.0,
-        template: "{}deg",
-    }
-    // TODO: extra_line CSS_TRANSFORM
+    }).extra_lines(&[CSS_TRANSFORM]).template("{}deg")
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
-    Plugin::OnlyArbitrary {
+    Plugin::new(PluginKind::OnlyArbitrary {
         prop,
         hints: &[],
         matcher: Angle,
-    }
-    // TODO: extra_line CSS_TRANSFORM
+    }).extra_lines(&[CSS_TRANSFORM])
 }
 
 pub(crate) const PLUGIN_1: Plugin =

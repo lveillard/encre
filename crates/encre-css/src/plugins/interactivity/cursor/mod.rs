@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::SamePropValues {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::SamePropValues {
     prop: SingleProp("cursor"),
     values: &[
         "auto",
@@ -43,10 +43,10 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::SamePropValues {
         "zoom-in",
         "zoom-out",
     ],
-};
+});
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
     prop: SingleProp("cursor"),
     hints: &[],
     matcher: All,
-};
+});

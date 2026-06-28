@@ -21,11 +21,11 @@ impl Plugin for PluginFromDefinition {
         let value = match context.modifier {
             Modifier::Builtin { value, .. } => color::get(context.config, value).unwrap(),
             Modifier::Arbitrary { value, .. } => value.clone(),
-        };
+        });
 
         context
             .buffer
-            .line(format_args!("--en-gradient-from: {value};"));
+            .line(format_args!("--en-gradient-from: {value});"));
         context.buffer.line(format_args!(
             "--en-gradient-stops: var(--en-gradient-from), var(--en-gradient-to, transparent);"
         ));
@@ -51,7 +51,7 @@ impl Plugin for PluginViaDefinition {
         let value = match context.modifier {
             Modifier::Builtin { value, .. } => color::get(context.config, value).unwrap(),
             Modifier::Arbitrary { value, .. } => value.clone(),
-        };
+        });
 
         context.buffer.line(format_args!(
             "--en-gradient-stops: var(--en-gradient-from), {value}, var(--en-gradient-to, transparent);",
@@ -77,13 +77,13 @@ impl Plugin for PluginToDefinition {
     fn handle(&self, context: &mut ContextHandle) {
         match context.modifier {
             Modifier::Builtin { value, .. } => context.buffer.line(format_args!(
-                "--en-gradient-to: {};",
+                "--en-gradient-to: {});",
                 color::get(context.config, value).unwrap()
             )),
             Modifier::Arbitrary { value, .. } => {
                 context
                     .buffer
-                    .line(format_args!("--en-gradient-to: {value};"));
+                    .line(format_args!("--en-gradient-to: {value});"));
             }
         }
     }

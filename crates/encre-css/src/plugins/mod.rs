@@ -57,20 +57,20 @@ pub mod typography;
 /// context structure).
 ///
 /// Each plugin consists of two methods:
-/// - [`Plugin::can_handle`] to check if it will be able to generate CSS for a specific modifier;
-/// - [`Plugin::handle`] to generate the CSS needed.
+/// - [`Plugin::new(PluginKind::can_handle`] to check if it will be able to generate CSS for a specific modifier;
+/// - [`Plugin::new(PluginKind::handle`] to generate the CSS needed.
 ///
-/// The [`Plugin::can_handle`] method takes a [`ContextCanHandle`] structure containing the
+/// The [`Plugin::new(PluginKind::can_handle`] method takes a [`ContextCanHandle`] structure containing the
 /// modifier and the current configuration.
 ///
-/// The [`Plugin::handle`] method takes a [`ContextHandle`] structure containing the modifier,
+/// The [`Plugin::new(PluginKind::handle`] method takes a [`ContextHandle`] structure containing the modifier,
 /// the current configuration and a buffer containing the whole CSS
 /// currently generated. You can use the [`Buffer`] structure (especially the [`Buffer::line`]
 /// and [`Buffer::lines`] functions) to push CSS declarations to it, they will be automatically
 /// indented.
 ///
-/// It is common to use the [`unreachable!`] macro if the [`Plugin::handle`] method cannot be
-/// called because you are sure that [`Plugin::can_handle`] returned `false`.
+/// It is common to use the [`unreachable!`] macro if the [`Plugin::new(PluginKind::handle`] method cannot be
+/// called because you are sure that [`Plugin::new(PluginKind::can_handle`] returned `false`.
 ///
 /// # Example (defines the `stroke-width` plugin)
 ///
@@ -100,7 +100,7 @@ pub mod typography;
 ///                 context.buffer.line(format_args!("stroke-width: {value}px;"));
 ///             }
 ///             Modifier::Arbitrary { value, .. } => {
-///                 context.buffer.line(format_args!("stroke-width: {value};"));
+///                 context.buffer.line(format_args!("stroke-width: {value});"));
 ///             }
 ///         }
 ///     }
@@ -182,14 +182,14 @@ pub mod typography;
 ///                         "bounce 1s infinite"
 ///                     }
 ///                     _ => unreachable!(),
-///                 };
+///                 });
 ///
 ///                 generate_wrapper(context, |context| {
-///                     context.buffer.line(format_args!("animation: {animation};"));
+///                     context.buffer.line(format_args!("animation: {animation});"));
 ///                 })
 ///             }
 ///             Modifier::Arbitrary { value, .. } => generate_wrapper(context, |context| {
-///                 context.buffer.line(format_args!("animation: {value};"));
+///                 context.buffer.line(format_args!("animation: {value});"));
 ///             }),
 ///         }
 ///     }
@@ -204,7 +204,7 @@ pub mod typography;
 /// [`Buffer::lines`]: crate::utils::buffer::Buffer::lines
 /// [`Config::register_plugin`]: crate::Config::register_plugin
 /// [`Config`]: crate::Config
-/// [`needs_wrapping`]: Plugin::needs_wrapping
+/// [`needs_wrapping`]: Plugin::new(PluginKind::needs_wrapping
 /// [`generator::generate_at_rules`]: crate::generator::generate_at_rules
 /// [`generator::generate_class`]: crate::generator::generate_class
 /// [`generator::generate_wrapper`]: crate::generator::generate_wrapper
@@ -222,7 +222,7 @@ pub trait Plugin: fmt::Debug {
     /// Get the CSS code from a modifier.
     ///
     ///
-    /// The [`Plugin::can_handle`] method **must be** called before to know if it can handle
+    /// The [`Plugin::new(PluginKind::can_handle`] method **must be** called before to know if it can handle
     /// the modifier, otherwise this function **will panic**.
     ///
     /// Various notes:
@@ -316,11 +316,42 @@ pub enum PropertyName {
 
 // TODO: Make a StaticPlugin/DynamicPlugin (with Strings and Vecs for ser/de)
 // TODO: Rename OnlyArbitrary -> Arbitrary and rename PLUGIN_1/PLUGIN_2 -> PLUGIN_BUILTIN/PLUGIN_ARBITRARY
-// TODO: Define prefix inside plugin with a structure (+ multiple rules per plugin?)
+// TODO: Rename Color/Sizing/Spacing -> AnyColor/AnySize/AnySpacing
+// TODO: Define prefix inside plugin + migrate has_ to the Plugin structure
 // TODO: add PluginArbitraryMatcher::* to the prelude
 
 #[derive(Debug, PartialEq)]
-pub enum Plugin {
+pub struct Plugin {
+    pub(crate) kind: PluginKind,
+    pub(crate) extra_lines: Option<&'static [&'static str]>,
+    pub(crate) template: Option<&'static str>,
+}
+
+impl Plugin {
+    pub const fn new(kind: PluginKind) -> Self {
+        Self {
+            kind,
+            extra_lines: None,
+            template: None,
+        }
+    }
+
+    pub const fn extra_lines(mut self, extra_lines: &'static [&'static str]) -> Self {
+        self.extra_lines = Some(extra_lines);
+        self
+    }
+
+    pub const fn template(mut self, template: &'static str) -> Self {
+        if !matches!(self.kind, PluginKind::OnlyArbitrary { .. } | PluginKind::AnyNumber { .. }) {
+            panic!("Plugin::template can only be used with PluginKind::OnlyArbitrary or PluginKind::AnyNumber");
+        }
+        self.template = Some(template);
+        self
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub enum PluginKind {
     ListCases {
         cases: phf::Map<&'static str, &'static [&'static str]>,
     },
@@ -351,7 +382,6 @@ pub enum Plugin {
         has_empty: bool,
         has_negative: bool,
         divide_by: f32,
-        template: &'static str,
     },
 
     OnlyArbitrary {
@@ -362,6 +392,5 @@ pub enum Plugin {
     ArbitraryShadow {
         prop: PropertyName,
         color_replacement: &'static str,
-        extra_line: &'static str,
     }
 }

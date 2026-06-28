@@ -2,7 +2,7 @@
 #![doc(alias = "interactivity")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::ListCases {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
         "none" => &["-ms-scroll-snap-type: none;", "scroll-snap-type: none;"],
         "x" => &[
@@ -20,4 +20,4 @@ pub(crate) const PLUGIN: Plugin = Plugin::ListCases {
         "mandatory" => &["--en-scroll-snap-strictness: mandatory;"],
         "proximity" => &["--en-scroll-snap-strictness: proximity;"],
     },
-};
+});

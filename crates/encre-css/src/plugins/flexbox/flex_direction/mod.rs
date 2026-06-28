@@ -2,7 +2,7 @@
 #![doc(alias = "flexbox")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("flex-direction"),
     values: phf_map! {
         "row" => "row",
@@ -10,4 +10,4 @@ pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
         "col" => "column",
         "col-reverse" => "column-reverse",
     },
-};
+});

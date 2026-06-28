@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::ListCases {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
         "xs" => &["font-size: 0.75rem;", "line-height: 1rem;"],
         "sm" => &["font-size: 0.875rem;", "line-height: 1.25rem;"],
@@ -19,9 +19,9 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::ListCases {
         "8xl" => &["font-size: 6rem;", "line-height: 1;"],
         "9xl" => &["font-size: 8rem;", "line-height: 1;"],
     },
-};
+});
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
     prop: SingleProp("font-size"),
     hints: &[
         PluginArbitraryHint::Length,
@@ -30,4 +30,4 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
         PluginArbitraryHint::RelativeSize,
     ],
     matcher: OrMultiple(&[&Length, &Percentage, &AbsoluteSize, &RelativeSize]),
-};
+});

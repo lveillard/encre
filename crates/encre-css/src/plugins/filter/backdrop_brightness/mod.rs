@@ -3,23 +3,9 @@
 use super::CSS_BACKDROP_FILTER;
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(context.modifier, Modifier::Builtin { value, .. } if value.parse::<usize>().is_ok())
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        if let Modifier::Builtin { value, .. } = context.modifier {
-            #[allow(clippy::cast_precision_loss)]
-            context.buffer.line(format_args!(
-                "--en-backdrop-brightness: brightness({});",
-                value.parse::<usize>().unwrap() as f32 / 100.,
-            ));
-
-            context.buffer.lines(CSS_BACKDROP_FILTER);
-        }
-    }
-}
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prop: SingleProp("--en-backdrop-brightness"),
+    has_empty: false,
+    has_negative: false,
+    divide_by: 100.0,
+}).extra_lines(&CSS_BACKDROP_FILTER).template("brightness({})");

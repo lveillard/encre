@@ -2,7 +2,7 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
     prop: SingleProp("position"),
     values: &["static", "fixed", "absolute", "relative", "sticky"],
-};
+});

@@ -3,31 +3,29 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-const VALUES: phf::Map<&'static str, &'static str> = phf_map! {
-    "none" => "0",
-    "xs" => "0.125rem",
-    "sm" => "0.25rem",
-    "md" => "0.375rem",
-    "lg" => "0.5rem",
-    "xl" => "0.75rem",
-    "2xl" => "1rem",
-    "3xl" => "1.5rem",
-    "full" => "9999px",
-};
-
 const fn builtin_plugin(prop: PropertyName) -> Plugin {
-    Plugin::ListValues {
+    Plugin::new(PluginKind::ListValues {
         prop,
-        values: VALUES,
-    }
+        values: phf_map! {
+            "none" => "0",
+            "xs" => "0.125rem",
+            "sm" => "0.25rem",
+            "md" => "0.375rem",
+            "lg" => "0.5rem",
+            "xl" => "0.75rem",
+            "2xl" => "1rem",
+            "3xl" => "1.5rem",
+            "full" => "9999px",
+        },
+    })
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
-    Plugin::OnlyArbitrary {
+    Plugin::new(PluginKind::OnlyArbitrary {
         prop,
         hints: &[],
         matcher: SpaceSeparated(&Or(&Length, &Percentage)),
-    }
+    })
 }
 
 pub(crate) const PLUGIN_1: Plugin = builtin_plugin(SingleProp("border-radius"));

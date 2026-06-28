@@ -2,7 +2,7 @@
 #![doc(alias = "interactivity")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
     prop: SingleProp("touch-action"),
     values: &[
         "auto",
@@ -16,4 +16,4 @@ pub(crate) const PLUGIN: Plugin = Plugin::SamePropValues {
         "manipulation",
         "none",
     ],
-};
+});

@@ -1,10 +1,10 @@
 //! Define the main [`generate`] function used to scan content and to generate CSS styles.
 use crate::{
     config::{Config, MaxShortcutDepth},
-    plugins::{Plugin, PropertyName},
+    plugins::{Plugin, PluginKind, PropertyName},
     preflight::Preflight,
     selector::{parse, Modifier, Selector, Variant},
-    utils::{buffer::Buffer, color, format_negative, shadow, spacing},
+    utils::{buffer::Buffer, color, shadow, spacing},
 };
 
 use std::{borrow::Cow, collections::BTreeSet};
@@ -13,7 +13,7 @@ use std::{borrow::Cow, collections::BTreeSet};
 ///
 /// [`Plugin::can_handle`]: crate::plugins::Plugin::can_handle
 #[derive(Debug)]
-pub struct ContextCanHandle<'a, 'b, 'c> {
+pub(crate) struct ContextCanHandle<'a, 'b, 'c> {
     /// The generator's configuration.
     pub config: &'a Config,
 
@@ -25,7 +25,7 @@ pub struct ContextCanHandle<'a, 'b, 'c> {
 ///
 /// [`Plugin::handle`]: crate::plugins::Plugin::handle
 #[derive(Debug)]
-pub struct ContextHandle<'a, 'b, 'c, 'd, 'e> {
+pub(crate) struct ContextHandle<'a, 'b, 'c, 'd, 'e> {
     /// The generator's configuration.
     pub config: &'a Config,
 
@@ -37,6 +37,14 @@ pub struct ContextHandle<'a, 'b, 'c, 'd, 'e> {
 
     // Private fields used in `generate_class` and `generate_at_rules`
     selector: &'e Selector<'e>,
+}
+
+fn do_templating<'a>(plugin: &Plugin, value: Cow<'a, str>) -> Cow<'a, str> {
+    if let Some(template) = plugin.template {
+        Cow::Owned(template.replace("{}", &value.to_string()))
+    } else {
+        value.clone()
+    }
 }
 
 fn push_css_lines(prop: &PropertyName, value: &str, context: &mut ContextHandle) {
@@ -53,16 +61,20 @@ fn push_css_lines(prop: &PropertyName, value: &str, context: &mut ContextHandle)
 }
 
 fn handle(plugin: &Plugin, context: &mut ContextHandle) {
-    match (plugin, context.modifier) {
-        (Plugin::ListCases { cases }, Modifier::Builtin { value, .. }) => {
+    match (&plugin.kind, context.modifier) {
+        (PluginKind::ListCases { cases }, Modifier::Builtin { value, .. }) => {
             generate_wrapper(context, |context| {
                 context.buffer.lines(
                     *cases.get(value)
                         .expect("key existence was checked in can_handle"),
-                )
+                );
+
+                if let Some(extra_lines) = plugin.extra_lines {
+                    context.buffer.lines(extra_lines);
+                }
             });
         }
-        (Plugin::ListValues { prop, values }, Modifier::Builtin { value, .. }) => {
+        (PluginKind::ListValues { prop, values }, Modifier::Builtin { value, .. }) => {
             generate_wrapper(context, |context| {
                 push_css_lines(
                     prop,
@@ -70,19 +82,27 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                         .get(value)
                         .expect("key existence was checked in can_handle"),
                         context,
-                )
+                );
+
+                if let Some(extra_lines) = plugin.extra_lines {
+                    context.buffer.lines(extra_lines);
+                }
             });
         }
-        (Plugin::SamePropValues { prop, .. }, Modifier::Builtin { value, .. }) => {
+        (PluginKind::SamePropValues { prop, .. }, Modifier::Builtin { value, .. }) => {
             generate_wrapper(context, |context| {
                 push_css_lines(prop, value, context);
+
+                if let Some(extra_lines) = plugin.extra_lines {
+                    context.buffer.lines(extra_lines);
+                }
             });
         }
         (
-            Plugin::Sizing {
+            PluginKind::Sizing {
                 prop,
                 is_horizontal,
-                has_none,
+                ..
             },
             Modifier::Builtin {
                 value, is_negative, ..
@@ -90,7 +110,7 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
         ) => {
             generate_wrapper(context, |context| {
                 let value = match *value {
-                    "none" if *has_none => Cow::Borrowed("none"),
+                    "none" => Cow::Borrowed("none"),
                     "auto" => Cow::Borrowed("auto"),
                     "full" => Cow::Borrowed("100%"),
                     "screen" if *is_horizontal => Cow::Borrowed("100vw"),
@@ -107,18 +127,22 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                     _ => spacing::get(value, *is_negative).unwrap(),
                 };
                 push_css_lines(prop, &*value, context);
+
+                if let Some(extra_lines) = plugin.extra_lines {
+                    context.buffer.lines(extra_lines);
+                }
             });
         }
         (
-            Plugin::Spacing { prop, has_auto, has_full },
+            PluginKind::Spacing { prop, .. },
             Modifier::Builtin {
                 value, is_negative, ..
             },
         ) => {
             generate_wrapper(context, |context| {
-                let value = if *has_auto && *value == "auto" {
+                let value = if *value == "auto" {
                     Cow::Borrowed("auto")
-                } else if *has_full && *value == "full" {
+                } else if *value == "full" {
                     if *is_negative {
                         Cow::Borrowed("-100%")
                     } else {
@@ -128,10 +152,14 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                     spacing::get(value, *is_negative).unwrap()
                 };
                 push_css_lines(prop, &*value, context);
+
+                if let Some(extra_lines) = plugin.extra_lines {
+                    context.buffer.lines(extra_lines);
+                }
             });
         }
         (
-            Plugin::Color { prop },
+            PluginKind::Color { prop },
             Modifier::Builtin {
                 value, ..
             },
@@ -139,34 +167,43 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
             generate_wrapper(context, |context| {
                 let value = color::get(context.config, value).unwrap();
                 push_css_lines(prop, &*value, context);
+
+                if let Some(extra_lines) = plugin.extra_lines {
+                    context.buffer.lines(extra_lines);
+                }
             });
         }
         (
-            Plugin::AnyNumber { prop, has_negative, has_empty, divide_by, template, .. },
+            PluginKind::AnyNumber { prop, divide_by, .. },
             Modifier::Builtin {
                 value, is_negative
             },
         ) => {
             generate_wrapper(context, |context| {
-                let value = if *has_empty && value.is_empty() { 1.0 / divide_by } else { value.parse::<usize>().unwrap() as f32 / divide_by };
-                let value = format!(
-                    "{}{}",
-                    if *has_negative { format_negative(is_negative) } else { "" },
-                    template.replace("{}", &value.to_string()),
-                );
+                let value = if value.is_empty() { 1.0 } else { value.parse::<usize>().unwrap() as f32 / divide_by };
+                let coeff = if *is_negative { -1.0 } else { 1.0 };
+                let value = do_templating(plugin, Cow::Owned((coeff * value).to_string()));
                 push_css_lines(prop, &*value, context);
+
+                if let Some(extra_lines) = plugin.extra_lines {
+                    context.buffer.lines(extra_lines);
+                }
             });
         }
         (
-            Plugin::Sizing { prop, .. } | Plugin::Spacing { prop, .. } | Plugin::Color { prop, .. } | Plugin::OnlyArbitrary { prop, .. },
+            PluginKind::Sizing { prop, .. } | PluginKind::Spacing { prop, .. } | PluginKind::Color { prop, .. } | PluginKind::OnlyArbitrary { prop, .. },
             Modifier::Arbitrary { value, .. },
         ) => {
             generate_wrapper(context, |context| {
-                push_css_lines(prop, value, context);
+                push_css_lines(prop, &*do_templating(plugin, value.clone()), context);
+
+                if let Some(extra_lines) = plugin.extra_lines {
+                    context.buffer.lines(extra_lines);
+                }
             });
         }
         (
-            Plugin::ArbitraryShadow { prop, extra_line, color_replacement },
+            PluginKind::ArbitraryShadow { prop, color_replacement },
             Modifier::Arbitrary { value, .. },
         ) => {
             generate_wrapper(context, |context| {
@@ -175,8 +212,8 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
 
                 push_css_lines(prop, &shadow.to_string(), context);
 
-                if !extra_line.is_empty() {
-                    context.buffer.line(extra_line);
+                if let Some(extra_lines) = plugin.extra_lines {
+                    context.buffer.lines(extra_lines);
                 }
             });
         }
@@ -195,7 +232,7 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
 /// Returns [`fmt::Error`] indicating whether writing to the buffer succeeded.
 ///
 /// [`fmt::Error`]: std::fmt::Error
-pub fn generate_at_rules<T: FnOnce(&mut ContextHandle)>(
+fn generate_at_rules<T: FnOnce(&mut ContextHandle)>(
     context: &mut ContextHandle,
     rule_content_fn: T,
 ) {
@@ -239,7 +276,7 @@ pub fn generate_at_rules<T: FnOnce(&mut ContextHandle)>(
 ///
 /// [`fmt::Error`]: std::fmt::Error
 #[allow(clippy::too_many_lines)]
-pub fn generate_class<T: FnOnce(&mut ContextHandle)>(
+fn generate_class<T: FnOnce(&mut ContextHandle)>(
     context: &mut ContextHandle,
     rule_content_fn: T,
     custom_after_class: &str,
@@ -350,7 +387,7 @@ pub fn generate_class<T: FnOnce(&mut ContextHandle)>(
 /// Returns [`fmt::Error`] indicating whether writing to the buffer succeeded.
 ///
 /// [`fmt::Error`]: std::fmt::Error
-pub fn generate_wrapper<T: FnOnce(&mut ContextHandle)>(
+fn generate_wrapper<T: FnOnce(&mut ContextHandle)>(
     context: &mut ContextHandle,
     rule_content_fn: T,
 ) {

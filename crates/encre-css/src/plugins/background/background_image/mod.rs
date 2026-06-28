@@ -72,7 +72,7 @@ impl Plugin for PluginDefinition {
             Modifier::Arbitrary { value, .. } => {
                 context
                     .buffer
-                    .line(format_args!("background-image: {value};"));
+                    .line(format_args!("background-image: {value});"));
             }
         }
     }
@@ -90,7 +90,7 @@ impl Plugin for PluginLinearDefinition {
                     (before, &after[1..])
                 } else {
                     (*value, "oklab")
-                };
+                });
 
                 ([
                     "to-t", "to-tr", "to-r", "to-br", "to-b", "to-bl", "to-l", "to-tl",
@@ -112,14 +112,14 @@ impl Plugin for PluginLinearDefinition {
                 } else {
                     // The interpolation mode defaults to `oklab`
                     (*value, "oklab")
-                };
+                });
 
                 let interpolation_mode = match interpolation_mode {
                     "longer" | "shorter" | "increasing" | "decreasing" => {
                         Cow::Owned(format!("oklch {interpolation_mode} hue"))
                     }
                     _ => Cow::Borrowed(interpolation_mode),
-                };
+                });
 
                 match gradient_type {
                     "none" => context.buffer.line("background-image: none;"),
@@ -176,7 +176,7 @@ impl Plugin for PluginRadialDefinition {
                     (before, &after[1..])
                 } else {
                     (*value, "oklab")
-                };
+                });
 
                 gradient_type.is_empty() && INTERPOLATION_MODES.contains(&interpolation_mode)
             }
@@ -193,14 +193,14 @@ impl Plugin for PluginRadialDefinition {
                 } else {
                     // The interpolation mode defaults to `oklab`
                     (*value, "oklab")
-                };
+                });
 
                 let interpolation_mode = match interpolation_mode {
                     "longer" | "shorter" | "increasing" | "decreasing" => {
                         Cow::Owned(format!("oklch {interpolation_mode} hue"))
                     }
                     _ => Cow::Borrowed(interpolation_mode),
-                };
+                });
 
                 context
                     .buffer
@@ -227,7 +227,7 @@ impl Plugin for PluginConicDefinition {
                     (before, &after[1..])
                 } else {
                     (*value, "oklab")
-                };
+                });
 
                 (gradient_type.is_empty() || gradient_type.parse::<usize>().is_ok())
                     && INTERPOLATION_MODES.contains(&interpolation_mode)
@@ -245,14 +245,14 @@ impl Plugin for PluginConicDefinition {
                 } else {
                     // The interpolation mode defaults to `oklab`
                     (*value, "oklab")
-                };
+                });
 
                 let interpolation_mode = match interpolation_mode {
                     "longer" | "shorter" | "increasing" | "decreasing" => {
                         Cow::Owned(format!("oklch {interpolation_mode} hue"))
                     }
                     _ => Cow::Borrowed(interpolation_mode),
-                };
+                });
 
                 if gradient_type.is_empty() {
                     context

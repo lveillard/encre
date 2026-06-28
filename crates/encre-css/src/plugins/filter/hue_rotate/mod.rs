@@ -2,32 +2,17 @@
 #![doc(alias = "filter")]
 use super::CSS_FILTER;
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prop: SingleProp("--en-hue-rotate"),
+    has_empty: false,
+    has_negative: true,
+    divide_by: 1.0,
+}).extra_lines(&[CSS_FILTER]).template("hue-rotate({}deg)");
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => value.parse::<usize>().is_ok_and(|v| v <= 360),
-            Modifier::Arbitrary { value, .. } => is_matching_angle(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { is_negative, value } => context.buffer.line(format_args!(
-                "--en-hue-rotate: hue-rotate({}{}deg);",
-                format_negative(is_negative),
-                value
-            )),
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("--en-hue-rotate: hue-rotate({value});"));
-            }
-        }
-
-        context.buffer.line(CSS_FILTER);
-    }
-}
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+    prop: SingleProp("--en-hue-rotate"),
+    hints: &[],
+    matcher: Angle,
+}).extra_lines(&[CSS_FILTER]).template("hue-rotate({})");

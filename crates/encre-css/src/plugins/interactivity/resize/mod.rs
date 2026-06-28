@@ -2,7 +2,7 @@
 #![doc(alias = "interactivity")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("resize"),
     values: phf_map! {
         "" => "both",
@@ -10,4 +10,4 @@ pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
         "x" => "horizontal",
         "y" => "vertical",
     },
-};
+});

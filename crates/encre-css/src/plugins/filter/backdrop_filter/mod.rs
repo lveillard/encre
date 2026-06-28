@@ -3,34 +3,12 @@
 use super::CSS_BACKDROP_FILTER;
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "" | "none",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => match *value {
-                "" => {
-                    context.buffer.lines(CSS_BACKDROP_FILTER);
-                }
-                "none" => {
-                    context
-                        .buffer
-                        .lines(["-webkit-backdrop-filter: none;", "backdrop-filter: none;"]);
-                }
-                _ => unreachable!(),
-            },
-            Modifier::Arbitrary { .. } => unreachable!(),
-        }
-    }
-}
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
+    cases: phf_map! {
+        "" => &CSS_BACKDROP_FILTER,
+        "none" => &[
+            "-webkit-backdrop-filter: none;",
+            "backdrop-filter: none;",
+        ],
+    },
+});

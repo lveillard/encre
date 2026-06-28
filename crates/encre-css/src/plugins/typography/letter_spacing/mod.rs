@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("letter-spacing"),
     values: phf_map! {
         "tighter" => "-0.05em",
@@ -13,10 +13,10 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::ListValues {
         "wider" => "0.05em",
         "widest" => "0.1em",
     },
-};
+});
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
     prop: SingleProp("letter-spacing"),
     hints: &[],
     matcher: Or(&Custom("nprmal"), &Length),
-};
+});

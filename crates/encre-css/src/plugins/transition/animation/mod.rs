@@ -112,19 +112,19 @@ impl Plugin for PluginDefinition {
                         "bounce 1s infinite"
                     }
                     _ => unreachable!(),
-                };
+                });
 
                 generate_wrapper(context, |context| {
                     context.buffer.lines([
-                        format_args!("-webkit-animation: {animation};"),
-                        format_args!("animation: {animation};"),
+                        format_args!("-webkit-animation: {animation});"),
+                        format_args!("animation: {animation});"),
                     ]);
                 });
             }
             Modifier::Arbitrary { value, .. } => generate_wrapper(context, |context| {
                 context.buffer.lines([
-                    format_args!("-webkit-animation: {value};"),
-                    format_args!("animation: {value};"),
+                    format_args!("-webkit-animation: {value});"),
+                    format_args!("animation: {value});"),
                 ]);
             }),
         }

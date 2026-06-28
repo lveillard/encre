@@ -4,19 +4,19 @@ use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
 const fn builtin_plugin(prop: PropertyName) -> Plugin {
-    Plugin::Spacing {
+    Plugin::new(PluginKind::Spacing {
         prop,
         has_auto: false,
         has_full: false,
-    }
+    })
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
-    Plugin::OnlyArbitrary {
+    Plugin::new(PluginKind::OnlyArbitrary {
         prop,
         hints: &[],
         matcher: Length,
-    }
+    })
 }
 
 pub(crate) const PLUGIN_1: Plugin = builtin_plugin(SingleProp("gap"));

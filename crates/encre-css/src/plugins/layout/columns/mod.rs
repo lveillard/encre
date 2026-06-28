@@ -2,7 +2,7 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("columns"),
     values: phf_map! {
         "1" => "1",
@@ -32,4 +32,4 @@ pub(crate) const PLUGIN: Plugin = Plugin::ListValues {
         "6xl" => "72rem",
         "7xl" => "80rem",
     },
-};
+});

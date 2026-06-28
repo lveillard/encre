@@ -2,7 +2,7 @@
 #![doc(alias = "accessibility")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::ListCases {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
         "sr-only" =>
         &[
@@ -29,4 +29,4 @@ pub(crate) const PLUGIN: Plugin = Plugin::ListCases {
             "white-space: normal;",
         ],
     },
-};
+});

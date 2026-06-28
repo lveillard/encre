@@ -1,8 +1,8 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "layout")]
-use crate::{config::BUILTIN_SCREENS, prelude::build_plugin::*};
+use crate::{config::BUILTIN_SCREENS, prelude::build_plugin::*});
 
-use std::{borrow::Cow, cmp::Ordering};
+use std::{borrow::Cow, cmp::Ordering});
 
 #[derive(Debug)]
 pub(crate) struct PluginDefinition;
@@ -50,13 +50,13 @@ impl Plugin for PluginDefinition {
                         a.1[..first_char_a].parse::<usize>().ok()
                     } else {
                         a.1.parse::<usize>().ok()
-                    };
+                    });
 
                     let b = if let Some(first_char_b) = b.1.chars().position(char::is_alphabetic) {
                         b.1[..first_char_b].parse::<usize>().ok()
                     } else {
                         b.1.parse::<usize>().ok()
-                    };
+                    });
 
                     if let Some(a) = a {
                         if let Some(b) = b {
@@ -86,7 +86,7 @@ impl Plugin for PluginDefinition {
                     generate_class(
                         context,
                         |context| {
-                            context.buffer.line(format_args!("max-width: {screen};"));
+                            context.buffer.line(format_args!("max-width: {screen});"));
                         },
                         "",
                     );
