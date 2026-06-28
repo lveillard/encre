@@ -1,6 +1,12 @@
 use super::{Modifier, Selector, Variant};
 use crate::{
-    config::{BUILTIN_PLUGINS, BUILTIN_VARIANTS, Config}, error::{ParseError, ParseErrorKind}, generator::ContextCanHandle, plugins::{Plugin, PluginArbitraryHint, PluginArbitraryMatcher, PluginKind, css_property::PLUGIN}, utils::{color, spacing, split_ignore_arbitrary, value_matchers::*},
+    config::{Config, BUILTIN_PLUGINS, BUILTIN_VARIANTS},
+    error::{ParseError, ParseErrorKind},
+    generator::ContextCanHandle,
+    plugins::{
+        css_property::PLUGIN, Plugin, PluginArbitraryHint, PluginArbitraryMatcher, PluginKind,
+    },
+    utils::{color, spacing, split_ignore_arbitrary, value_matchers::*},
 };
 
 use std::{borrow::Cow, ops::Range, str::FromStr};
@@ -172,7 +178,9 @@ fn is_arbitrary_matching(matcher: &PluginArbitraryMatcher, value: &str) -> bool 
 
 fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
     match (&plugin.kind, context.modifier) {
-        (PluginKind::ListCases { cases }, Modifier::Builtin { value, .. }) => cases.contains_key(value),
+        (PluginKind::ListCases { cases }, Modifier::Builtin { value, .. }) => {
+            cases.contains_key(value)
+        }
         (PluginKind::ListValues { values, .. }, Modifier::Builtin { value, .. }) => {
             values.contains_key(value)
         }
@@ -206,10 +214,23 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
         (PluginKind::Color { .. }, Modifier::Builtin { value, .. }) => {
             color::is_matching_builtin_color(context.config, value)
         }
-        (PluginKind::AnyNumber { has_empty, has_negative, .. }, Modifier::Builtin { value, is_negative, .. }) => {
-            (*has_empty && value.is_empty()) || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative))
+        (
+            PluginKind::AnyNumber {
+                has_empty,
+                has_negative,
+                ..
+            },
+            Modifier::Builtin {
+                value, is_negative, ..
+            },
+        ) => {
+            (*has_empty && value.is_empty())
+                || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative))
         }
-        (PluginKind::OnlyArbitrary { matcher, hints, .. }, Modifier::Arbitrary { hint, value, .. }) => {
+        (
+            PluginKind::OnlyArbitrary { matcher, hints, .. },
+            Modifier::Arbitrary { hint, value, .. },
+        ) => {
             // TODO: handle prefix.is_empty()
             PluginArbitraryHint::from_str(hint).is_ok_and(|h| hints.contains(&h))
                 || (hint.is_empty() && is_arbitrary_matching(matcher, value))

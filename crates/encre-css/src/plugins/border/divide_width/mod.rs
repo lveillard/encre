@@ -1,116 +1,62 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
-fn divide_width_can_handle(context: &mut ContextCanHandle) -> bool {
-    match context.modifier {
-        Modifier::Builtin { value, .. } => {
-            value.is_empty() || *value == "reverse" || value.parse::<usize>().is_ok()
-        }
-        Modifier::Arbitrary { hint, value, .. } => {
-            *hint == "length" || (hint.is_empty() && is_matching_length(value))
-        }
-    }
-}
+pub(crate) const PLUGIN_X_1: Plugin = Plugin::new(PluginKind::ListCases {
+    cases: phf_map! {
+        "reverse" => &["--en-divide-x-reverse: 1;"],
+    },
+}).extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-#[derive(Debug)]
-pub(crate) struct PluginXDefinition;
+pub(crate) const PLUGIN_X_2: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prop: MultipleProps(&["border-inline-start-width", "border-inline-end-width"]),
+    has_empty: true,
+    has_negative: false,
+    divide_by: 1.0,
+}).template_multiple(&[
+    "calc({}px * var(--en-divide-x-reverse))",
+    "calc({}px * calc(1 - var(--en-divide-x-reverse)))",
+]).extra_lines(&[
+    "--en-divide-x-reverse: 0;"
+]).extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-impl Plugin for PluginXDefinition {
-    fn can_handle(&self, mut context: ContextCanHandle) -> bool {
-        divide_width_can_handle(&mut context)
-    }
+pub(crate) const PLUGIN_X_3: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+    prop: MultipleProps(&["border-inline-start-width", "border-inline-end-width"]),
+    hints: &[PluginArbitraryHint::Length],
+    matcher: Length,
+}).template_multiple(&[
+    "calc({} * var(--en-divide-x-reverse))",
+    "calc({} * calc(1 - var(--en-divide-x-reverse)))",
+]).extra_lines(&[
+    "--en-divide-x-reverse: 0;"
+]).extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-    fn needs_wrapping(&self) -> bool {
-        false
-    }
+pub(crate) const PLUGIN_Y_1: Plugin = Plugin::new(PluginKind::ListCases {
+    cases: phf_map! {
+        "reverse" => &["--en-divide-y-reverse: 1;"],
+    },
+}).extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-    fn handle(&self, context: &mut ContextHandle) {
-        generate_at_rules(context, |context| {
-            generate_class(
-                context,
-                |context| match context.modifier {
-                    Modifier::Builtin { value, .. } => {
-                        if *value == "reverse" {
-                            return context.buffer.line("--en-divide-x-reverse: 1;");
-                        }
+pub(crate) const PLUGIN_Y_2: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prop: MultipleProps(&["border-block-start-width", "border-block-end-width"]),
+    has_empty: true,
+    has_negative: false,
+    divide_by: 1.0,
+}).template_multiple(&[
+    "calc({}px * var(--en-divide-y-reverse))",
+    "calc({}px * calc(1 - var(--en-divide-y-reverse)))",
+]).extra_lines(&[
+    "--en-divide-y-reverse: 0;"
+]).extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-                        let value = if value.is_empty() { "1" } else { value });
-                        context.buffer.lines([
-                            format_args!("--en-divide-x-reverse: 0;"),
-                            format_args!(
-                                "border-inline-start-width: calc({value}px * var(--en-divide-x-reverse));",
-                            ),
-                            format_args!(
-                                "border-inline-end-width: calc({value}px * calc(1 - var(--en-divide-x-reverse)));",
-                            ),
-                        ]);
-                    }
-                    Modifier::Arbitrary { value, .. } => {
-                        context.buffer.lines([
-                            format_args!("--en-divide-x-reverse: 0;"),
-                            format_args!(
-                                "border-inline-start-width: calc({value} * var(--en-divide-x-reverse));"
-                            ),
-                            format_args!(
-                                "border-inline-end-width: calc({value} * calc(1 - var(--en-divide-x-reverse)));"
-                            ),
-                        ]);
-                    }
-                },
-                " > :not([hidden]) ~ :not([hidden])",
-            );
-        });
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginYDefinition;
-
-impl Plugin for PluginYDefinition {
-    fn can_handle(&self, mut context: ContextCanHandle) -> bool {
-        divide_width_can_handle(&mut context)
-    }
-
-    fn needs_wrapping(&self) -> bool {
-        false
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        generate_at_rules(context, |context| {
-            generate_class(
-                context,
-                |context| match context.modifier {
-                    Modifier::Builtin { value, .. } => {
-                        if *value == "reverse" {
-                            return context.buffer.line("--en-divide-y-reverse: 1;");
-                        }
-
-                        let value = if value.is_empty() { "1" } else { value });
-                        context.buffer.lines([
-                            format_args!("--en-divide-y-reverse: 0;"),
-                            format_args!(
-                                "border-block-start-width: calc({value}px * var(--en-divide-y-reverse));",
-                            ),
-                            format_args!(
-                                "border-block-end-width: calc({value}px * calc(1 - var(--en-divide-y-reverse)));",
-                            ),
-                        ]);
-                    }
-                    Modifier::Arbitrary { value, .. } => {
-                        context.buffer.lines([
-                            format_args!("--en-divide-y-reverse: 0;"),
-                            format_args!(
-                                "border-block-start-width: calc({value} * var(--en-divide-y-reverse));"
-                            ),
-                            format_args!(
-                                "border-block-end-width: calc({value} * calc(1 - var(--en-divide-y-reverse)));"
-                            ),
-                        ]);
-                    }
-                },
-                " > :not([hidden]) ~ :not([hidden])",
-            );
-        });
-    }
-}
+pub(crate) const PLUGIN_Y_3: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+    prop: MultipleProps(&["border-block-start-width", "border-block-end-width"]),
+    hints: &[PluginArbitraryHint::Length],
+    matcher: Length,
+}).template_multiple(&[
+    "calc({} * var(--en-divide-y-reverse))",
+    "calc({} * calc(1 - var(--en-divide-y-reverse)))",
+]).extra_lines(&[
+    "--en-divide-y-reverse: 0;"
+]).extra_class(" > :not([hidden]) ~ :not([hidden])");

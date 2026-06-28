@@ -9,7 +9,8 @@ const fn builtin_plugin(prop: PropertyName) -> Plugin {
         has_empty: false,
         has_negative: true,
         divide_by: 100.0,
-    }).extra_lines(&[CSS_TRANSFORM])
+    })
+    .extra_lines(&[CSS_TRANSFORM])
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
@@ -17,7 +18,8 @@ const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
         prop,
         hints: &[],
         matcher: Or(&Percentage, &Number),
-    }).extra_lines(&[CSS_TRANSFORM])
+    })
+    .extra_lines(&[CSS_TRANSFORM])
 }
 
 pub(crate) const PLUGIN_1: Plugin =

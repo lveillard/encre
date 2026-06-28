@@ -140,7 +140,10 @@ mod tests {
 }"
         );
         assert_eq!(
-            generate(["bg-[url(&#39;/hello_with_underscores.png&#39;)]"], &base_config()),
+            generate(
+                ["bg-[url(&#39;/hello_with_underscores.png&#39;)]"],
+                &base_config()
+            ),
             r".bg-\[url\(\'\/hello_with_underscores\.png\'\)\] {
   background-image: url('/hello_with_underscores.png');
 }"

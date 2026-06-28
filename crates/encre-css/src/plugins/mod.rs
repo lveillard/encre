@@ -35,6 +35,8 @@
 
 use std::str::FromStr;
 
+use crate::plugins::PropertyName::MultipleProps;
+
 pub mod accessibility;
 pub mod background;
 pub mod border;
@@ -319,12 +321,15 @@ pub enum PropertyName {
 // TODO: Rename Color/Sizing/Spacing -> AnyColor/AnySize/AnySpacing
 // TODO: Define prefix inside plugin + migrate has_ to the Plugin structure
 // TODO: add PluginArbitraryMatcher::* to the prelude
+// TODO: template for Color/Sizing/Spacing?
 
 #[derive(Debug, PartialEq)]
 pub struct Plugin {
     pub(crate) kind: PluginKind,
     pub(crate) extra_lines: Option<&'static [&'static str]>,
+    pub(crate) extra_class: Option<&'static str>,
     pub(crate) template: Option<&'static str>,
+    pub(crate) template_multiple: Option<&'static [&'static str]>,
 }
 
 impl Plugin {
@@ -332,7 +337,9 @@ impl Plugin {
         Self {
             kind,
             extra_lines: None,
+            extra_class: None,
             template: None,
+            template_multiple: None,
         }
     }
 
@@ -341,11 +348,55 @@ impl Plugin {
         self
     }
 
+    pub const fn extra_class(mut self, extra_class: &'static str) -> Self {
+        self.extra_class = Some(extra_class);
+        self
+    }
+
     pub const fn template(mut self, template: &'static str) -> Self {
-        if !matches!(self.kind, PluginKind::OnlyArbitrary { .. } | PluginKind::AnyNumber { .. }) {
-            panic!("Plugin::template can only be used with PluginKind::OnlyArbitrary or PluginKind::AnyNumber");
+        if !matches!(
+            self.kind,
+            PluginKind::OnlyArbitrary { .. } | PluginKind::AnyNumber { .. } | PluginKind::Spacing { .. }
+        ) {
+            panic!("Plugin::template can only be used with PluginKind::OnlyArbitrary or PluginKind::AnyNumber or PluginKind::Spacing");
         }
+
         self.template = Some(template);
+        self
+    }
+
+    pub const fn template_multiple(mut self, templates: &'static [&'static str]) -> Self {
+        if !matches!(
+            self.kind,
+            PluginKind::OnlyArbitrary { .. } | PluginKind::AnyNumber { .. } | PluginKind::Spacing { .. }
+        ) {
+            panic!("Plugin::template_multiple can only be used with PluginKind::OnlyArbitrary or PluginKind::AnyNumber or PluginKind::Spacing");
+        }
+
+        if !matches!(
+            self.kind,
+            PluginKind::OnlyArbitrary {
+                prop: MultipleProps(..),
+                ..
+            } | PluginKind::AnyNumber {
+                prop: MultipleProps(..),
+                ..
+            } | PluginKind::Spacing {
+                prop: MultipleProps(..),
+                ..
+            }
+        ) {
+            panic!("Plugin::template can only be used with a MultipleProps property name. To define a template for a single property name, use Plugin::template");
+        }
+
+        if !matches!(
+            self.kind,
+            PluginKind::OnlyArbitrary { prop: MultipleProps(p), .. } | PluginKind::AnyNumber { prop: MultipleProps(p), .. } | PluginKind::Spacing { prop: MultipleProps(p), .. } if p.len() == templates.len()
+        ) {
+            panic!("Plugin::template_multiple should have as many elements as the number of properties defined in MultipleProps. Each template will be applied for the corresponding property name in the order they are defined");
+            }
+
+        self.template_multiple = Some(templates);
         self
     }
 }
@@ -392,5 +443,5 @@ pub enum PluginKind {
     ArbitraryShadow {
         prop: PropertyName,
         color_replacement: &'static str,
-    }
+    },
 }

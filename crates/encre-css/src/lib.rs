@@ -245,11 +245,14 @@ pub mod prelude {
     /// ```
     pub mod build_plugin {
         pub use crate::{
-            plugins::{Plugin, PluginKind, PluginArbitraryHint, PluginArbitraryMatcher, PropertyName, PropertyName::*},
+            plugins::{
+                Plugin, PluginArbitraryHint, PluginArbitraryMatcher, PluginKind, PropertyName,
+                PropertyName::*,
+            },
             selector::Modifier,
             utils::{buffer::Buffer, color, shadow, spacing, value_matchers::*},
         };
-        pub use std::fmt::{self, Write};
         pub use phf::{self, phf_map};
+        pub use std::fmt::{self, Write};
     }
 }

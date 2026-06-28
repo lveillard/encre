@@ -29,7 +29,8 @@ pub(crate) const PLUGIN_Y_1: Plugin = builtin_plugin(SingleProp("scroll-padding-
 pub(crate) const PLUGIN_Y_2: Plugin = arbitrary_plugin(SingleProp("scroll-padding-block"));
 
 pub(crate) const PLUGIN_START_1: Plugin = builtin_plugin(SingleProp("scroll-padding-inline-start"));
-pub(crate) const PLUGIN_START_2: Plugin = arbitrary_plugin(SingleProp("scroll-padding-inline-start"));
+pub(crate) const PLUGIN_START_2: Plugin =
+    arbitrary_plugin(SingleProp("scroll-padding-inline-start"));
 
 pub(crate) const PLUGIN_END_1: Plugin = builtin_plugin(SingleProp("scroll-padding-inline-end"));
 pub(crate) const PLUGIN_END_2: Plugin = arbitrary_plugin(SingleProp("scroll-padding-inline-end"));

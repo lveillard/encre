@@ -1031,12 +1031,21 @@ pub const BUILTIN_PLUGINS: &[(Cow<'static, str>, &'static Plugin)] = &[
     (Cow::Borrowed("gap-x"), &grid::gap::PLUGIN_X_2),
     (Cow::Borrowed("gap-y"), &grid::gap::PLUGIN_Y_1),
     (Cow::Borrowed("gap-y"), &grid::gap::PLUGIN_Y_2),
-    // (Cow::Borrowed("space-x"), &spacing::space_between::PluginXDefinition),
-    // (Cow::Borrowed("space-y"), &spacing::space_between::PluginYDefinition),
-    // (Cow::Borrowed("divide-x"), &border::divide_width::PluginXDefinition),
-    // (Cow::Borrowed("divide-y"), &border::divide_width::PluginYDefinition),
-    // (Cow::Borrowed("divide"), &border::divide_style::PluginDefinition),
-    // (Cow::Borrowed("divide"), &border::divide_color::PluginDefinition),
+    (Cow::Borrowed("space-x"), &spacing::space_between::PLUGIN_X_1),
+    (Cow::Borrowed("space-x"), &spacing::space_between::PLUGIN_X_2),
+    (Cow::Borrowed("space-x"), &spacing::space_between::PLUGIN_X_3),
+    (Cow::Borrowed("space-y"), &spacing::space_between::PLUGIN_Y_1),
+    (Cow::Borrowed("space-y"), &spacing::space_between::PLUGIN_Y_2),
+    (Cow::Borrowed("space-y"), &spacing::space_between::PLUGIN_Y_3),
+    (Cow::Borrowed("divide-x"), &border::divide_width::PLUGIN_X_1),
+    (Cow::Borrowed("divide-x"), &border::divide_width::PLUGIN_X_2),
+    (Cow::Borrowed("divide-x"), &border::divide_width::PLUGIN_X_3),
+    (Cow::Borrowed("divide-y"), &border::divide_width::PLUGIN_Y_1),
+    (Cow::Borrowed("divide-y"), &border::divide_width::PLUGIN_Y_2),
+    (Cow::Borrowed("divide-y"), &border::divide_width::PLUGIN_Y_3),
+    (Cow::Borrowed("divide"), &border::divide_style::PLUGIN),
+    (Cow::Borrowed("divide"), &border::divide_color::PLUGIN_1),
+    (Cow::Borrowed("divide"), &border::divide_color::PLUGIN_2),
     (Cow::Borrowed("place-self"), &flexbox::place_self::PLUGIN),
     (Cow::Borrowed("self"), &flexbox::align_self::PLUGIN),
     (Cow::Borrowed("justify-self"), &flexbox::justify_self::PLUGIN),
@@ -2414,100 +2423,100 @@ mod tests {
         );
     }
 
-//     #[test]
-//     fn gen_css_with_custom_plugin_and_extra_fields() {
-//         use crate::prelude::build_plugin::*;
-//         use std::collections::HashMap;
-//
-//         #[derive(Debug)]
-//         struct EmojiPlugin;
-//
-//         impl Plugin for EmojiPlugin {
-//             fn can_handle(&self, context: ContextCanHandle) -> bool {
-//                 matches!(context.modifier, Modifier::Builtin { value, .. } if context.config.extra.get("emojis").map_or(false, |val| val.as_table().map_or(false, |table| table.contains_key(*value))))
-//             }
-//
-//             fn handle(&self, context: &mut ContextHandle) {
-//                 if let Modifier::Builtin { value, .. } = context.modifier {
-//                     context.buffer.line(format_args!(
-//                         r#"content: {};"#,
-//                         context
-//                             .config
-//                             .extra
-//                             .get("emojis")
-//                             .unwrap()
-//                             .as_table()
-//                             .unwrap()
-//                             .get(*value)
-//                             .unwrap()
-//                     ));
-//                 }
-//             }
-//         }
-//
-//         let mut config = base_config();
-//         config.register_plugin("emoji", &EmojiPlugin);
-//         config.extra.add(
-//             "emojis",
-//             HashMap::from_iter([("tada", "\u{1f389}"), ("rocket", "\u{1f680}")]),
-//         );
-//
-//         let generated = generate(["emoji-tada"], &config);
-//
-//         assert_eq!(
-//             generated,
-//             String::from(
-//                 ".emoji-tada {
-//   content: \"\u{1f389}\";
-// }"
-//             )
-//         );
-//     }
+    //     #[test]
+    //     fn gen_css_with_custom_plugin_and_extra_fields() {
+    //         use crate::prelude::build_plugin::*;
+    //         use std::collections::HashMap;
+    //
+    //         #[derive(Debug)]
+    //         struct EmojiPlugin;
+    //
+    //         impl Plugin for EmojiPlugin {
+    //             fn can_handle(&self, context: ContextCanHandle) -> bool {
+    //                 matches!(context.modifier, Modifier::Builtin { value, .. } if context.config.extra.get("emojis").map_or(false, |val| val.as_table().map_or(false, |table| table.contains_key(*value))))
+    //             }
+    //
+    //             fn handle(&self, context: &mut ContextHandle) {
+    //                 if let Modifier::Builtin { value, .. } = context.modifier {
+    //                     context.buffer.line(format_args!(
+    //                         r#"content: {};"#,
+    //                         context
+    //                             .config
+    //                             .extra
+    //                             .get("emojis")
+    //                             .unwrap()
+    //                             .as_table()
+    //                             .unwrap()
+    //                             .get(*value)
+    //                             .unwrap()
+    //                     ));
+    //                 }
+    //             }
+    //         }
+    //
+    //         let mut config = base_config();
+    //         config.register_plugin("emoji", &EmojiPlugin);
+    //         config.extra.add(
+    //             "emojis",
+    //             HashMap::from_iter([("tada", "\u{1f389}"), ("rocket", "\u{1f680}")]),
+    //         );
+    //
+    //         let generated = generate(["emoji-tada"], &config);
+    //
+    //         assert_eq!(
+    //             generated,
+    //             String::from(
+    //                 ".emoji-tada {
+    //   content: \"\u{1f389}\";
+    // }"
+    //             )
+    //         );
+    //     }
 
-//     #[test]
-//     fn gen_css_with_custom_plugin_extra_fields_and_parsed_config() {
-//         use crate::prelude::build_plugin::*;
-//
-//         #[derive(Debug)]
-//         struct EmojiPlugin;
-//
-//         impl Plugin for EmojiPlugin {
-//             fn can_handle(&self, context: ContextCanHandle) -> bool {
-//                 matches!(context.modifier, Modifier::Builtin { value, .. } if context.config.extra.get("emojis").map_or(false, |val| val.as_table().map_or(false, |table| table.contains_key(*value))))
-//             }
-//
-//             fn handle(&self, context: &mut ContextHandle) {
-//                 if let Modifier::Builtin { value, .. } = context.modifier {
-//                     context.buffer.line(format_args!(
-//                         r#"content: {};"#,
-//                         context
-//                             .config
-//                             .extra
-//                             .get("emojis")
-//                             .unwrap()
-//                             .as_table()
-//                             .unwrap()
-//                             .get(*value)
-//                             .unwrap()
-//                     ));
-//                 }
-//             }
-//         }
-//
-//         let mut config = Config::from_file("tests/fixtures/extra-fields-config.toml").unwrap();
-//         config.register_plugin("emoji", &EmojiPlugin);
-//
-//         let generated = generate(["emoji-tada"], &config);
-//
-//         assert_eq!(
-//             generated,
-//             String::from(
-//                 ".emoji-tada {
-//   content: \"\u{1f389}\";
-// }"
-//             )
-//         );
-//     }
+    //     #[test]
+    //     fn gen_css_with_custom_plugin_extra_fields_and_parsed_config() {
+    //         use crate::prelude::build_plugin::*;
+    //
+    //         #[derive(Debug)]
+    //         struct EmojiPlugin;
+    //
+    //         impl Plugin for EmojiPlugin {
+    //             fn can_handle(&self, context: ContextCanHandle) -> bool {
+    //                 matches!(context.modifier, Modifier::Builtin { value, .. } if context.config.extra.get("emojis").map_or(false, |val| val.as_table().map_or(false, |table| table.contains_key(*value))))
+    //             }
+    //
+    //             fn handle(&self, context: &mut ContextHandle) {
+    //                 if let Modifier::Builtin { value, .. } = context.modifier {
+    //                     context.buffer.line(format_args!(
+    //                         r#"content: {};"#,
+    //                         context
+    //                             .config
+    //                             .extra
+    //                             .get("emojis")
+    //                             .unwrap()
+    //                             .as_table()
+    //                             .unwrap()
+    //                             .get(*value)
+    //                             .unwrap()
+    //                     ));
+    //                 }
+    //             }
+    //         }
+    //
+    //         let mut config = Config::from_file("tests/fixtures/extra-fields-config.toml").unwrap();
+    //         config.register_plugin("emoji", &EmojiPlugin);
+    //
+    //         let generated = generate(["emoji-tada"], &config);
+    //
+    //         assert_eq!(
+    //             generated,
+    //             String::from(
+    //                 ".emoji-tada {
+    //   content: \"\u{1f389}\";
+    // }"
+    //             )
+    //         );
+    //     }
 
     #[test]
     fn config_is_extended_and_overridden() {

@@ -8,7 +8,8 @@ const fn builtin_plugin(prop: PropertyName) -> Plugin {
         prop,
         has_auto: true,
         has_full: true,
-    }).extra_lines(&[CSS_TRANSFORM])
+    })
+    .extra_lines(&[CSS_TRANSFORM])
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
@@ -16,7 +17,8 @@ const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
         prop,
         hints: &[],
         matcher: Or(&Length, &Percentage),
-    }).extra_lines(&[CSS_TRANSFORM])
+    })
+    .extra_lines(&[CSS_TRANSFORM])
 }
 
 pub(crate) const PLUGIN_X_1: Plugin = builtin_plugin(SingleProp("--en-translate-x"));

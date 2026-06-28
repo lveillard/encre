@@ -3,9 +3,9 @@ pub mod border_color;
 pub mod border_radius;
 pub mod border_style;
 pub mod border_width;
-// pub mod divide_color;
-// pub mod divide_style;
-// pub mod divide_width;
+pub mod divide_color;
+pub mod divide_style;
+pub mod divide_width;
 pub mod outline_color;
 pub mod outline_offset;
 pub mod outline_style;
@@ -249,17 +249,17 @@ mod tests {
         assert_eq!(
             generate(["divide-x"], &base_config()),
             ".divide-x > :not([hidden]) ~ :not([hidden]) {
-  --en-divide-x-reverse: 0;
   border-inline-start-width: calc(1px * var(--en-divide-x-reverse));
   border-inline-end-width: calc(1px * calc(1 - var(--en-divide-x-reverse)));
+  --en-divide-x-reverse: 0;
 }"
         );
         assert_eq!(
             generate(["divide-y-2"], &base_config()),
             ".divide-y-2 > :not([hidden]) ~ :not([hidden]) {
-  --en-divide-y-reverse: 0;
   border-block-start-width: calc(2px * var(--en-divide-y-reverse));
   border-block-end-width: calc(2px * calc(1 - var(--en-divide-y-reverse)));
+  --en-divide-y-reverse: 0;
 }"
         );
         assert_eq!(
@@ -271,9 +271,9 @@ mod tests {
         assert_eq!(
             generate(["divide-y-[0.1rem]"], &base_config()),
             r".divide-y-\[0\.1rem\] > :not([hidden]) ~ :not([hidden]) {
-  --en-divide-y-reverse: 0;
   border-block-start-width: calc(0.1rem * var(--en-divide-y-reverse));
   border-block-end-width: calc(0.1rem * calc(1 - var(--en-divide-y-reverse)));
+  --en-divide-y-reverse: 0;
 }"
         );
         assert_eq!(

@@ -4,9 +4,7 @@ use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
 const fn builtin_plugin(prop: PropertyName) -> Plugin {
-    Plugin::new(PluginKind::Color {
-        prop,
-    })
+    Plugin::new(PluginKind::Color { prop })
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {

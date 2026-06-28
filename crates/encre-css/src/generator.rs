@@ -39,14 +39,6 @@ pub(crate) struct ContextHandle<'a, 'b, 'c, 'd, 'e> {
     selector: &'e Selector<'e>,
 }
 
-fn do_templating<'a>(plugin: &Plugin, value: Cow<'a, str>) -> Cow<'a, str> {
-    if let Some(template) = plugin.template {
-        Cow::Owned(template.replace("{}", &value.to_string()))
-    } else {
-        value.clone()
-    }
-}
-
 fn push_css_lines(prop: &PropertyName, value: &str, context: &mut ContextHandle) {
     match prop {
         PropertyName::SingleProp(prop) => {
@@ -60,42 +52,82 @@ fn push_css_lines(prop: &PropertyName, value: &str, context: &mut ContextHandle)
     }
 }
 
+fn push_css_lines_with_templating(prop: &PropertyName, plugin: &Plugin, value: &str, context: &mut ContextHandle) {
+    match prop {
+        PropertyName::SingleProp(prop) => {
+            let value = if let Some(template) = plugin.template {
+                Cow::Owned(template.replace("{}", &value))
+            } else {
+                Cow::Borrowed(value)
+            };
+
+            context.buffer.line(format_args!("{prop}: {value};"));
+        }
+        PropertyName::MultipleProps(props) => {
+            if let Some(templates) = plugin.template_multiple {
+                for (i, prop) in props.iter().enumerate() {
+                    // The length of plugin.template_multiple is asserted to be the
+                    // same as the length of the list of property names at compile
+                    // time in the method Plugin::template_multiple
+                    context.buffer.line(format_args!("{prop}: {};", templates[i].replace("{}", &value)));
+                }
+            } else if let Some(template) = plugin.template {
+                let value = template.replace("{}", &value);
+                for prop in *props {
+                    context.buffer.line(format_args!("{prop}: {value};"));
+                }
+            } else {
+                for prop in *props {
+                    context.buffer.line(format_args!("{prop}: {value};"));
+                }
+            }
+        }
+    }
+}
+
 fn handle(plugin: &Plugin, context: &mut ContextHandle) {
     match (&plugin.kind, context.modifier) {
         (PluginKind::ListCases { cases }, Modifier::Builtin { value, .. }) => {
-            generate_wrapper(context, |context| {
-                context.buffer.lines(
-                    *cases.get(value)
-                        .expect("key existence was checked in can_handle"),
-                );
+            generate_at_rules(context, |context| {
+                generate_class(context, |context| {
+                    context.buffer.lines(
+                        *cases.get(value)
+                            .expect("key existence was checked in can_handle"),
+                    );
 
-                if let Some(extra_lines) = plugin.extra_lines {
-                    context.buffer.lines(extra_lines);
-                }
+                    if let Some(extra_lines) = plugin.extra_lines {
+                        context.buffer.lines(extra_lines);
+                    }
+                }, plugin.extra_class.unwrap_or(""));
             });
         }
         (PluginKind::ListValues { prop, values }, Modifier::Builtin { value, .. }) => {
-            generate_wrapper(context, |context| {
-                push_css_lines(
-                    prop,
-                    *values
-                        .get(value)
-                        .expect("key existence was checked in can_handle"),
-                        context,
-                );
+            generate_at_rules(context, |context| {
+                generate_class(context, |context| {
+                    push_css_lines(
+                        prop,
+                        *values
+                            .get(value)
+                            .expect("key existence was checked in can_handle"),
+                            context,
+                    );
 
-                if let Some(extra_lines) = plugin.extra_lines {
-                    context.buffer.lines(extra_lines);
-                }
+                    if let Some(extra_lines) = plugin.extra_lines {
+                        context.buffer.lines(extra_lines);
+                    }
+                }, plugin.extra_class.unwrap_or(""));
             });
+
         }
         (PluginKind::SamePropValues { prop, .. }, Modifier::Builtin { value, .. }) => {
-            generate_wrapper(context, |context| {
-                push_css_lines(prop, value, context);
+            generate_at_rules(context, |context| {
+                generate_class(context, |context| {
+                    push_css_lines(prop, value, context);
 
-                if let Some(extra_lines) = plugin.extra_lines {
-                    context.buffer.lines(extra_lines);
-                }
+                    if let Some(extra_lines) = plugin.extra_lines {
+                        context.buffer.lines(extra_lines);
+                    }
+                }, plugin.extra_class.unwrap_or(""));
             });
         }
         (
@@ -108,29 +140,31 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 value, is_negative, ..
             },
         ) => {
-            generate_wrapper(context, |context| {
-                let value = match *value {
-                    "none" => Cow::Borrowed("none"),
-                    "auto" => Cow::Borrowed("auto"),
-                    "full" => Cow::Borrowed("100%"),
-                    "screen" if *is_horizontal => Cow::Borrowed("100vw"),
-                    "screen" if !is_horizontal => Cow::Borrowed("100vh"),
-                    "min" => Cow::Borrowed("min-content"),
-                    "max" => Cow::Borrowed("max-content"),
-                    "fit" => Cow::Borrowed("fit-content"),
-                    "svw" if *is_horizontal => Cow::Borrowed("100svw"),
-                    "lvw" if *is_horizontal => Cow::Borrowed("100lvw"),
-                    "dvw" if *is_horizontal => Cow::Borrowed("100dvw"),
-                    "svh" if !is_horizontal => Cow::Borrowed("100svh"),
-                    "lvh" if !is_horizontal => Cow::Borrowed("100lvh"),
-                    "dvh" if !is_horizontal => Cow::Borrowed("100dvh"),
-                    _ => spacing::get(value, *is_negative).unwrap(),
-                };
-                push_css_lines(prop, &*value, context);
+            generate_at_rules(context, |context| {
+                generate_class(context, |context| {
+                    let value = match *value {
+                        "none" => Cow::Borrowed("none"),
+                        "auto" => Cow::Borrowed("auto"),
+                        "full" => Cow::Borrowed("100%"),
+                        "screen" if *is_horizontal => Cow::Borrowed("100vw"),
+                        "screen" if !is_horizontal => Cow::Borrowed("100vh"),
+                        "min" => Cow::Borrowed("min-content"),
+                        "max" => Cow::Borrowed("max-content"),
+                        "fit" => Cow::Borrowed("fit-content"),
+                        "svw" if *is_horizontal => Cow::Borrowed("100svw"),
+                        "lvw" if *is_horizontal => Cow::Borrowed("100lvw"),
+                        "dvw" if *is_horizontal => Cow::Borrowed("100dvw"),
+                        "svh" if !is_horizontal => Cow::Borrowed("100svh"),
+                        "lvh" if !is_horizontal => Cow::Borrowed("100lvh"),
+                        "dvh" if !is_horizontal => Cow::Borrowed("100dvh"),
+                        _ => spacing::get(value, *is_negative).unwrap(),
+                    };
+                    push_css_lines(prop, &*value, context);
 
-                if let Some(extra_lines) = plugin.extra_lines {
-                    context.buffer.lines(extra_lines);
-                }
+                    if let Some(extra_lines) = plugin.extra_lines {
+                        context.buffer.lines(extra_lines);
+                    }
+                }, plugin.extra_class.unwrap_or(""));
             });
         }
         (
@@ -139,23 +173,25 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 value, is_negative, ..
             },
         ) => {
-            generate_wrapper(context, |context| {
-                let value = if *value == "auto" {
-                    Cow::Borrowed("auto")
-                } else if *value == "full" {
-                    if *is_negative {
-                        Cow::Borrowed("-100%")
+            generate_at_rules(context, |context| {
+                generate_class(context, |context| {
+                    let value = if *value == "auto" {
+                        Cow::Borrowed("auto")
+                    } else if *value == "full" {
+                        if *is_negative {
+                            Cow::Borrowed("-100%")
+                        } else {
+                            Cow::Borrowed("100%")
+                        }
                     } else {
-                        Cow::Borrowed("100%")
-                    }
-                } else {
-                    spacing::get(value, *is_negative).unwrap()
-                };
-                push_css_lines(prop, &*value, context);
+                        spacing::get(value, *is_negative).unwrap()
+                    };
+                    push_css_lines_with_templating(prop, plugin, &*value, context);
 
-                if let Some(extra_lines) = plugin.extra_lines {
-                    context.buffer.lines(extra_lines);
-                }
+                    if let Some(extra_lines) = plugin.extra_lines {
+                        context.buffer.lines(extra_lines);
+                    }
+                }, plugin.extra_class.unwrap_or(""));
             });
         }
         (
@@ -164,14 +200,17 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 value, ..
             },
         ) => {
-            generate_wrapper(context, |context| {
-                let value = color::get(context.config, value).unwrap();
-                push_css_lines(prop, &*value, context);
+            generate_at_rules(context, |context| {
+                generate_class(context, |context| {
+                    let value = color::get(context.config, value).unwrap();
+                    push_css_lines(prop, &*value, context);
 
-                if let Some(extra_lines) = plugin.extra_lines {
-                    context.buffer.lines(extra_lines);
-                }
+                    if let Some(extra_lines) = plugin.extra_lines {
+                        context.buffer.lines(extra_lines);
+                    }
+                }, plugin.extra_class.unwrap_or(""));
             });
+
         }
         (
             PluginKind::AnyNumber { prop, divide_by, .. },
@@ -179,43 +218,53 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 value, is_negative
             },
         ) => {
-            generate_wrapper(context, |context| {
-                let value = if value.is_empty() { 1.0 } else { value.parse::<usize>().unwrap() as f32 / divide_by };
-                let coeff = if *is_negative { -1.0 } else { 1.0 };
-                let value = do_templating(plugin, Cow::Owned((coeff * value).to_string()));
-                push_css_lines(prop, &*value, context);
+            generate_at_rules(context, |context| {
+                generate_class(context, |context| {
+                    let value = if value.is_empty() { 1.0 } else { value.parse::<usize>().unwrap() as f32 / divide_by };
+                    let coeff = if *is_negative { -1.0 } else { 1.0 };
+                    let value = (value * coeff).to_string();
 
-                if let Some(extra_lines) = plugin.extra_lines {
-                    context.buffer.lines(extra_lines);
-                }
+                    push_css_lines_with_templating(prop, plugin, &*value, context);
+
+                    if let Some(extra_lines) = plugin.extra_lines {
+                        context.buffer.lines(extra_lines);
+                    }
+                }, plugin.extra_class.unwrap_or(""));
             });
+
         }
         (
-            PluginKind::Sizing { prop, .. } | PluginKind::Spacing { prop, .. } | PluginKind::Color { prop, .. } | PluginKind::OnlyArbitrary { prop, .. },
+            PluginKind::OnlyArbitrary { prop, .. },
             Modifier::Arbitrary { value, .. },
         ) => {
-            generate_wrapper(context, |context| {
-                push_css_lines(prop, &*do_templating(plugin, value.clone()), context);
+            generate_at_rules(context, |context| {
+                generate_class(context, |context| {
+                    push_css_lines_with_templating(prop, plugin, &*value, context);
 
-                if let Some(extra_lines) = plugin.extra_lines {
-                    context.buffer.lines(extra_lines);
-                }
+                    if let Some(extra_lines) = plugin.extra_lines {
+                        context.buffer.lines(extra_lines);
+                    }
+                }, plugin.extra_class.unwrap_or(""));
             });
+
         }
         (
             PluginKind::ArbitraryShadow { prop, color_replacement },
             Modifier::Arbitrary { value, .. },
         ) => {
-            generate_wrapper(context, |context| {
-                let mut shadow = shadow::ShadowList::parse(value).unwrap();
-                shadow.replace_all_colors(color_replacement);
+            generate_at_rules(context, |context| {
+                generate_class(context, |context| {
+                    let mut shadow = shadow::ShadowList::parse(value).unwrap();
+                    shadow.replace_all_colors(color_replacement);
 
-                push_css_lines(prop, &shadow.to_string(), context);
+                    push_css_lines(prop, &shadow.to_string(), context);
 
-                if let Some(extra_lines) = plugin.extra_lines {
-                    context.buffer.lines(extra_lines);
-                }
+                    if let Some(extra_lines) = plugin.extra_lines {
+                        context.buffer.lines(extra_lines);
+                    }
+                }, plugin.extra_class.unwrap_or(""));
             });
+
         }
         _ => unreachable!("Only plugins which can be handled are supposed to be handled. However {plugin:?} cannot handle {:?} but passed can_handle check. This is a bug in encre-css, please report it.", context.modifier),
     }
@@ -376,26 +425,6 @@ fn generate_class<T: FnOnce(&mut ContextHandle)>(
     }
 }
 
-/// Generate the complete CSS wrapper needed for a single rule.
-///
-/// This function is a combination of the [`generate_at_rules`] and [`generate_class`] functions.
-///
-/// The second argument, a closure, is called to generate the CSS content of the rule.
-///
-/// # Errors
-///
-/// Returns [`fmt::Error`] indicating whether writing to the buffer succeeded.
-///
-/// [`fmt::Error`]: std::fmt::Error
-fn generate_wrapper<T: FnOnce(&mut ContextHandle)>(
-    context: &mut ContextHandle,
-    rule_content_fn: T,
-) {
-    generate_at_rules(context, |context| {
-        generate_class(context, rule_content_fn, "");
-    });
-}
-
 fn resolve_selector<'a>(
     selector: &'a str,
     full_class: Option<&'a str>,
@@ -498,11 +527,6 @@ pub fn generate<'a>(sources: impl IntoIterator<Item = &'a str>, config: &Config)
             selector: &selector,
         };
 
-        // if selector.plugin.needs_wrapping() {
-        //     generate_wrapper(&mut context, |context| selector.plugin.handle(context));
-        // } else {
-        //     selector.plugin.handle(&mut context);
-        // }
         handle(selector.plugin, &mut context);
     }
 

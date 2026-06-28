@@ -15,6 +15,6 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::ArbitraryShadow {
-  prop: SingleProp("text-shadow"),
-  color_replacement: "var(--en-text-shadow-color, {})",
+    prop: SingleProp("text-shadow"),
+    color_replacement: "var(--en-text-shadow-color, {})",
 });

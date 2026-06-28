@@ -9,7 +9,9 @@ const fn builtin_plugin(prop: PropertyName) -> Plugin {
         has_empty: false,
         has_negative: true,
         divide_by: 1.0,
-    }).extra_lines(&[CSS_TRANSFORM]).template("{}deg")
+    })
+    .extra_lines(&[CSS_TRANSFORM])
+    .template("{}deg")
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
@@ -17,7 +19,8 @@ const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
         prop,
         hints: &[],
         matcher: Angle,
-    }).extra_lines(&[CSS_TRANSFORM])
+    })
+    .extra_lines(&[CSS_TRANSFORM])
 }
 
 pub(crate) const PLUGIN_X_1: Plugin = builtin_plugin(SingleProp("--en-skew-x"));

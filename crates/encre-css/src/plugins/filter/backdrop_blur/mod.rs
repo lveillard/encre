@@ -15,10 +15,13 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
         "3xl" => "blur(64px)",
         "none" => "blur(0)",
     },
-}).extra_lines(&CSS_BACKDROP_FILTER);
+})
+.extra_lines(&CSS_BACKDROP_FILTER);
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
     prop: SingleProp("--en-backdrop-blur"),
     hints: &[],
     matcher: Length,
-}).extra_lines(&CSS_BACKDROP_FILTER).template("blur({})");
+})
+.extra_lines(&CSS_BACKDROP_FILTER)
+.template("blur({})");

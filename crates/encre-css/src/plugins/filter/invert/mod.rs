@@ -8,4 +8,6 @@ pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::AnyNumber {
     has_empty: true,
     has_negative: false,
     divide_by: 100.0,
-}).extra_lines(&[CSS_FILTER]).template("invert({})");
+})
+.extra_lines(&[CSS_FILTER])
+.template("invert({})");

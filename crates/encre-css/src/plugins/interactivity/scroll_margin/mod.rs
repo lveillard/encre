@@ -29,7 +29,8 @@ pub(crate) const PLUGIN_Y_1: Plugin = builtin_plugin(SingleProp("scroll-margin-b
 pub(crate) const PLUGIN_Y_2: Plugin = arbitrary_plugin(SingleProp("scroll-margin-block"));
 
 pub(crate) const PLUGIN_START_1: Plugin = builtin_plugin(SingleProp("scroll-margin-inline-start"));
-pub(crate) const PLUGIN_START_2: Plugin = arbitrary_plugin(SingleProp("scroll-margin-inline-start"));
+pub(crate) const PLUGIN_START_2: Plugin =
+    arbitrary_plugin(SingleProp("scroll-margin-inline-start"));
 
 pub(crate) const PLUGIN_END_1: Plugin = builtin_plugin(SingleProp("scroll-margin-inline-end"));
 pub(crate) const PLUGIN_END_2: Plugin = arbitrary_plugin(SingleProp("scroll-margin-inline-end"));

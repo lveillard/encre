@@ -274,7 +274,9 @@ impl<'a> ShadowList<'a> {
         self.0.iter_mut().for_each(|shadow| match shadow {
             Shadow::Shorthand1 { ref mut color, .. }
             | Shadow::Shorthand2 { ref mut color, .. }
-            | Shadow::Full { ref mut color, .. } => *color = Cow::Owned(new_color.replace("{}", color)),
+            | Shadow::Full { ref mut color, .. } => {
+                *color = Cow::Owned(new_color.replace("{}", color))
+            }
             _ => (),
         });
     }

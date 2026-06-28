@@ -9,7 +9,8 @@ const fn builtin_plugin(prop: PropertyName) -> Plugin {
         has_empty: true,
         has_negative: false,
         divide_by: 1.0,
-    }).template("{}px")
+    })
+    .template("{}px")
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
