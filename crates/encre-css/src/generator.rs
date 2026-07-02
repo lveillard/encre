@@ -59,15 +59,18 @@ fn push_css_lines_with_templating(
     slash_value: Option<&str>,
     context: &mut ContextHandle,
 ) {
+    let transform_template = |template: &str| {
+        if let Some(slash_value) = slash_value {
+            template.replace("{}", &value).replace("{/}", slash_value)
+        } else {
+            template.replace("{}", &value)
+        }
+    };
+
     match prop {
         PropertyName::SingleProp(prop) => {
             let value = if let Some(template) = plugin.template {
-                Cow::Owned(
-                    template
-                        .replace("{}", &value)
-                        // TODO: use an if here instead of default empty value
-                        .replace("{/}", slash_value.unwrap_or("")),
-                )
+                Cow::Owned(transform_template(template))
             } else {
                 Cow::Borrowed(value)
             };
@@ -80,17 +83,11 @@ fn push_css_lines_with_templating(
                     // The length of plugin.template_multiple is asserted to be the
                     // same as the length of the list of property names at compile
                     // time in the method Plugin::template_multiple
-                    context.buffer.line(format_args!(
-                        "{prop}: {};",
-                        templates[i]
-                            .replace("{}", &value)
-                            .replace("{/}", slash_value.unwrap_or(""))
-                    ));
+                    let value = transform_template(templates[i]);
+                    context.buffer.line(format_args!("{prop}: {value};",));
                 }
             } else if let Some(template) = plugin.template {
-                let value = template
-                    .replace("{}", &value)
-                    .replace("{/}", slash_value.unwrap_or(""));
+                let value = transform_template(template);
                 for prop in *props {
                     context.buffer.line(format_args!("{prop}: {value};"));
                 }
@@ -103,9 +100,23 @@ fn push_css_lines_with_templating(
     }
 }
 
+fn add_extra_css(plugin: &Plugin, context: &mut ContextHandle, value: &str) {
+    if let Some(extra_css) = &plugin.extra_css {
+        let Some(css) = extra_css.get(value) else {
+            return;
+        };
+
+        if !css.is_empty() {
+            context.buffer.raw(css);
+        }
+    }
+}
+
 fn handle(plugin: &Plugin, context: &mut ContextHandle) {
     match (&plugin.kind, context.modifier) {
         (PluginKind::ListCases { cases }, Modifier::Builtin { value, .. }) => {
+            add_extra_css(plugin, context, value);
+
             generate_at_rules(context, |context| {
                 generate_class(
                     context,
@@ -133,9 +144,12 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
             } else {
                 (*value, plugin.extra_slash.as_ref().map(|e| e.1))
             };
+
+            add_extra_css(plugin, context, &*value);
             let value = *values
                 .get(&*value)
                 .expect("key existence was checked in can_handle");
+
             let value = if let Some((values, _)) = &plugin.extra_slash {
                 Cow::Owned(
                     value.replace(
@@ -188,11 +202,22 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 value, is_negative, ..
             },
         ) => {
+            let (value, template_value) = if plugin.extra_slash.is_some()
+                && let Some(index) = value.find('/')
+            {
+                let (before, after) = value.split_at(index);
+                (before, Some(&after[1..]))
+            } else {
+                (*value, plugin.extra_slash.as_ref().map(|e| e.1))
+            };
+
+            add_extra_css(plugin, context, &*value);
+
             generate_at_rules(context, |context| {
                 generate_class(
                     context,
                     |context| {
-                        let value = match *value {
+                        let value = match &*value {
                             "none" => Cow::Borrowed("none"),
                             "auto" => Cow::Borrowed("auto"),
                             "full" => Cow::Borrowed("100%"),
@@ -209,7 +234,13 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                             "dvh" if !is_horizontal => Cow::Borrowed("100dvh"),
                             _ => spacing::get(value, *is_negative).unwrap(),
                         };
-                        push_css_lines_with_templating(prop, plugin, &value, None, context);
+                        push_css_lines_with_templating(
+                            prop,
+                            plugin,
+                            &value,
+                            template_value,
+                            context,
+                        );
 
                         if let Some(extra_lines) = plugin.extra_lines {
                             context.buffer.lines(extra_lines);
@@ -225,13 +256,24 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 value, is_negative, ..
             },
         ) => {
+            let (value, template_value) = if plugin.extra_slash.is_some()
+                && let Some(index) = value.find('/')
+            {
+                let (before, after) = value.split_at(index);
+                (before, Some(&after[1..]))
+            } else {
+                (*value, plugin.extra_slash.as_ref().map(|e| e.1))
+            };
+
+            add_extra_css(plugin, context, &*value);
+
             generate_at_rules(context, |context| {
                 generate_class(
                     context,
                     |context| {
-                        let value = if *value == "auto" {
+                        let value = if &*value == "auto" {
                             Cow::Borrowed("auto")
-                        } else if *value == "full" {
+                        } else if &*value == "full" {
                             if *is_negative {
                                 Cow::Borrowed("-100%")
                             } else {
@@ -240,7 +282,13 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                         } else {
                             spacing::get(value, *is_negative).unwrap()
                         };
-                        push_css_lines_with_templating(prop, plugin, &*value, None, context);
+                        push_css_lines_with_templating(
+                            prop,
+                            plugin,
+                            &*value,
+                            template_value,
+                            context,
+                        );
 
                         if let Some(extra_lines) = plugin.extra_lines {
                             context.buffer.lines(extra_lines);
@@ -281,6 +329,8 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 (*value, plugin.extra_slash.as_ref().map(|e| e.1))
             };
 
+            add_extra_css(plugin, context, &*value);
+
             generate_at_rules(context, |context| {
                 generate_class(
                     context,
@@ -293,7 +343,13 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                         let coeff = if *is_negative { -1.0 } else { 1.0 };
                         let value = (value * coeff).to_string();
 
-                        push_css_lines_with_templating(prop, plugin, &*value, template_value, context);
+                        push_css_lines_with_templating(
+                            prop,
+                            plugin,
+                            &*value,
+                            template_value,
+                            context,
+                        );
 
                         if let Some(extra_lines) = plugin.extra_lines {
                             context.buffer.lines(extra_lines);

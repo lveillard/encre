@@ -320,12 +320,14 @@ pub enum PropertyName {
 // TODO: Rename OnlyArbitrary -> Arbitrary and rename PLUGIN_1/PLUGIN_2 -> PLUGIN_BUILTIN/PLUGIN_ARBITRARY
 // TODO: Rename Color/Sizing/Spacing -> AnyColor/AnySize/AnySpacing
 // TODO: Define prefix inside plugin + migrate has_ to the Plugin structure
-// TODO: add PluginArbitraryMatcher::* to the prelude
+// TODO: Add PluginArbitraryMatcher::* to the prelude
+// TODO: Rename extra_lines -> extra_rule_lines?
 
 #[derive(Debug, PartialEq)]
 pub struct Plugin {
     pub(crate) kind: PluginKind,
     pub(crate) extra_lines: Option<&'static [&'static str]>,
+    pub(crate) extra_css: Option<phf::Map<&'static str, &'static str>>,
     pub(crate) extra_class: Option<&'static str>,
     pub(crate) template: Option<&'static str>,
     pub(crate) template_multiple: Option<&'static [&'static str]>,
@@ -337,6 +339,7 @@ impl Plugin {
         Self {
             kind,
             extra_lines: None,
+            extra_css: None,
             extra_class: None,
             extra_slash: None,
             template: None,
@@ -349,17 +352,32 @@ impl Plugin {
         self
     }
 
+    pub const fn extra_css(mut self, extra_css: phf::Map<&'static str, &'static str>) -> Self {
+        self.extra_css = Some(extra_css);
+        self
+    }
+
     pub const fn extra_class(mut self, extra_class: &'static str) -> Self {
         self.extra_class = Some(extra_class);
         self
     }
 
-    pub const fn extra_slash(mut self, values: phf::Map<&'static str, &'static str>, default: &'static str) -> Self {
+    pub const fn extra_slash(
+        mut self,
+        values: phf::Map<&'static str, &'static str>,
+        default: &'static str,
+    ) -> Self {
         if !matches!(
             self.kind,
-            PluginKind::ListValues { .. } | PluginKind::AnyNumber { .. }
+            PluginKind::ListValues { .. }
+                | PluginKind::AnyNumber { .. }
+                | PluginKind::Sizing { .. }
+                | PluginKind::Spacing { .. }
+                | PluginKind::Color { .. }
         ) {
-            panic!("Plugin::extra_slash only works with PluginKind::ListValues or PluginKind::AnyNumber");
+            panic!(
+                "Plugin::extra_slash only works with PluginKind::ListValues or PluginKind::AnyNumber or PluginKind::{{Sizing, Spacing, Color}}"
+            );
         }
 
         self.extra_slash = Some((values, default));
@@ -375,7 +393,9 @@ impl Plugin {
                 | PluginKind::Sizing { .. }
                 | PluginKind::Color { .. }
         ) {
-            panic!("Plugin::template can only be used with PluginKind::OnlyArbitrary or PluginKind::AnyNumber or PluginKind::{{Spacing, Sizing, Color}}");
+            panic!(
+                "Plugin::template can only be used with PluginKind::OnlyArbitrary or PluginKind::AnyNumber or PluginKind::{{Spacing, Sizing, Color}}"
+            );
         }
 
         self.template = Some(template);
@@ -391,7 +411,9 @@ impl Plugin {
                 | PluginKind::Sizing { .. }
                 | PluginKind::Color { .. }
         ) {
-            panic!("Plugin::template_multiple can only be used with PluginKind::OnlyArbitrary or PluginKind::AnyNumber or PluginKind::{{Spacing, Sizing, Color}}");
+            panic!(
+                "Plugin::template_multiple can only be used with PluginKind::OnlyArbitrary or PluginKind::AnyNumber or PluginKind::{{Spacing, Sizing, Color}}"
+            );
         }
 
         if !matches!(
@@ -413,7 +435,9 @@ impl Plugin {
                 ..
             }
         ) {
-            panic!("Plugin::template can only be used with a MultipleProps property name. To define a template for a single property name, use Plugin::template");
+            panic!(
+                "Plugin::template can only be used with a MultipleProps property name. To define a template for a single property name, use Plugin::template"
+            );
         }
 
         if !matches!(
@@ -435,7 +459,9 @@ impl Plugin {
                 ..
             } if p.len() == templates.len()
         ) {
-            panic!("Plugin::template_multiple should have as many elements as the number of properties defined in MultipleProps. Each template will be applied for the corresponding property name in the order they are defined");
+            panic!(
+                "Plugin::template_multiple should have as many elements as the number of properties defined in MultipleProps. Each template will be applied for the corresponding property name in the order they are defined"
+            );
         }
 
         self.template_multiple = Some(templates);

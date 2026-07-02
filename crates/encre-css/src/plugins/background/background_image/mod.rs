@@ -105,7 +105,3 @@ pub(crate) const PLUGIN_CONIC_3: Plugin = Plugin::new(PluginKind::OnlyArbitrary 
     matcher: All,
 })
 .template("conic-gradient({})");
-
-// TODO: make sure Plugin::template is used with Plugin::extra_slash when using
-// AnyNumber at compile time
-// TODO: implement extra_slash for all kinds
