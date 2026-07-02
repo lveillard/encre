@@ -1,7 +1,6 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "flexbox")]
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("flex"),

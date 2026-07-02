@@ -1,7 +1,6 @@
 #![doc = include_str!("README.md")]
 #![doc(alias("background", "bg", "gradient"))]
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
 const INTERPOLATION_MODES_MAP: phf::Map<&'static str, &'static str> = phf_map! {
     "longer" => "oklch longer hue",

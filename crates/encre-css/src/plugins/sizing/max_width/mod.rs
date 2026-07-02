@@ -1,7 +1,6 @@
 #![doc = include_str!("README.md")]
 #![doc(alias("sizing", "size"))]
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Spacing {
     prop: SingleProp("max-width"),

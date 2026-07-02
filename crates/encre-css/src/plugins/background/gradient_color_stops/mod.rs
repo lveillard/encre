@@ -1,7 +1,6 @@
 #![doc = include_str!("README.md")]
 #![doc(alias("background", "bg", "gradient"))]
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_FROM_1: Plugin = Plugin::new(PluginKind::Color {
     prop: SingleProp("--en-gradient-from"),

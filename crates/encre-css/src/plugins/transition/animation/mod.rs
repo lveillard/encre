@@ -1,7 +1,6 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "transition")]
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
 const SPIN_ANIMATION: &str = "@-webkit-keyframes spin {
   to {

@@ -246,8 +246,8 @@ pub mod prelude {
     pub mod build_plugin {
         pub use crate::{
             plugins::{
-                Plugin, PluginArbitraryHint, PluginArbitraryMatcher, PluginKind, PropertyName,
-                PropertyName::*,
+                Plugin, PluginArbitraryHint, PluginArbitraryMatcher, PluginArbitraryMatcher::*,
+                PluginKind, PropertyName, PropertyName::*,
             },
             selector::Modifier,
             utils::{buffer::Buffer, color, shadow, spacing, value_matchers::*},

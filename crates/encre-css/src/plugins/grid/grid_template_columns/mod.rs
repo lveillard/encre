@@ -1,7 +1,6 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "grid")]
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
     prop: SingleProp("grid-template-columns"),

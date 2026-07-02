@@ -320,7 +320,6 @@ pub enum PropertyName {
 // TODO: Rename OnlyArbitrary -> Arbitrary and rename PLUGIN_1/PLUGIN_2 -> PLUGIN_BUILTIN/PLUGIN_ARBITRARY
 // TODO: Rename Color/Sizing/Spacing -> AnyColor/AnySize/AnySpacing
 // TODO: Define prefix inside plugin + migrate has_ to the Plugin structure
-// TODO: Add PluginArbitraryMatcher::* to the prelude
 // TODO: Rename extra_lines -> extra_rule_lines?
 // TODO: Think about what items need to be public and/or reexported for Functional kind
 

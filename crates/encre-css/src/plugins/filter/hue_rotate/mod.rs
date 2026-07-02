@@ -2,7 +2,6 @@
 #![doc(alias = "filter")]
 use super::CSS_FILTER;
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
     prop: SingleProp("--en-hue-rotate"),

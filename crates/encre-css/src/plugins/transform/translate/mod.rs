@@ -1,7 +1,6 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "transform")]
 use crate::{plugins::transform::CSS_TRANSFORM, prelude::build_plugin::*};
-use PluginArbitraryMatcher::*;
 
 const fn builtin_plugin(prop: PropertyName) -> Plugin {
     Plugin::new(PluginKind::Spacing {

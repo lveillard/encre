@@ -1,7 +1,6 @@
 #![doc = include_str!("README.md")]
 #![doc(alias("spacing", "space"))]
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
 const fn builtin_plugin(prop: PropertyName) -> Plugin {
     Plugin::new(PluginKind::Spacing {

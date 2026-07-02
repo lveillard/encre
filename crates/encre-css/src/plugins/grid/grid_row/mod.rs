@@ -1,7 +1,6 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "grid")]
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
 const fn builtin_plugin(prop: PropertyName, template: &'static str) -> Plugin {
     Plugin::new(PluginKind::AnyNumber {
