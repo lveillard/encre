@@ -262,6 +262,9 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
         (PluginKind::ArbitraryShadow { .. }, Modifier::Arbitrary { hint, value, .. }) => {
             *hint == "shadow" || (hint.is_empty() && is_matching_shadow(value))
         }
+        (PluginKind::Functional { can_handle: plugin_can_handle, .. }, _) => {
+            plugin_can_handle(context)
+        }
         _ => false,
     }
 }

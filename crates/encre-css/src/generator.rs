@@ -13,7 +13,7 @@ use std::{borrow::Cow, collections::BTreeSet};
 ///
 /// [`Plugin::can_handle`]: crate::plugins::Plugin::can_handle
 #[derive(Debug)]
-pub(crate) struct ContextCanHandle<'a, 'b, 'c> {
+pub struct ContextCanHandle<'a, 'b, 'c> {
     /// The generator's configuration.
     pub config: &'a Config,
 
@@ -25,7 +25,7 @@ pub(crate) struct ContextCanHandle<'a, 'b, 'c> {
 ///
 /// [`Plugin::handle`]: crate::plugins::Plugin::handle
 #[derive(Debug)]
-pub(crate) struct ContextHandle<'a, 'b, 'c, 'd, 'e> {
+pub struct ContextHandle<'a, 'b, 'c, 'd, 'e> {
     /// The generator's configuration.
     pub config: &'a Config,
 
@@ -398,6 +398,9 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 );
             });
         }
+        (PluginKind::Functional { handle, .. }, _) => {
+            handle(context);
+        }
         _ => unreachable!(
             "Only plugins which can be handled are supposed to be handled. However {plugin:?} cannot handle {:?} but passed can_handle check. This is a bug in encre-css, please report it.",
             context.modifier
@@ -416,7 +419,7 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
 /// Returns [`fmt::Error`] indicating whether writing to the buffer succeeded.
 ///
 /// [`fmt::Error`]: std::fmt::Error
-fn generate_at_rules<T: FnOnce(&mut ContextHandle)>(
+pub fn generate_at_rules<T: FnOnce(&mut ContextHandle)>(
     context: &mut ContextHandle,
     rule_content_fn: T,
 ) {
@@ -460,7 +463,7 @@ fn generate_at_rules<T: FnOnce(&mut ContextHandle)>(
 ///
 /// [`fmt::Error`]: std::fmt::Error
 #[allow(clippy::too_many_lines)]
-fn generate_class<T: FnOnce(&mut ContextHandle)>(
+pub fn generate_class<T: FnOnce(&mut ContextHandle)>(
     context: &mut ContextHandle,
     rule_content_fn: T,
     custom_after_class: &str,

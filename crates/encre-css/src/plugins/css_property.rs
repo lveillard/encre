@@ -1,30 +1,26 @@
 //! Define a plugin used to generate CSS properties quickly.
 //!
 //! Used for arbitrary CSS properties like `[mask-type:luminance]`.
-use crate::prelude::build_plugin::*;
+use crate::{generator::{generate_at_rules, generate_class}, prelude::build_plugin::*};
 
-// FIXME
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases { cases: phf_map! {} });
-
-// #[derive(Debug)]
-// pub(crate) struct CssPropertyPlugin;
-//
-// impl Plugin for CssPropertyPlugin {
-//     fn can_handle(&self, _context: ContextCanHandle) -> bool {
-//         // NOTE: No need to implement it because we are manually calling the `handle` method in `selector.rs`
-//         unreachable!();
-//     }
-//
-//     fn handle(&self, context: &mut ContextHandle) {
-//         match context.modifier {
-//             Modifier::Builtin { .. } => unreachable!(),
-//             Modifier::Arbitrary { value, .. } => {
-//                 for line in value.lines() {
-//                     if let Some((prop, value)) = line.split_once(':') {
-//                         context.buffer.line(format_args!("{prop}: {value});"));
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Functional {
+    can_handle: |_| true,
+    handle: |context| match context.modifier {
+        Modifier::Builtin { .. } => unreachable!(),
+        Modifier::Arbitrary { value, .. } => {
+            generate_at_rules(context, |context| {
+                generate_class(
+                    context,
+                    |context| {
+                        for line in value.lines() {
+                            if let Some((prop, value)) = line.split_once(':') {
+                                context.buffer.line(format_args!("{prop}: {value};"));
+                            }
+                        }
+                    },
+                    "",
+                );
+            });
+        }
+    },
+});

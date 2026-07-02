@@ -35,7 +35,7 @@
 
 use std::str::FromStr;
 
-use crate::plugins::PropertyName::MultipleProps;
+use crate::{generator::{ContextCanHandle, ContextHandle}, plugins::PropertyName::MultipleProps};
 
 pub mod accessibility;
 pub mod background;
@@ -322,6 +322,7 @@ pub enum PropertyName {
 // TODO: Define prefix inside plugin + migrate has_ to the Plugin structure
 // TODO: Add PluginArbitraryMatcher::* to the prelude
 // TODO: Rename extra_lines -> extra_rule_lines?
+// TODO: Think about what items need to be public and/or reexported for Functional kind
 
 #[derive(Debug, PartialEq)]
 pub struct Plugin {
@@ -512,4 +513,9 @@ pub enum PluginKind {
         prop: PropertyName,
         color_replacement: &'static str,
     },
+
+    Functional {
+        can_handle: fn(&ContextCanHandle) -> bool,
+        handle: fn(&mut ContextHandle),
+    }
 }

@@ -823,7 +823,7 @@ pub const BUILTIN_VARIANTS: phf::OrderedMap<&'static str, Variant> = {
 /// Sorted following [Tailwind's order](https://github.com/tailwindlabs/tailwindcss/blob/master/src/corePlugins.js).
 #[rustfmt::skip]
 pub const BUILTIN_PLUGINS: &[(Cow<'static, str>, &'static Plugin)] = &[
-    // (Cow::Borrowed("container"), &layout::container::PluginDefinition),
+    (Cow::Borrowed("container"), &layout::container::PLUGIN),
     (Cow::Borrowed(""), &accessibility::screen_reader::PLUGIN),
     (Cow::Borrowed("pointer-events"), &interactivity::pointer_events::PLUGIN),
     (Cow::Borrowed(""), &layout::visibility::PLUGIN),

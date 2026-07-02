@@ -7,7 +7,7 @@ pub mod break_before;
 pub mod break_inside;
 pub mod clear;
 pub mod columns;
-// pub mod container;
+pub mod container;
 pub mod at_container;
 pub mod display;
 pub mod floats;
