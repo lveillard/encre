@@ -8,7 +8,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Sizing {
     has_none: true,
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("max-height"),
     hints: &[],
     matcher: Or(&Length, &Percentage),

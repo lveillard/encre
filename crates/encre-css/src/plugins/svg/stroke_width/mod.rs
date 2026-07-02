@@ -10,7 +10,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
 })
 .template("{}px");
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("stroke-width"),
     hints: &[PluginArbitraryHint::Length, PluginArbitraryHint::Percentage],
     matcher: Or(&Length, &Percentage),

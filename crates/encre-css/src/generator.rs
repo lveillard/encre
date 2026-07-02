@@ -359,7 +359,7 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 );
             });
         }
-        (PluginKind::OnlyArbitrary { prop, .. }, Modifier::Arbitrary { value, .. }) => {
+        (PluginKind::Arbitrary { prop, .. }, Modifier::Arbitrary { value, .. }) => {
             generate_at_rules(context, |context| {
                 generate_class(
                     context,

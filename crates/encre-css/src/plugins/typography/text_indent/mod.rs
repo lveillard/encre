@@ -8,7 +8,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Spacing {
     has_full: false,
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("text-indent"),
     hints: &[],
     matcher: Length,

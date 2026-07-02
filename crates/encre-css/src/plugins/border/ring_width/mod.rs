@@ -11,7 +11,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
     "box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow), var(--en-shadow, 0 0 #0000);",
 ]).template("0 0 0 calc({}px + var(--en-ring-offset-width)) var(--en-ring-color)");
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("--en-ring-shadow"),
     hints: &[PluginArbitraryHint::Length],
     matcher: Length,
@@ -28,7 +28,7 @@ pub(crate) const PLUGIN_INSET_1: Plugin = Plugin::new(PluginKind::AnyNumber {
     "box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow, 0 0 #0000);"
 ]).template("inset 0 0 0 calc({}px + var(--en-ring-offset-width)) var(--en-ring-color)");
 
-pub(crate) const PLUGIN_INSET_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_INSET_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("--en-inset-ring-shadow"),
     hints: &[PluginArbitraryHint::Length],
     matcher: Length,

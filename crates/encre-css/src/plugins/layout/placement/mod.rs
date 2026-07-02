@@ -11,7 +11,7 @@ const fn builtin_plugin(prop: PropertyName) -> Plugin {
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
-    Plugin::new(PluginKind::OnlyArbitrary {
+    Plugin::new(PluginKind::Arbitrary {
         prop,
         hints: &[],
         matcher: OrMultiple(&[&Length, &Percentage, &Custom("auto")]),

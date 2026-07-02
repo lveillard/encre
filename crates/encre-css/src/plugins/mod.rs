@@ -317,7 +317,7 @@ pub enum PropertyName {
 }
 
 // TODO: Make a StaticPlugin/DynamicPlugin (with Strings and Vecs for ser/de)
-// TODO: Rename OnlyArbitrary -> Arbitrary and rename PLUGIN_1/PLUGIN_2 -> PLUGIN_BUILTIN/PLUGIN_ARBITRARY
+// TODO: Rename PLUGIN_1/PLUGIN_2 -> PLUGIN_BUILTIN/PLUGIN_ARBITRARY
 // TODO: Rename Color/Sizing/Spacing -> AnyColor/AnySize/AnySpacing
 // TODO: Define prefix inside plugin + migrate has_ to the Plugin structure
 // TODO: Rename extra_lines -> extra_rule_lines?
@@ -387,14 +387,14 @@ impl Plugin {
     pub const fn template(mut self, template: &'static str) -> Self {
         if !matches!(
             self.kind,
-            PluginKind::OnlyArbitrary { .. }
+            PluginKind::Arbitrary { .. }
                 | PluginKind::AnyNumber { .. }
                 | PluginKind::Spacing { .. }
                 | PluginKind::Sizing { .. }
                 | PluginKind::Color { .. }
         ) {
             panic!(
-                "Plugin::template can only be used with PluginKind::OnlyArbitrary or PluginKind::AnyNumber or PluginKind::{{Spacing, Sizing, Color}}"
+                "Plugin::template can only be used with PluginKind::Arbitrary or PluginKind::AnyNumber or PluginKind::{{Spacing, Sizing, Color}}"
             );
         }
 
@@ -405,20 +405,20 @@ impl Plugin {
     pub const fn template_multiple(mut self, templates: &'static [&'static str]) -> Self {
         if !matches!(
             self.kind,
-            PluginKind::OnlyArbitrary { .. }
+            PluginKind::Arbitrary { .. }
                 | PluginKind::AnyNumber { .. }
                 | PluginKind::Spacing { .. }
                 | PluginKind::Sizing { .. }
                 | PluginKind::Color { .. }
         ) {
             panic!(
-                "Plugin::template_multiple can only be used with PluginKind::OnlyArbitrary or PluginKind::AnyNumber or PluginKind::{{Spacing, Sizing, Color}}"
+                "Plugin::template_multiple can only be used with PluginKind::Arbitrary or PluginKind::AnyNumber or PluginKind::{{Spacing, Sizing, Color}}"
             );
         }
 
         if !matches!(
             self.kind,
-            PluginKind::OnlyArbitrary {
+            PluginKind::Arbitrary {
                 prop: MultipleProps(..),
                 ..
             } | PluginKind::AnyNumber {
@@ -442,7 +442,7 @@ impl Plugin {
 
         if !matches!(
             self.kind,
-            PluginKind::OnlyArbitrary {
+            PluginKind::Arbitrary {
                 prop: MultipleProps(p),
                 ..
             } | PluginKind::AnyNumber {
@@ -503,7 +503,7 @@ pub enum PluginKind {
         divide_by: f32,
     },
 
-    OnlyArbitrary {
+    Arbitrary {
         prop: PropertyName,
         hints: &'static [PluginArbitraryHint],
         matcher: PluginArbitraryMatcher,

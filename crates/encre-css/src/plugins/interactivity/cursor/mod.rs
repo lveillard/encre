@@ -44,7 +44,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::SamePropValues {
     ],
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("cursor"),
     hints: &[],
     matcher: All,

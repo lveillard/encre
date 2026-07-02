@@ -7,7 +7,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::SamePropValues {
     values: &["disc", "decimal", "none"],
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("list-style-type"),
     hints: &[],
     matcher: All,

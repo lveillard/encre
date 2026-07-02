@@ -17,7 +17,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::SamePropValues {
     values: &["auto"],
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("grid-column"),
     hints: &[],
     matcher: All,

@@ -7,7 +7,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::SamePropValues {
     values: &["auto", "cover", "contain"],
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("background-size"),
     hints: &[PluginArbitraryHint::Length, PluginArbitraryHint::Percentage],
     matcher: CommaSeparated(&OrMultiple(&[

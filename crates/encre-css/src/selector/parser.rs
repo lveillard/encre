@@ -252,7 +252,7 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
                     || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative)))
         }
         (
-            PluginKind::OnlyArbitrary { matcher, hints, .. },
+            PluginKind::Arbitrary { matcher, hints, .. },
             Modifier::Arbitrary { hint, value, .. },
         ) => {
             // TODO: handle prefix.is_empty()

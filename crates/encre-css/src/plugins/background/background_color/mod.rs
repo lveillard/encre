@@ -6,7 +6,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Color {
     prop: SingleProp("background-color"),
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("background-color"),
     hints: &[PluginArbitraryHint::Color],
     matcher: Color,

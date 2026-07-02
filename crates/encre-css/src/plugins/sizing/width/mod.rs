@@ -8,7 +8,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Sizing {
     has_none: false,
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("width"),
     hints: &[],
     matcher: Or(&Length, &Percentage),

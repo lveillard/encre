@@ -28,7 +28,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     },
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("background-image"),
     hints: &[PluginArbitraryHint::Url, PluginArbitraryHint::Image],
     matcher: Image,
@@ -59,7 +59,7 @@ pub(crate) const PLUGIN_LINEAR_2: Plugin = Plugin::new(PluginKind::AnyNumber {
 .template("linear-gradient({}deg in {/}, var(--en-gradient-stops))")
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
-pub(crate) const PLUGIN_LINEAR_3: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_LINEAR_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("background-image"),
     hints: &[],
     matcher: All,
@@ -74,7 +74,7 @@ pub(crate) const PLUGIN_RADIAL_1: Plugin = Plugin::new(PluginKind::ListValues {
 })
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
-pub(crate) const PLUGIN_RADIAL_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_RADIAL_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("background-image"),
     hints: &[],
     matcher: All,
@@ -98,7 +98,7 @@ pub(crate) const PLUGIN_CONIC_2: Plugin = Plugin::new(PluginKind::AnyNumber {
 .template("conic-gradient(from {}deg in {/}, var(--en-gradient-stops))")
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
-pub(crate) const PLUGIN_CONIC_3: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_CONIC_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("background-image"),
     hints: &[],
     matcher: All,

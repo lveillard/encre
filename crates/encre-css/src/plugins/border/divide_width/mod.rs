@@ -20,7 +20,7 @@ pub(crate) const PLUGIN_X_2: Plugin = Plugin::new(PluginKind::AnyNumber {
     "--en-divide-x-reverse: 0;"
 ]).extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-pub(crate) const PLUGIN_X_3: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_X_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: MultipleProps(&["border-inline-start-width", "border-inline-end-width"]),
     hints: &[PluginArbitraryHint::Length],
     matcher: Length,
@@ -49,7 +49,7 @@ pub(crate) const PLUGIN_Y_2: Plugin = Plugin::new(PluginKind::AnyNumber {
     "--en-divide-y-reverse: 0;"
 ]).extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-pub(crate) const PLUGIN_Y_3: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_Y_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: MultipleProps(&["border-block-start-width", "border-block-end-width"]),
     hints: &[PluginArbitraryHint::Length],
     matcher: Length,

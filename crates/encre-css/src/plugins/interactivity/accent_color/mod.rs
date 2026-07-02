@@ -6,7 +6,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Color {
     prop: SingleProp("accent-color"),
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::OnlyArbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("accent-color"),
     hints: &[PluginArbitraryHint::Color],
     matcher: Color,
