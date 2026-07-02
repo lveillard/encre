@@ -2,12 +2,12 @@
 pub mod background_attachment;
 pub mod background_clip;
 pub mod background_color;
-// pub mod background_image;
+pub mod background_image;
 pub mod background_origin;
 pub mod background_position;
 pub mod background_repeat;
 pub mod background_size;
-// pub mod gradient_color_stops;
+pub mod gradient_color_stops;
 
 #[cfg(test)]
 mod tests {
@@ -120,6 +120,12 @@ mod tests {
 }"
         );
         assert_eq!(
+            generate(["bg-linear-123/hsl"], &base_config()),
+            r".bg-linear-123\/hsl {
+  background-image: linear-gradient(123deg in hsl, var(--en-gradient-stops));
+}"
+        );
+        assert_eq!(
             generate(["bg-linear-to-b/decreasing"], &base_config()),
             r".bg-linear-to-b\/decreasing {
   background-image: linear-gradient(to bottom in oklch decreasing hue, var(--en-gradient-stops));
@@ -184,6 +190,13 @@ mod tests {
   background-image: conic-gradient(from -180deg in oklab, var(--en-gradient-stops));
 }"
         );
+        assert_eq!(
+            generate(["bg-none"], &base_config()),
+            ".bg-none {
+  background-image: none;
+}"
+        );
+        assert!(generate(["bg-none/decreasing"], &base_config()).is_empty(),);
     }
 
     #[test]
@@ -204,6 +217,18 @@ mod tests {
             generate(["bg-[purple]"], &base_config()),
             r".bg-\[purple\] {
   background-color: purple;
+}"
+        );
+    }
+
+    #[test]
+    fn gradient_color_stops() {
+        // TODO: improve test
+        assert_eq!(
+            generate(["from-red-200"], &base_config()),
+            r".from-red-200 {
+  --en-gradient-from: oklch(88.5% .062 18.334);
+  --en-gradient-stops: var(--en-gradient-from), var(--en-gradient-to, transparent);
 }"
         );
     }

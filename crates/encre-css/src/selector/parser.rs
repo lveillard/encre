@@ -1,10 +1,10 @@
 use super::{Modifier, Selector, Variant};
 use crate::{
-    config::{Config, BUILTIN_PLUGINS, BUILTIN_VARIANTS},
+    config::{BUILTIN_PLUGINS, BUILTIN_VARIANTS, Config},
     error::{ParseError, ParseErrorKind},
     generator::ContextCanHandle,
     plugins::{
-        css_property::PLUGIN, Plugin, PluginArbitraryHint, PluginArbitraryMatcher, PluginKind,
+        Plugin, PluginArbitraryHint, PluginArbitraryMatcher, PluginKind, css_property::PLUGIN,
     },
     utils::{color, spacing, split_ignore_arbitrary, value_matchers::*},
 };
@@ -182,7 +182,19 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
             cases.contains_key(value)
         }
         (PluginKind::ListValues { values, .. }, Modifier::Builtin { value, .. }) => {
-            values.contains_key(value)
+            let (value, template_value) = if plugin.extra_slash.is_some()
+                && let Some(index) = value.find('/')
+            {
+                let (before, after) = value.split_at(index);
+                (before, Some(&after[1..]))
+            } else {
+                (*value, plugin.extra_slash.as_ref().map(|e| e.1))
+            };
+            plugin
+                .extra_slash
+                .as_ref()
+                .is_none_or(|extra_slash| extra_slash.0.contains_key(template_value.unwrap()))
+                && values.contains_key(value)
         }
         (
             PluginKind::Sizing {
@@ -224,8 +236,20 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
                 value, is_negative, ..
             },
         ) => {
-            (*has_empty && value.is_empty())
-                || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative))
+            let (value, template_value) = if plugin.extra_slash.is_some()
+                && let Some(index) = value.find('/')
+            {
+                let (before, after) = value.split_at(index);
+                (before, Some(&after[1..]))
+            } else {
+                (*value, plugin.extra_slash.as_ref().map(|e| e.1))
+            };
+            plugin
+                .extra_slash
+                .as_ref()
+                .is_none_or(|extra_slash| extra_slash.0.contains_key(template_value.unwrap()))
+                && ((*has_empty && value.is_empty())
+                    || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative)))
         }
         (
             PluginKind::OnlyArbitrary { matcher, hints, .. },
