@@ -14,8 +14,6 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("--en-hue-rotate"),
-    hints: &[],
-    matcher: Angle,
 })
 .extra_lines(&[CSS_FILTER])
 .template("hue-rotate({})");

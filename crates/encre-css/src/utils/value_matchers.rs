@@ -348,11 +348,10 @@ pub fn is_matching_color(value: &str) -> bool {
 /// assert!(is_matching_length("300px"));
 /// ```
 pub fn is_matching_length(value: &str) -> bool {
-    value.split(' ').all(|v| {
-        v == "0"
-            || LENGTH_UNITS.iter().any(|u| v.ends_with(u))
-            || is_matching_computational_css_function(value)
-    }) || is_matching_base(value)
+    value == "0"
+        || LENGTH_UNITS.iter().any(|u| value.ends_with(u))
+        || is_matching_computational_css_function(value)
+        || is_matching_base(value)
 }
 
 /// Returns whether the CSS value has the [`<number>`](https://developer.mozilla.org/en-US/docs/Web/CSS/number) type.
@@ -420,9 +419,9 @@ pub fn is_matching_gradient(value: &str) -> bool {
 /// assert!(is_matching_position("42%"));
 /// ```
 pub fn is_matching_position(value: &str) -> bool {
-    value
-        .split(' ')
-        .all(|v| VALID_POSITIONS.contains(&v) || is_matching_length(v) || is_matching_percentage(v))
+    VALID_POSITIONS.contains(&value)
+        || is_matching_length(value)
+        || is_matching_percentage(value)
         || is_matching_base(value)
 }
 
@@ -511,7 +510,9 @@ mod tests {
     #[test]
     fn is_matching_shadow_with_functions_test() {
         assert!(is_matching_shadow("10px 10px min(1px,2px) 10px rgb(1,1,1)"));
-        assert!(is_matching_shadow("inset 0 -3em 3em rgba(0,0,0,0.1),0 0 0 2px rgb(255,255,255),0.3em 0.3em 1em rgba(0,0,0,0.3)"));
+        assert!(is_matching_shadow(
+            "inset 0 -3em 3em rgba(0,0,0,0.1),0 0 0 2px rgb(255,255,255),0.3em 0.3em 1em rgba(0,0,0,0.3)"
+        ));
         assert!(is_matching_shadow(
             "var(--a, 0 0 1px rgb(0, 0, 0)), 0 0 1px rgb(0, 0, 0)"
         ));

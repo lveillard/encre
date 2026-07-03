@@ -10,6 +10,4 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Sizing {
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("min-height"),
-    hints: &[],
-    matcher: Or(&Length, &Percentage),
 });

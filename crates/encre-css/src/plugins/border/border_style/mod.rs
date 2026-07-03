@@ -1,6 +1,7 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::SamePropValues {
     prop: SingleProp("border-style"),
@@ -12,6 +13,6 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::SamePropValues {
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("border-style"),
-    hints: &[],
-    matcher: SpaceSeparated(&LineStyle),
-});
+})
+.hints(&[])
+.matcher(SpaceSeparated(&LineStyle));

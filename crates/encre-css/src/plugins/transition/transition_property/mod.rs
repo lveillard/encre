@@ -40,6 +40,4 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListCases {
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("transition-property"),
-    hints: &[],
-    matcher: All,
 });

@@ -18,8 +18,6 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("--en-drop-shadow"),
-    hints: &[],
-    matcher: Shadow,
 })
 .extra_lines(&[CSS_FILTER])
 .template("drop-shadow({})");

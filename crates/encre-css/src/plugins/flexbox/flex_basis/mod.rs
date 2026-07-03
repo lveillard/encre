@@ -10,6 +10,4 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Spacing {
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("flex-basis"),
-    hints: &[],
-    matcher: Length,
 });

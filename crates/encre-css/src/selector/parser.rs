@@ -251,20 +251,27 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
                 && ((*has_empty && value.is_empty())
                     || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative)))
         }
-        (
-            PluginKind::Arbitrary { matcher, hints, .. },
-            Modifier::Arbitrary { hint, value, .. },
-        ) => {
+        (PluginKind::Arbitrary { .. }, Modifier::Arbitrary { hint, value, .. }) => {
             // TODO: handle prefix.is_empty()
-            PluginArbitraryHint::from_str(hint).is_ok_and(|h| hints.contains(&h))
-                || (hint.is_empty() && is_arbitrary_matching(matcher, value))
+            PluginArbitraryHint::from_str(hint).is_ok_and(|h| {
+                plugin
+                    .arbitrary_hints
+                    .is_some_and(|hints| hints.contains(&h))
+            }) || (hint.is_empty()
+                && plugin
+                    .arbitrary_matcher
+                    .is_none_or(|matcher| is_arbitrary_matching(&matcher, value)))
         }
         (PluginKind::ArbitraryShadow { .. }, Modifier::Arbitrary { hint, value, .. }) => {
             *hint == "shadow" || (hint.is_empty() && is_matching_shadow(value))
         }
-        (PluginKind::Functional { can_handle: plugin_can_handle, .. }, _) => {
-            plugin_can_handle(context)
-        }
+        (
+            PluginKind::Functional {
+                can_handle: plugin_can_handle,
+                ..
+            },
+            _,
+        ) => plugin_can_handle(context),
         _ => false,
     }
 }

@@ -19,6 +19,4 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("transform-origin"),
-    hints: &[],
-    matcher: Position,
 });

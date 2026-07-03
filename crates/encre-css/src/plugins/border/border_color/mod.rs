@@ -1,17 +1,16 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
 const fn builtin_plugin(prop: PropertyName) -> Plugin {
     Plugin::new(PluginKind::Color { prop })
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
-    Plugin::new(PluginKind::Arbitrary {
-        prop,
-        hints: &[PluginArbitraryHint::Color],
-        matcher: Color,
-    })
+    Plugin::new(PluginKind::Arbitrary { prop })
+        .hints(&[PluginArbitraryHint::Color])
+        .matcher(Color)
 }
 
 pub(crate) const PLUGIN_1: Plugin = builtin_plugin(SingleProp("border-color"));

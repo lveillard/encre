@@ -1,6 +1,7 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
 const fn builtin_plugin(prop: PropertyName) -> Plugin {
     Plugin::new(PluginKind::AnyNumber {
@@ -13,11 +14,9 @@ const fn builtin_plugin(prop: PropertyName) -> Plugin {
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
-    Plugin::new(PluginKind::Arbitrary {
-        prop,
-        hints: &[PluginArbitraryHint::Length, PluginArbitraryHint::LineWidth],
-        matcher: Or(&Length, &LineWidth),
-    })
+    Plugin::new(PluginKind::Arbitrary { prop })
+        .hints(&[PluginArbitraryHint::Length, PluginArbitraryHint::LineWidth])
+        .matcher(SpaceSeparated(&Or(&Length, &LineWidth)))
 }
 
 pub(crate) const PLUGIN_1: Plugin = builtin_plugin(SingleProp("border-width"));

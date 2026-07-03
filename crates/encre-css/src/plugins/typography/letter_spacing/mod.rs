@@ -16,6 +16,4 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("letter-spacing"),
-    hints: &[],
-    matcher: Or(&Custom("nprmal"), &Length),
 });

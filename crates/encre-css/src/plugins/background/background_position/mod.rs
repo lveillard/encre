@@ -1,6 +1,7 @@
 #![doc = include_str!("README.md")]
 #![doc(alias("background", "bg"))]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-position"),
@@ -19,6 +20,6 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("background-position"),
-    hints: &[PluginArbitraryHint::Position],
-    matcher: CommaSeparated(&Position),
-});
+})
+.hints(&[PluginArbitraryHint::Position])
+.matcher(CommaSeparated(&SpaceSeparated(&Position)));

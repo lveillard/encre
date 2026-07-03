@@ -1,6 +1,7 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "svg")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
     prop: SingleProp("stroke-width"),
@@ -12,6 +13,11 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("stroke-width"),
-    hints: &[PluginArbitraryHint::Length, PluginArbitraryHint::Percentage],
-    matcher: Or(&Length, &Percentage),
-});
+})
+.hints(&[PluginArbitraryHint::Length, PluginArbitraryHint::Percentage])
+.matcher(CommaSeparated(&OrMultiple(&[
+    &Length,
+    &Percentage,
+    &LineWidth,
+    &Number,
+])));

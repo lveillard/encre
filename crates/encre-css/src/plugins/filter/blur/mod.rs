@@ -20,8 +20,6 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("--en-blur"),
-    hints: &[],
-    matcher: Length,
 })
 .extra_lines(&[CSS_FILTER])
 .template("blur({})");

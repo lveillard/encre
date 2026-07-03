@@ -22,6 +22,4 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Spacing {
 
 pub(crate) const PLUGIN_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("line-height"),
-    hints: &[],
-    matcher: OrMultiple(&[&Custom("normal"), &Number, &Length, &Percentage]),
 });

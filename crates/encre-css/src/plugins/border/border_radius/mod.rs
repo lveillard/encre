@@ -1,6 +1,7 @@
 #![doc = include_str!("README.md")]
 #![doc(alias("border", "rounded"))]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
 const fn builtin_plugin(prop: PropertyName) -> Plugin {
     Plugin::new(PluginKind::ListValues {
@@ -20,11 +21,9 @@ const fn builtin_plugin(prop: PropertyName) -> Plugin {
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
-    Plugin::new(PluginKind::Arbitrary {
-        prop,
-        hints: &[],
-        matcher: SpaceSeparated(&Or(&Length, &Percentage)),
-    })
+    Plugin::new(PluginKind::Arbitrary { prop })
+        .hints(&[])
+        .matcher(SpaceSeparated(&Or(&Length, &Percentage)))
 }
 
 pub(crate) const PLUGIN_1: Plugin = builtin_plugin(SingleProp("border-radius"));

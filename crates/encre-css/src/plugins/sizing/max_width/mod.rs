@@ -39,6 +39,4 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::ListValues {
 
 pub(crate) const PLUGIN_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("max-width"),
-    hints: &[PluginArbitraryHint::Length, PluginArbitraryHint::Percentage],
-    matcher: Or(&Length, &Percentage),
 });

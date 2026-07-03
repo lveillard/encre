@@ -11,11 +11,7 @@ const fn builtin_plugin(prop: PropertyName) -> Plugin {
 }
 
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
-    Plugin::new(PluginKind::Arbitrary {
-        prop,
-        hints: &[],
-        matcher: Length,
-    })
+    Plugin::new(PluginKind::Arbitrary { prop })
 }
 
 pub(crate) const PLUGIN_1: Plugin = builtin_plugin(SingleProp("gap"));

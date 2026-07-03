@@ -1,6 +1,7 @@
 #![doc = include_str!("README.md")]
 #![doc(alias("background", "bg", "gradient"))]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
 const INTERPOLATION_MODES_MAP: phf::Map<&'static str, &'static str> = phf_map! {
     "longer" => "oklch longer hue",
@@ -30,9 +31,9 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("background-image"),
-    hints: &[PluginArbitraryHint::Url, PluginArbitraryHint::Image],
-    matcher: Image,
-});
+})
+.hints(&[PluginArbitraryHint::Url, PluginArbitraryHint::Image])
+.matcher(Image);
 
 pub(crate) const PLUGIN_LINEAR_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-image"),
@@ -61,8 +62,6 @@ pub(crate) const PLUGIN_LINEAR_2: Plugin = Plugin::new(PluginKind::AnyNumber {
 
 pub(crate) const PLUGIN_LINEAR_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("background-image"),
-    hints: &[],
-    matcher: All,
 })
 .template("linear-gradient({})");
 
@@ -76,8 +75,6 @@ pub(crate) const PLUGIN_RADIAL_1: Plugin = Plugin::new(PluginKind::ListValues {
 
 pub(crate) const PLUGIN_RADIAL_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("background-image"),
-    hints: &[],
-    matcher: All,
 })
 .template("radial-gradient({})");
 
@@ -100,7 +97,5 @@ pub(crate) const PLUGIN_CONIC_2: Plugin = Plugin::new(PluginKind::AnyNumber {
 
 pub(crate) const PLUGIN_CONIC_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("background-image"),
-    hints: &[],
-    matcher: All,
 })
 .template("conic-gradient({})");

@@ -276,7 +276,6 @@ impl FromStr for PluginArbitraryHint {
     }
 }
 
-// TODO: Check if splitting by spaces in is_matching_length and is_matching_position is still needed
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum PluginArbitraryMatcher {
     All,
@@ -332,6 +331,8 @@ pub struct Plugin {
     pub(crate) template: Option<&'static str>,
     pub(crate) template_multiple: Option<&'static [&'static str]>,
     pub(crate) extra_slash: Option<(phf::Map<&'static str, &'static str>, &'static str)>,
+    pub(crate) arbitrary_hints: Option<&'static [PluginArbitraryHint]>,
+    pub(crate) arbitrary_matcher: Option<PluginArbitraryMatcher>,
 }
 
 impl Plugin {
@@ -344,6 +345,8 @@ impl Plugin {
             extra_slash: None,
             template: None,
             template_multiple: None,
+            arbitrary_hints: None,
+            arbitrary_matcher: None,
         }
     }
 
@@ -467,6 +470,24 @@ impl Plugin {
         self.template_multiple = Some(templates);
         self
     }
+
+    pub const fn hints(mut self, hints: &'static [PluginArbitraryHint]) -> Self {
+        if !matches!(self.kind, PluginKind::Arbitrary { .. }) {
+            panic!("Plugin::hints can only be used with PluginKind::Arbitrary");
+        }
+
+        self.arbitrary_hints = Some(hints);
+        self
+    }
+
+    pub const fn matcher(mut self, matcher: PluginArbitraryMatcher) -> Self {
+        if !matches!(self.kind, PluginKind::Arbitrary { .. }) {
+            panic!("Plugin::matches can only be used with PluginKind::Arbitrary");
+        }
+
+        self.arbitrary_matcher = Some(matcher);
+        self
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -505,8 +526,6 @@ pub enum PluginKind {
 
     Arbitrary {
         prop: PropertyName,
-        hints: &'static [PluginArbitraryHint],
-        matcher: PluginArbitraryMatcher,
     },
     ArbitraryShadow {
         prop: PropertyName,

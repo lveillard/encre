@@ -1,6 +1,7 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
@@ -22,11 +23,16 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListCases {
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("font-size"),
-    hints: &[
-        PluginArbitraryHint::Length,
-        PluginArbitraryHint::Percentage,
-        PluginArbitraryHint::AbsoluteSize,
-        PluginArbitraryHint::RelativeSize,
-    ],
-    matcher: OrMultiple(&[&Length, &Percentage, &AbsoluteSize, &RelativeSize]),
-});
+})
+.hints(&[
+    PluginArbitraryHint::Length,
+    PluginArbitraryHint::Percentage,
+    PluginArbitraryHint::AbsoluteSize,
+    PluginArbitraryHint::RelativeSize,
+])
+.matcher(OrMultiple(&[
+    &Length,
+    &Percentage,
+    &AbsoluteSize,
+    &RelativeSize,
+]));

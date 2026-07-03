@@ -1,6 +1,7 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Color {
     prop: SingleProp("--en-ring-offset-color"),
@@ -9,7 +10,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Color {
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("--en-ring-offset-color"),
-    hints: &[PluginArbitraryHint::Color],
-    matcher: Color,
 })
+.hints(&[PluginArbitraryHint::Color])
+.matcher(Color)
 .extra_lines(&["--en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);"]);

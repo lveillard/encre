@@ -21,8 +21,6 @@ pub(crate) const PLUGIN_X_2: Plugin = Plugin::new(PluginKind::Spacing {
 
 pub(crate) const PLUGIN_X_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: MultipleProps(&["margin-inline-start", "margin-inline-end"]),
-    hints: &[],
-    matcher: Or(&Length, &Percentage),
 }).template_multiple(&[
     "calc({} * var(--en-space-x-reverse))",
     "calc({} * calc(1 - var(--en-space-x-reverse)))",
@@ -49,8 +47,6 @@ pub(crate) const PLUGIN_Y_2: Plugin = Plugin::new(PluginKind::Spacing {
 
 pub(crate) const PLUGIN_Y_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: MultipleProps(&["margin-block-start", "margin-block-end"]),
-    hints: &[],
-    matcher: Or(&Length, &Percentage),
 }).template_multiple(&[
     "calc({} * var(--en-space-y-reverse))",
     "calc({} * calc(1 - var(--en-space-y-reverse)))",

@@ -1,6 +1,7 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
+use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("font-family"),
@@ -13,9 +14,9 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("font-family"),
-    hints: &[
-        PluginArbitraryHint::GenericName,
-        PluginArbitraryHint::FamilyName,
-    ],
-    matcher: CommaSeparated(&FontFamilyName),
-});
+})
+.hints(&[
+    PluginArbitraryHint::GenericName,
+    PluginArbitraryHint::FamilyName,
+])
+.matcher(CommaSeparated(&FontFamilyName));

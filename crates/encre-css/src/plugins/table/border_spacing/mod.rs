@@ -14,8 +14,6 @@ const fn builtin_plugin(prop: PropertyName) -> Plugin {
 const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
     Plugin::new(PluginKind::Arbitrary {
         prop,
-        hints: &[],
-        matcher: Length,
     })
     .extra_lines(&["border-spacing: var(--en-border-spacing-x) var(--en-border-spacing-y);"])
 }

@@ -11,8 +11,6 @@ pub(crate) const PLUGIN_FROM_1: Plugin = Plugin::new(PluginKind::Color {
 
 pub(crate) const PLUGIN_FROM_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("--en-gradient-from"),
-    hints: &[PluginArbitraryHint::Color],
-    matcher: Color,
 })
 .extra_lines(&[
     "--en-gradient-stops: var(--en-gradient-from), var(--en-gradient-to, transparent);",
@@ -25,8 +23,6 @@ pub(crate) const PLUGIN_VIA_1: Plugin = Plugin::new(PluginKind::Color {
 
 pub(crate) const PLUGIN_VIA_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("--en-gradient-stops"),
-    hints: &[PluginArbitraryHint::Color],
-    matcher: Color,
 })
 .template("var(--en-gradient-from), {}, var(--en-gradient-to, transparent)");
 
@@ -36,6 +32,4 @@ pub(crate) const PLUGIN_TO_1: Plugin = Plugin::new(PluginKind::Color {
 
 pub(crate) const PLUGIN_TO_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("--en-gradient-to"),
-    hints: &[PluginArbitraryHint::Color],
-    matcher: Color,
 });
