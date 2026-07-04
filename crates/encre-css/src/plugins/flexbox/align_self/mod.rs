@@ -5,10 +5,10 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("align-self"),
     values: phf_map! {
-        "auto" => "auto",
-        "start" => "flex-start",
-        "center" => "center",
-        "end" => "flex-end",
-        "stretch" => "stretch",
+        "self-auto" => "auto",
+        "self-start" => "flex-start",
+        "self-center" => "center",
+        "self-end" => "flex-end",
+        "self-stretch" => "stretch",
     },
 });

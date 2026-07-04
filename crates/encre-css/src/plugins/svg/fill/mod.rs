@@ -3,9 +3,11 @@
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Color {
+    prefix: "fill",
     prop: SingleProp("fill"),
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+    prefix: "fill",
     prop: SingleProp("fill"),
 });

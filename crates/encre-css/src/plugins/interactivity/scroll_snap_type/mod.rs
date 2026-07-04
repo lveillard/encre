@@ -4,20 +4,20 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
-        "none" => &["-ms-scroll-snap-type: none;", "scroll-snap-type: none;"],
-        "x" => &[
+        "snap-none" => &["-ms-scroll-snap-type: none;", "scroll-snap-type: none;"],
+        "snap-x" => &[
             "-ms-scroll-snap-type: x var(--en-scroll-snap-strictness);",
             "scroll-snap-type: x var(--en-scroll-snap-strictness);",
         ],
-        "y" => &[
+        "snap-y" => &[
             "-ms-scroll-snap-type: y var(--en-scroll-snap-strictness);",
             "scroll-snap-type: y var(--en-scroll-snap-strictness);",
         ],
-        "both" => &[
+        "snap-both" => &[
             "-ms-scroll-snap-type: both var(--en-scroll-snap-strictness);",
             "scroll-snap-type: both var(--en-scroll-snap-strictness);",
         ],
-        "mandatory" => &["--en-scroll-snap-strictness: mandatory;"],
-        "proximity" => &["--en-scroll-snap-strictness: proximity;"],
+        "snap-mandatory" => &["--en-scroll-snap-strictness: mandatory;"],
+        "snap-proximity" => &["--en-scroll-snap-strictness: proximity;"],
     },
 });

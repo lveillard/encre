@@ -5,10 +5,11 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("container-type"),
     values: phf_map! {
-        "" => "inline-size",
+        "@container" => "inline-size",
     },
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+    prefix: "@container",
     prop: SingleProp("container-type"),
 });

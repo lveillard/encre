@@ -4,6 +4,7 @@ use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prefix: "ring-offset",
     prop: SingleProp("--en-ring-offset-width"),
     has_empty: false,
     has_negative: false,
@@ -13,6 +14,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
 .template("{}px");
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+    prefix: "ring-offset",
     prop: SingleProp("--en-ring-offset-width"),
 })
 .hints(&[PluginArbitraryHint::Length])

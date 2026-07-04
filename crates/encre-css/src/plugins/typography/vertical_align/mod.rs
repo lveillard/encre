@@ -2,16 +2,16 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("vertical-align"),
-    values: &[
-        "baseline",
-        "top",
-        "middle",
-        "bottom",
-        "text-top",
-        "text-bottom",
-        "sub",
-        "super",
-    ],
+    values: phf_map! {
+        "align-baseline" => "baseline",
+        "align-top" => "top",
+        "align-middle" => "middle",
+        "align-bottom" => "bottom",
+        "align-text-top" => "text-top",
+        "align-text-bottom" => "text-bottom",
+        "align-sub" => "sub",
+        "align-super" => "super",
+    },
 });

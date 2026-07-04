@@ -2,7 +2,13 @@
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("border-style"),
-    values: &["solid", "dashed", "dotted", "double", "none"],
+    values: phf_map! {
+        "divide-solid" => "solid",
+        "divide-dashed" => "dashed",
+        "divide-dotted" => "dotted",
+        "divide-double" => "double",
+        "divide-none" => "none"
+    },
 }).extra_class(" > :not([hidden]) ~ :not([hidden])");

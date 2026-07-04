@@ -5,13 +5,14 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("grid-auto-columns"),
     values: phf_map! {
-        "auto" => "auto",
-        "min" => "min-content",
-        "max" => "max-content",
-        "fr" => "minmax(0, 1fr)"
+        "auto-cols-auto" => "auto",
+        "auto-cols-min" => "min-content",
+        "auto-cols-max" => "max-content",
+        "auto-cols-fr" => "minmax(0, 1fr)"
     },
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+    prefix: "auto-cols",
     prop: SingleProp("grid-auto-columns"),
 });

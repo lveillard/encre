@@ -4,6 +4,7 @@ use super::CSS_BACKDROP_FILTER;
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prefix: "backdrop-sepia",
     prop: SingleProp("--en-backdrop-sepia"),
     has_empty: true,
     has_negative: false,

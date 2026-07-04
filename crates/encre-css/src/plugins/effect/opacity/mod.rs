@@ -3,6 +3,7 @@
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prefix: "opacity",
     prop: SingleProp("opacity"),
     has_empty: false,
     has_negative: false,

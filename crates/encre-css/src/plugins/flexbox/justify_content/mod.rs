@@ -5,11 +5,11 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("justify-content"),
     values: phf_map! {
-        "start" => "flex-start",
-        "center" => "center",
-        "end" => "flex-end",
-        "between" => "space-between",
-        "around" => "space-around",
-        "evenly" => "space-evenly",
+        "justify-start" => "flex-start",
+        "justify-center" => "center",
+        "justify-end" => "flex-end",
+        "justify-between" => "space-between",
+        "justify-around" => "space-around",
+        "justify-evenly" => "space-evenly",
     },
 });

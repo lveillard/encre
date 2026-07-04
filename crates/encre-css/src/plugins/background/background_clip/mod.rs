@@ -5,9 +5,9 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-clip"),
     values: phf_map! {
-        "border" => "border-box",
-        "padding" => "padding-box",
-        "content" => "content-box",
-        "text" => "text",
+        "bg-clip-border" => "border-box",
+        "bg-clip-padding" => "padding-box",
+        "bg-clip-content" => "content-box",
+        "bg-clip-text" => "text",
     },
 });

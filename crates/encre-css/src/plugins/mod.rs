@@ -318,9 +318,10 @@ pub enum PropertyName {
 // TODO: Make a StaticPlugin/DynamicPlugin (with Strings and Vecs for ser/de)
 // TODO: Rename PLUGIN_1/PLUGIN_2 -> PLUGIN_BUILTIN/PLUGIN_ARBITRARY
 // TODO: Rename Color/Sizing/Spacing -> AnyColor/AnySize/AnySpacing
-// TODO: Define prefix inside plugin + migrate has_ to the Plugin structure
+// TODO: migrate has_ to the Plugin structure
 // TODO: Rename extra_lines -> extra_rule_lines?
 // TODO: Think about what items need to be public and/or reexported for Functional kind
+// TODO: Use tuples for multiple plugins (easier for const fns)
 
 #[derive(Debug, PartialEq)]
 pub struct Plugin {
@@ -333,6 +334,7 @@ pub struct Plugin {
     pub(crate) extra_slash: Option<(phf::Map<&'static str, &'static str>, &'static str)>,
     pub(crate) arbitrary_hints: Option<&'static [PluginArbitraryHint]>,
     pub(crate) arbitrary_matcher: Option<PluginArbitraryMatcher>,
+    pub(crate) list_prefix: Option<&'static str>,
 }
 
 impl Plugin {
@@ -347,6 +349,7 @@ impl Plugin {
             template_multiple: None,
             arbitrary_hints: None,
             arbitrary_matcher: None,
+            list_prefix: None,
         }
     }
 
@@ -488,6 +491,15 @@ impl Plugin {
         self.arbitrary_matcher = Some(matcher);
         self
     }
+
+    pub const fn list_prefix(mut self, list_prefix: &'static str) -> Self {
+        if !matches!(self.kind, PluginKind::ListValues { .. } | PluginKind::ListCases { .. }) {
+            panic!("Plugin::list_prefix can only be used with PluginKind::ListValues or PluginKind::ListCases. For other kinds, use the built-in `prefix` field");
+        }
+
+        self.list_prefix = Some(list_prefix);
+        self
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -499,25 +511,25 @@ pub enum PluginKind {
         prop: PropertyName,
         values: phf::Map<&'static str, &'static str>,
     },
-    SamePropValues {
-        prop: PropertyName,
-        values: &'static [&'static str],
-    },
 
     Sizing {
+        prefix: &'static str,
         prop: PropertyName,
         is_horizontal: bool,
         has_none: bool,
     },
     Spacing {
+        prefix: &'static str,
         prop: PropertyName,
         has_auto: bool,
         has_full: bool,
     },
     Color {
+        prefix: &'static str,
         prop: PropertyName,
     },
     AnyNumber {
+        prefix: &'static str,
         prop: PropertyName,
         has_empty: bool,
         has_negative: bool,
@@ -525,9 +537,11 @@ pub enum PluginKind {
     },
 
     Arbitrary {
+        prefix: &'static str,
         prop: PropertyName,
     },
-    ArbitraryShadow {
+    ArbitraryShadow { // TODO: replace by Functional
+        prefix: &'static str,
         prop: PropertyName,
         color_replacement: &'static str,
     },
@@ -535,5 +549,5 @@ pub enum PluginKind {
     Functional {
         can_handle: fn(&ContextCanHandle) -> bool,
         handle: fn(&mut ContextHandle),
-    }
+    },
 }

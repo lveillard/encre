@@ -5,8 +5,8 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
-        "" => &CSS_BACKDROP_FILTER,
-        "none" => &[
+        "backdrop-filter" => &CSS_BACKDROP_FILTER,
+        "backdrop-filter-none" => &[
             "-webkit-backdrop-filter: none;",
             "backdrop-filter: none;",
         ],

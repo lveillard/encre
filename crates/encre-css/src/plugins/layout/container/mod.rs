@@ -9,7 +9,7 @@ use crate::{
 use std::{borrow::Cow, cmp::Ordering};
 
 fn can_handle(context: &ContextCanHandle) -> bool {
-    matches!(context.modifier, Modifier::Builtin { value: "", .. })
+    matches!(context.modifier, Modifier::Builtin { value: "container", .. })
 }
 
 fn handle(context: &mut ContextHandle) {

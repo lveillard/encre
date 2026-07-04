@@ -2,8 +2,9 @@
 #![doc(alias = "transform")]
 use crate::{plugins::transform::CSS_TRANSFORM, prelude::build_plugin::*};
 
-const fn builtin_plugin(prop: PropertyName) -> Plugin {
+const fn builtin_plugin(prefix: &'static str, prop: PropertyName) -> Plugin {
     Plugin::new(PluginKind::AnyNumber {
+        prefix,
         prop,
         has_empty: false,
         has_negative: true,
@@ -13,15 +14,16 @@ const fn builtin_plugin(prop: PropertyName) -> Plugin {
     .template("{}deg")
 }
 
-const fn arbitrary_plugin(prop: PropertyName) -> Plugin {
+const fn arbitrary_plugin(prefix: &'static str, prop: PropertyName) -> Plugin {
     Plugin::new(PluginKind::Arbitrary {
+        prefix,
         prop,
     })
     .extra_lines(&[CSS_TRANSFORM])
 }
 
-pub(crate) const PLUGIN_X_1: Plugin = builtin_plugin(SingleProp("--en-skew-x"));
-pub(crate) const PLUGIN_X_2: Plugin = arbitrary_plugin(SingleProp("--en-skew-x"));
+pub(crate) const PLUGIN_X_1: Plugin = builtin_plugin("skew-x", SingleProp("--en-skew-x"));
+pub(crate) const PLUGIN_X_2: Plugin = arbitrary_plugin("skew-x", SingleProp("--en-skew-x"));
 
-pub(crate) const PLUGIN_Y_1: Plugin = builtin_plugin(SingleProp("--en-skew-y"));
-pub(crate) const PLUGIN_Y_2: Plugin = arbitrary_plugin(SingleProp("--en-skew-y"));
+pub(crate) const PLUGIN_Y_1: Plugin = builtin_plugin("skew-y", SingleProp("--en-skew-y"));
+pub(crate) const PLUGIN_Y_2: Plugin = arbitrary_plugin("skew-y", SingleProp("--en-skew-y"));

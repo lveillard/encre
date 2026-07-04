@@ -2,14 +2,18 @@
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::SamePropValues {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("outline-style"),
-    values: &["dashed", "dotted", "double"],
+    values: phf_map! {
+        "outline-dashed" => "dashed",
+        "outline-dotted" => "dotted",
+        "outline-double" => "double",
+    },
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
-        "hidden" => &[
+        "outline-hidden" => &[
             "outline: 2px solid transparent;",
             "outline-offset: 2px;"
         ],

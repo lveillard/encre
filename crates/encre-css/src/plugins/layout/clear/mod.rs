@@ -5,11 +5,11 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("clear"),
     values: phf_map! {
-        "start" => "inline-start",
-        "end" => "inline-end",
-        "left" => "left",
-        "right" => "right",
-        "both" => "both",
-        "none" => "none",
+        "clear-start" => "inline-start",
+        "clear-end" => "inline-end",
+        "clear-left" => "left",
+        "clear-right" => "right",
+        "clear-both" => "both",
+        "clear-none" => "none",
     },
 });

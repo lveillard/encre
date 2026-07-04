@@ -2,7 +2,10 @@
 #![doc(alias = "table")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("caption-side"),
-    values: &["top", "bottom"],
+    values: phf_map! {
+        "caption-top" => "top",
+        "caption-bottom" => "bottom",
+    },
 });

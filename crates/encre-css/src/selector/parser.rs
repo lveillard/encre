@@ -178,17 +178,37 @@ fn is_arbitrary_matching(matcher: &PluginArbitraryMatcher, value: &str) -> bool 
 
 fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
     match (&plugin.kind, context.modifier) {
-        (PluginKind::ListCases { cases }, Modifier::Builtin { value, .. }) => {
+        (&PluginKind::ListCases { ref cases }, &Modifier::Builtin { mut value, .. }) => {
+            if let Some(prefix) = plugin.list_prefix {
+                let Some(new_value) = &value.strip_prefix(prefix) else {
+                    return false;
+                };
+                value = new_value;
+                if value.starts_with('-') {
+                    value = &value[1..];
+                }
+            }
+
             cases.contains_key(value)
         }
-        (PluginKind::ListValues { values, .. }, Modifier::Builtin { value, .. }) => {
+        (&PluginKind::ListValues { ref values, .. }, &Modifier::Builtin { mut value, .. }) => {
+            if let Some(prefix) = plugin.list_prefix {
+                let Some(new_value) = &value.strip_prefix(prefix) else {
+                    return false;
+                };
+                value = new_value;
+                if value.starts_with('-') {
+                    value = &value[1..];
+                }
+            }
+
             let (value, template_value) = if plugin.extra_slash.is_some()
                 && let Some(index) = value.find('/')
             {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (*value, plugin.extra_slash.as_ref().map(|e| e.1))
+                (value, plugin.extra_slash.as_ref().map(|e| e.1))
             };
             plugin
                 .extra_slash
@@ -198,36 +218,56 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
         }
         (
             PluginKind::Sizing {
+                prefix,
                 is_horizontal,
                 has_none,
                 ..
             },
             Modifier::Builtin { value, .. },
         ) => {
+            let Some(mut value) = value.strip_prefix(prefix) else {
+                return false;
+            };
+            if value.starts_with('-') {
+                value = &value[1..];
+            }
             spacing::is_matching_builtin_spacing(value)
-                || ["full", "screen", "min", "max", "fit", "auto"].contains(value)
-                || (*is_horizontal && ["svw", "lvw", "dvw"].contains(value))
-                || (!is_horizontal && ["svh", "lvh", "dvh"].contains(value))
-                || (*has_none && *value == "none")
-        }
-        (PluginKind::SamePropValues { values, .. }, Modifier::Builtin { value, .. }) => {
-            values.contains(value)
+                || ["full", "screen", "min", "max", "fit", "auto"].contains(&value)
+                || (*is_horizontal && ["svw", "lvw", "dvw"].contains(&value))
+                || (!is_horizontal && ["svh", "lvh", "dvh"].contains(&value))
+                || (*has_none && value == "none")
         }
         (
             PluginKind::Spacing {
-                has_auto, has_full, ..
+                prefix,
+                has_auto,
+                has_full,
+                ..
             },
             Modifier::Builtin { value, .. },
         ) => {
+            let &Some(mut value) = &value.strip_prefix(prefix) else {
+                return false;
+            };
+            if value.starts_with('-') {
+                value = &value[1..];
+            }
             spacing::is_matching_builtin_spacing(value)
-                || (*has_auto && *value == "auto")
-                || (*has_full && *value == "full")
+                || (*has_auto && value == "auto")
+                || (*has_full && value == "full")
         }
-        (PluginKind::Color { .. }, Modifier::Builtin { value, .. }) => {
+        (PluginKind::Color { prefix, .. }, Modifier::Builtin { value, .. }) => {
+            let Some(mut value) = value.strip_prefix(prefix) else {
+                return false;
+            };
+            if value.starts_with('-') {
+                value = &value[1..];
+            }
             color::is_matching_builtin_color(context.config, value)
         }
         (
             PluginKind::AnyNumber {
+                prefix,
                 has_empty,
                 has_negative,
                 ..
@@ -236,13 +276,19 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
                 value, is_negative, ..
             },
         ) => {
+            let Some(mut value) = value.strip_prefix(prefix) else {
+                return false;
+            };
+            if value.starts_with('-') {
+                value = &value[1..];
+            }
             let (value, template_value) = if plugin.extra_slash.is_some()
                 && let Some(index) = value.find('/')
             {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (*value, plugin.extra_slash.as_ref().map(|e| e.1))
+                (value, plugin.extra_slash.as_ref().map(|e| e.1))
             };
             plugin
                 .extra_slash
@@ -251,19 +297,38 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
                 && ((*has_empty && value.is_empty())
                     || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative)))
         }
-        (PluginKind::Arbitrary { .. }, Modifier::Arbitrary { hint, value, .. }) => {
-            // TODO: handle prefix.is_empty()
-            PluginArbitraryHint::from_str(hint).is_ok_and(|h| {
-                plugin
-                    .arbitrary_hints
-                    .is_some_and(|hints| hints.contains(&h))
-            }) || (hint.is_empty()
-                && plugin
-                    .arbitrary_matcher
-                    .is_none_or(|matcher| is_arbitrary_matching(&matcher, value)))
+        (
+            PluginKind::Arbitrary { prefix, .. },
+            Modifier::Arbitrary {
+                hint,
+                value,
+                prefix: modifier_prefix,
+            },
+        ) => {
+            modifier_prefix
+                .strip_prefix(prefix)
+                .is_some_and(|r| r == "-")
+                && (PluginArbitraryHint::from_str(hint).is_ok_and(|h| {
+                    plugin
+                        .arbitrary_hints
+                        .is_some_and(|hints| hints.contains(&h))
+                }) || (hint.is_empty()
+                    && plugin
+                        .arbitrary_matcher
+                        .is_none_or(|matcher| is_arbitrary_matching(&matcher, value))))
         }
-        (PluginKind::ArbitraryShadow { .. }, Modifier::Arbitrary { hint, value, .. }) => {
-            *hint == "shadow" || (hint.is_empty() && is_matching_shadow(value))
+        (
+            PluginKind::ArbitraryShadow { prefix, .. },
+            Modifier::Arbitrary {
+                hint,
+                value,
+                prefix: modifier_prefix,
+            },
+        ) => {
+            modifier_prefix
+                .strip_prefix(prefix)
+                .is_some_and(|r| r == "-")
+                && (*hint == "shadow" || (hint.is_empty() && is_matching_shadow(value)))
         }
         (
             PluginKind::Functional {
@@ -787,6 +852,7 @@ fn parse_recursive<'a>(
 
         if remaining.1.starts_with(ARBITRARY_START) && remaining.1.ends_with(ARBITRARY_END) {
             // Arbitrary CSS property (without namespace)
+            // TODO: remove this special case
             let plugin = &PLUGIN;
 
             variants
@@ -815,7 +881,7 @@ fn parse_recursive<'a>(
                 .collect()
         } else {
             // Find the right plugin for handling this selector
-            for (order, layer, (namespace, plugin)) in BUILTIN_PLUGINS
+            for (order, layer, plugin) in BUILTIN_PLUGINS
                 .iter()
                 .enumerate()
                 .map(|p| {
@@ -838,24 +904,11 @@ fn parse_recursive<'a>(
                 )
             {
                 // Find the modifier
-                if let Some(modifier) = remaining
-                    .1
-                    .strip_prefix(&**namespace)
-                    .and_then(|modifier| parse_modifier(modifier, is_negative))
-                {
+                if let Some(modifier) = parse_modifier(remaining.1, is_negative) {
                     let context = ContextCanHandle {
                         config,
                         modifier: &modifier,
                     };
-
-                    if let Modifier::Arbitrary { prefix, .. } = modifier {
-                        if !prefix.is_empty() {
-                            // If the modifier is arbitrary, the namespace must be strictly parsed
-                            // to avoid accepting too much selectors, e.g `flex-test-[]` being
-                            // parsed as a `flex` selector
-                            continue;
-                        }
-                    }
 
                     if can_handle(plugin, &context) {
                         return variants

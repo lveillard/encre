@@ -4,6 +4,7 @@ use super::CSS_BACKDROP_FILTER;
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prefix: "backdrop-hue-rotate",
     prop: SingleProp("--en-backdrop-hue-rotate"),
     has_empty: false,
     has_negative: true,
@@ -13,6 +14,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
 .template("hue-rotate({}deg)");
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+    prefix: "backdrop-hue-rotate",
     prop: SingleProp("--en-backdrop-hue-rotate"),
 })
 .extra_lines(&CSS_BACKDROP_FILTER)

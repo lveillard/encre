@@ -4,6 +4,7 @@ use super::CSS_BACKDROP_FILTER;
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prefix: "backdrop-contrast",
     prop: SingleProp("--en-backdrop-contrast"),
     has_empty: false,
     has_negative: false,

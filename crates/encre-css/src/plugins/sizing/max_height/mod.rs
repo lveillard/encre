@@ -3,11 +3,13 @@
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Sizing {
+    prefix: "max-h",
     prop: SingleProp("max-height"),
     is_horizontal: false,
     has_none: true,
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+    prefix: "max-h",
     prop: SingleProp("max-height"),
 });

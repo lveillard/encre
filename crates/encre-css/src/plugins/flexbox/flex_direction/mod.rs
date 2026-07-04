@@ -5,9 +5,9 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("flex-direction"),
     values: phf_map! {
-        "row" => "row",
-        "row-reverse" => "row-reverse",
-        "col" => "column",
-        "col-reverse" => "column-reverse",
+        "flex-row" => "row",
+        "flex-row-reverse" => "row-reverse",
+        "flex-col" => "column",
+        "flex-col-reverse" => "column-reverse",
     },
 });

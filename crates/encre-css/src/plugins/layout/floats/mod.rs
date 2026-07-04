@@ -5,10 +5,10 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("float"),
     values: phf_map! {
-        "start" => "inline-start",
-        "end" => "inline-end",
-        "left" => "left",
-        "right" => "right",
-        "none" => "none",
+        "float-start" => "inline-start",
+        "float-end" => "inline-end",
+        "float-left" => "left",
+        "float-right" => "right",
+        "float-none" => "none",
     },
 });

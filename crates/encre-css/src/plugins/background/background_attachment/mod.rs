@@ -2,7 +2,11 @@
 #![doc(alias("background", "bg"))]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-attachment"),
-    values: &["fixed", "local", "scroll"],
+    values: phf_map! {
+        "bg-fixed" => "fixed",
+        "bg-local" => "local",
+        "bg-scroll" => "scroll",
+    },
 });

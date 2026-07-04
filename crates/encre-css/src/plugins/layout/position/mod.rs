@@ -2,7 +2,13 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("position"),
-    values: &["static", "fixed", "absolute", "relative", "sticky"],
+    values: phf_map! {
+        "static" => "static",
+        "fixed" => "fixed",
+        "absolute" => "absolute",
+        "relative" => "relative",
+        "sticky" => "sticky",
+    },
 });

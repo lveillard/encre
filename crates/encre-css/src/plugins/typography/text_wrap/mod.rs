@@ -2,7 +2,12 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("text-wrap"),
-    values: &["wrap", "nowrap", "balance", "pretty"],
+    values: phf_map! {
+        "text-wrap" => "wrap",
+        "text-nowrap" => "nowrap",
+        "text-balance" => "balance",
+        "text-pretty" => "pretty",
+    },
 });

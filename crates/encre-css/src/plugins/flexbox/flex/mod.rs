@@ -5,13 +5,14 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("flex"),
     values: phf_map! {
-        "1" => "1 1 0%",
-        "auto" => "1 1 auto",
-        "initial" => "0 1 auto",
-        "none" => "none",
+        "flex-1" => "1 1 0%",
+        "flex-auto" => "1 1 auto",
+        "flex-initial" => "0 1 auto",
+        "flex-none" => "none",
     },
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+    prefix: "flex",
     prop: SingleProp("flex"),
 });

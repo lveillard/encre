@@ -2,7 +2,10 @@
 #![doc(alias = "interactivity")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("pointer-events"),
-    values: &["auto", "none"],
+    values: phf_map! {
+        "pointer-events-auto" => "auto",
+        "pointer-events-none" => "none",
+    },
 });

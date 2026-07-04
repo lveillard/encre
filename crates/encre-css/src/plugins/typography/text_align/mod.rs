@@ -2,7 +2,14 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("text-align"),
-    values: &["left", "center", "right", "justify", "start", "end"],
+    values: phf_map! {
+        "text-left" => "left",
+        "text-center" => "center",
+        "text-right" => "right",
+        "text-justify" => "justify",
+        "text-start" => "start",
+        "text-end" => "end",
+    },
 });

@@ -4,14 +4,14 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
-        "auto" => &["overscroll-behavior: auto;"],
-        "x-auto" => &["overscroll-behavior-x: auto;"],
-        "y-auto" => &["overscroll-behavior-y: auto;"],
-        "contain" => &["overscroll-behavior: contain;"],
-        "x-contain" => &["overscroll-behavior-x: contain;"],
-        "y-contain" => &["overscroll-behavior-y: contain;"],
-        "none" => &["overscroll-behavior: none;"],
-        "x-none" => &["overscroll-behavior-x: none;"],
-        "y-none" => &["overscroll-behavior-y: none;"],
+        "overscroll-auto" => &["overscroll-behavior: auto;"],
+        "overscroll-x-auto" => &["overscroll-behavior-x: auto;"],
+        "overscroll-y-auto" => &["overscroll-behavior-y: auto;"],
+        "overscroll-contain" => &["overscroll-behavior: contain;"],
+        "overscroll-x-contain" => &["overscroll-behavior-x: contain;"],
+        "overscroll-y-contain" => &["overscroll-behavior-y: contain;"],
+        "overscroll-none" => &["overscroll-behavior: none;"],
+        "overscroll-x-none" => &["overscroll-behavior-x: none;"],
+        "overscroll-y-none" => &["overscroll-behavior-y: none;"],
     },
 });

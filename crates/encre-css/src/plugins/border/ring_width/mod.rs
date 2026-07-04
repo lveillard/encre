@@ -4,6 +4,7 @@ use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prefix: "ring",
     prop: SingleProp("--en-ring-shadow"),
     has_empty: true,
     has_negative: false,
@@ -13,6 +14,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
 ]).template("0 0 0 calc({}px + var(--en-ring-offset-width)) var(--en-ring-color)");
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+    prefix: "ring",
     prop: SingleProp("--en-ring-shadow"),
 })
 .hints(&[PluginArbitraryHint::Length])
@@ -22,6 +24,7 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
 ]).template("var(--en-ring-inset) 0 0 0 calc({} + var(--en-ring-offset-width)) var(--en-ring-color)");
 
 pub(crate) const PLUGIN_INSET_1: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prefix: "inset-ring",
     prop: SingleProp("--en-inset-ring-shadow"),
     has_empty: true,
     has_negative: false,
@@ -31,6 +34,7 @@ pub(crate) const PLUGIN_INSET_1: Plugin = Plugin::new(PluginKind::AnyNumber {
 ]).template("inset 0 0 0 calc({}px + var(--en-ring-offset-width)) var(--en-ring-color)");
 
 pub(crate) const PLUGIN_INSET_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+    prefix: "inset-ring",
     prop: SingleProp("--en-inset-ring-shadow"),
 })
 .hints(&[PluginArbitraryHint::Length])

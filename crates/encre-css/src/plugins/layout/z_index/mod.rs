@@ -2,12 +2,15 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::SamePropValues {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("z-index"),
-    values: &["auto"],
+    values: phf_map! {
+        "z-auto" => "auto",
+    },
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prefix: "z",
     prop: SingleProp("z-index"),
     has_empty: false,
     has_negative: true,

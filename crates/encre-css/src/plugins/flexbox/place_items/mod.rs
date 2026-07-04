@@ -2,7 +2,12 @@
 #![doc(alias = "flexbox")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("place-items"),
-    values: &["stretch", "start", "center", "end"],
+    values: phf_map! {
+        "place-items-stretch" => "stretch",
+        "place-items-start" => "start",
+        "place-items-center" => "center",
+        "place-items-end" => "end",
+    },
 });

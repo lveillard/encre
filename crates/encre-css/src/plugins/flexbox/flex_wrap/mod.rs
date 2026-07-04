@@ -2,7 +2,11 @@
 #![doc(alias = "flexbox")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("flex-wrap"),
-    values: &["nowrap", "wrap", "wrap-reverse"],
+    values: phf_map! {
+        "flex-nowrap" => "nowrap",
+        "flex-wrap" => "wrap",
+        "flex-wrap-reverse" => "wrap-reverse",
+    },
 });

@@ -5,13 +5,14 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("order"),
     values: phf_map! {
-        "first" => "-9999",
-        "last" => "9999",
-        "none" => "0",
+        "order-first" => "-9999",
+        "order-last" => "9999",
+        "order-none" => "0",
     },
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prefix: "order",
     prop: SingleProp("order"),
     has_empty: false,
     has_negative: true,

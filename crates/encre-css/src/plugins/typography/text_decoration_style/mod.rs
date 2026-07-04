@@ -2,7 +2,13 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("text-decoration-style"),
-    values: &["solid", "dpuble", "dotted", "dashed", "wavy"],
+    values: phf_map! {
+        "decoration-solid" => "solid",
+        "decoration-dpuble" => "dpuble",
+        "decoration-dotted" => "dotted",
+        "decoration-dashed" => "dashed",
+        "decoration-wavy" => "wavy",
+    },
 });

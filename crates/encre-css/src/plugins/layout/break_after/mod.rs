@@ -2,16 +2,16 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("break-after"),
-    values: &[
-        "auto",
-        "avoid",
-        "all",
-        "avoid-page",
-        "page",
-        "left",
-        "right",
-        "column",
-    ],
+    values: phf_map! {
+        "break-after-auto" => "auto",
+        "break-after-avoid" => "avoid",
+        "break-after-all" => "all",
+        "break-after-avoid-page" => "avoid-page",
+        "break-after-page" => "page",
+        "break-after-left" => "left",
+        "break-after-right" => "right",
+        "break-after-column" => "column",
+    },
 });

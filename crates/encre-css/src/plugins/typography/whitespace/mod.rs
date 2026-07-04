@@ -2,14 +2,14 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::SamePropValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("white-space"),
-    values: &[
-        "normal",
-        "nowrap",
-        "pre",
-        "pre-line",
-        "pre-wrap",
-        "break-spaces",
-    ],
+    values: phf_map! {
+        "whitespace-normal" => "normal",
+        "whitespace-nowrap" => "nowrap",
+        "whitespace-pre" => "pre",
+        "whitespace-pre-line" => "pre-line",
+        "whitespace-pre-wrap" => "pre-wrap",
+        "whitespace-break-spaces" => "break-spaces",
+    },
 });

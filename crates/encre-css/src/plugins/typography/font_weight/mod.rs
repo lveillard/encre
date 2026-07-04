@@ -6,19 +6,20 @@ use PluginArbitraryMatcher::*;
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("font-weight"),
     values: phf_map! {
-        "thin" => "100",
-        "extralight" => "200",
-        "light" => "300",
-        "normal" => "400",
-        "medium" => "500",
-        "semibold" => "600",
-        "bold" => "700",
-        "extrabold" => "800",
-        "black" => "900",
+        "font-thin" => "100",
+        "font-extralight" => "200",
+        "font-light" => "300",
+        "font-normal" => "400",
+        "font-medium" => "500",
+        "font-semibold" => "600",
+        "font-bold" => "700",
+        "font-extrabold" => "800",
+        "font-black" => "900",
     },
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+    prefix: "font",
     prop: SingleProp("font-weight"),
 })
 .hints(&[PluginArbitraryHint::Number])

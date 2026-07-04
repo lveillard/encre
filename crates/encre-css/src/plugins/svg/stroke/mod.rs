@@ -4,10 +4,12 @@ use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Color {
+    prefix: "stroke",
     prop: SingleProp("stroke"),
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+    prefix: "stroke",
     prop: SingleProp("stroke"),
 })
 .hints(&[PluginArbitraryHint::Color])

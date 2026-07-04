@@ -4,6 +4,7 @@ use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prefix: "outline-offset",
     prop: SingleProp("outline-offset"),
     has_empty: false,
     has_negative: false,
@@ -12,6 +13,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
 .template("{}px");
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+    prefix: "outline-offset",
     prop: SingleProp("outline-offset"),
 })
 .hints(&[PluginArbitraryHint::Length])

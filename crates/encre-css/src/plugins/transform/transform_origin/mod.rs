@@ -5,18 +5,19 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("transform-origin"),
     values: phf_map! {
-        "bottom" => "bottom",
-        "center" => "center",
-        "left" => "left",
-        "bottom-left" => "bottom left",
-        "top-left" => "top left",
-        "right" => "right",
-        "bottom-right" => "bottom right",
-        "top-right" => "top right",
-        "top" => "top",
+        "origin-bottom" => "bottom",
+        "origin-center" => "center",
+        "origin-left" => "left",
+        "origin-bottom-left" => "bottom left",
+        "origin-top-left" => "top left",
+        "origin-right" => "right",
+        "origin-bottom-right" => "bottom right",
+        "origin-top-right" => "top right",
+        "origin-top" => "top",
     },
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+    prefix: "origin",
     prop: SingleProp("transform-origin"),
 });

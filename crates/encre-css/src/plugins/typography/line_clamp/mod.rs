@@ -4,13 +4,14 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
-        "none" => &[
+        "line-clamp-none" => &[
             "-webkit-line-clamp: unset;"
         ]
     },
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prefix: "line-clamp",
     prop: SingleProp("-webkit-line-clamp"),
     has_empty: false,
     has_negative: false,

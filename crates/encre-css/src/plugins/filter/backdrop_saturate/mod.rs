@@ -4,6 +4,7 @@ use super::CSS_BACKDROP_FILTER;
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prefix: "backdrop-saturate",
     prop: SingleProp("--en-backdrop-saturate"),
     has_empty: false,
     has_negative: false,

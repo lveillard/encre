@@ -3,6 +3,7 @@
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
+    prefix: "delay",
     prop: SingleProp("transition-delay"),
     has_empty: false,
     has_negative: false,
@@ -11,5 +12,6 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
 .template("{}ms");
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+    prefix: "delay",
     prop: SingleProp("transition-delay"),
 });
