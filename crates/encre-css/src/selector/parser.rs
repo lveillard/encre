@@ -881,64 +881,90 @@ fn parse_recursive<'a>(
                 .collect()
         } else {
             // Find the right plugin for handling this selector
-            for (order, layer, plugin) in BUILTIN_PLUGINS
-                .iter()
-                .enumerate()
-                .map(|p| {
-                    (
-                        p.0,
-                        forced_layer.unwrap_or(parent_forced_layer.unwrap_or(LAYER_BUILTIN)),
-                        p.1,
-                    )
-                })
-                .chain(
-                    // Selectors generated using custom plugins are placed first to be easily
-                    // overridden
-                    config.custom_plugins.iter().enumerate().map(|p| {
-                        (
-                            p.0,
-                            forced_layer.unwrap_or(parent_forced_layer.unwrap_or(LAYER_CUSTOM)),
-                            p.1,
-                        )
-                    }),
-                )
-            {
-                // Find the modifier
-                if let Some(modifier) = parse_modifier(remaining.1, is_negative) {
-                    let context = ContextCanHandle {
-                        config,
-                        modifier: &modifier,
-                    };
-
-                    if can_handle(plugin, &context) {
-                        return variants
-                            .into_iter()
-                            .map(|variants| {
-                                Ok(Selector {
-                                    layer,
-                                    order,
-                                    full: if let Some(full_class) = full_class {
-                                        full_class
-                                    } else {
-                                        val
-                                    },
-                                    modifier: modifier.clone(),
-                                    variants,
-                                    is_important,
-                                    plugin: *plugin,
-                                })
-                            })
-                            .collect();
-                    }
-                }
-            }
-
-            vec![Err(ParseError::new(
+            find_plugin_to_handle_class(
+                config,
+                parent_forced_layer,
+                forced_layer,
+                variants,
+                val,
+                full_class,
+                remaining.1,
+                is_negative,
+                is_important,
                 span,
-                ParseErrorKind::UnknownPlugin(val),
-            ))]
+            )
         }
     }
+}
+
+fn find_plugin_to_handle_class<'a>(
+    config: &Config,
+    parent_forced_layer: Option<i8>,
+    forced_layer: Option<i8>,
+    variants: Vec<Vec<Variant<'a>>>,
+    val: &'a str,
+    full_class: Option<&'a str>,
+    modifier: &'a str,
+    is_negative: bool,
+    is_important: bool,
+    span: Range<usize>,
+) -> Vec<Result<Selector<'a>, ParseError<'a>>> {
+    // Find the modifier
+    if let Some(modifier) = parse_modifier(modifier, is_negative) {
+        for (order, layer, plugin) in BUILTIN_PLUGINS
+            .iter()
+            .enumerate()
+            .map(|p| {
+                (
+                    p.0,
+                    forced_layer.unwrap_or(parent_forced_layer.unwrap_or(LAYER_BUILTIN)),
+                    p.1,
+                )
+            })
+            .chain(
+                // Selectors generated using custom plugins are placed first to be easily
+                // overridden
+                config.custom_plugins.iter().enumerate().map(|p| {
+                    (
+                        p.0,
+                        forced_layer.unwrap_or(parent_forced_layer.unwrap_or(LAYER_CUSTOM)),
+                        p.1,
+                    )
+                }),
+            )
+        {
+            let context = ContextCanHandle {
+                config,
+                modifier: &modifier,
+            };
+
+            if can_handle(plugin, &context) {
+                return variants
+                    .into_iter()
+                    .map(|variants| {
+                        Ok(Selector {
+                            layer,
+                            order,
+                            full: if let Some(full_class) = full_class {
+                                full_class
+                            } else {
+                                val
+                            },
+                            modifier: modifier.clone(),
+                            variants,
+                            is_important,
+                            plugin: *plugin,
+                        })
+                    })
+                    .collect();
+            }
+        }
+    }
+
+    vec![Err(ParseError::new(
+        span,
+        ParseErrorKind::UnknownPlugin(val),
+    ))]
 }
 
 fn parse_modifier(mut modifier: &str, is_negative: bool) -> Option<Modifier<'_>> {
