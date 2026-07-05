@@ -102,6 +102,7 @@
 //! [`BUILTIN_SCREENS`]: crate::config::BUILTIN_SCREENS
 //! [`BUILTIN_COLORS`]: crate::config::BUILTIN_COLORS
 pub(crate) mod parser;
+pub(super) mod trie;
 
 use crate::plugins::Plugin;
 

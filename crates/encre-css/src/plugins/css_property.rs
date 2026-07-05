@@ -4,7 +4,7 @@
 use crate::{generator::{generate_at_rules, generate_class}, prelude::build_plugin::*};
 
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Functional {
-    can_handle: |_| true,
+    class: "", // field not used for css-property
     handle: |context| match context.modifier {
         Modifier::Builtin { .. } => unreachable!(),
         Modifier::Arbitrary { value, .. } => {

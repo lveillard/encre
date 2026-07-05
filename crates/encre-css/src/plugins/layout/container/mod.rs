@@ -8,10 +8,6 @@ use crate::{
 
 use std::{borrow::Cow, cmp::Ordering};
 
-fn can_handle(context: &ContextCanHandle) -> bool {
-    matches!(context.modifier, Modifier::Builtin { value: "container", .. })
-}
-
 fn handle(context: &mut ContextHandle) {
     if let Modifier::Builtin { .. } = context.modifier {
         generate_at_rules(context, |context| {
@@ -115,4 +111,4 @@ fn handle(context: &mut ContextHandle) {
     }
 }
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Functional { can_handle, handle });
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Functional { class: "container", handle });

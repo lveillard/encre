@@ -1,15 +1,16 @@
 use super::{Modifier, Selector, Variant};
 use crate::{
-    config::{BUILTIN_PLUGINS, BUILTIN_VARIANTS, Config},
+    config::{BUILTIN_VARIANTS, Config},
     error::{ParseError, ParseErrorKind},
     generator::ContextCanHandle,
     plugins::{
         Plugin, PluginArbitraryHint, PluginArbitraryMatcher, PluginKind, css_property::PLUGIN,
     },
+    selector::trie::{Trie, TrieData, build_trie},
     utils::{color, spacing, split_ignore_arbitrary, value_matchers::*},
 };
 
-use std::{borrow::Cow, ops::Range, str::FromStr};
+use std::{borrow::Cow, ops::Range, str::FromStr, sync::OnceLock};
 
 pub(crate) const ARBITRARY_START: char = '[';
 pub(crate) const ARBITRARY_END: char = ']';
@@ -36,6 +37,8 @@ const VALID_PLUGIN_HINT: [&str; 13] = [
 const LAYER_CUSTOM: i8 = -1;
 const LAYER_BUILTIN: i8 = 0;
 const LAYER_ARBITRARY: i8 = i8::MAX;
+
+static TRIE: OnceLock<Trie> = OnceLock::new();
 
 /// Remove the first and last character of a string.
 pub(crate) fn unwrap_string(val: &mut &str) {
@@ -178,30 +181,10 @@ fn is_arbitrary_matching(matcher: &PluginArbitraryMatcher, value: &str) -> bool 
 
 fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
     match (&plugin.kind, context.modifier) {
-        (&PluginKind::ListCases { ref cases }, &Modifier::Builtin { mut value, .. }) => {
-            if let Some(prefix) = plugin.list_prefix {
-                let Some(new_value) = &value.strip_prefix(prefix) else {
-                    return false;
-                };
-                value = new_value;
-                if value.starts_with('-') {
-                    value = &value[1..];
-                }
-            }
-
+        (&PluginKind::ListCases { ref cases }, &Modifier::Builtin { value, .. }) => {
             cases.contains_key(value)
         }
-        (&PluginKind::ListValues { ref values, .. }, &Modifier::Builtin { mut value, .. }) => {
-            if let Some(prefix) = plugin.list_prefix {
-                let Some(new_value) = &value.strip_prefix(prefix) else {
-                    return false;
-                };
-                value = new_value;
-                if value.starts_with('-') {
-                    value = &value[1..];
-                }
-            }
-
+        (&PluginKind::ListValues { ref values, .. }, &Modifier::Builtin { value, .. }) => {
             let (value, template_value) = if plugin.extra_slash.is_some()
                 && let Some(index) = value.find('/')
             {
@@ -218,56 +201,33 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
         }
         (
             PluginKind::Sizing {
-                prefix,
                 is_horizontal,
                 has_none,
                 ..
             },
             Modifier::Builtin { value, .. },
         ) => {
-            let Some(mut value) = value.strip_prefix(prefix) else {
-                return false;
-            };
-            if value.starts_with('-') {
-                value = &value[1..];
-            }
             spacing::is_matching_builtin_spacing(value)
                 || ["full", "screen", "min", "max", "fit", "auto"].contains(&value)
                 || (*is_horizontal && ["svw", "lvw", "dvw"].contains(&value))
                 || (!is_horizontal && ["svh", "lvh", "dvh"].contains(&value))
-                || (*has_none && value == "none")
+                || (*has_none && *value == "none")
         }
         (
             PluginKind::Spacing {
-                prefix,
-                has_auto,
-                has_full,
-                ..
+                has_auto, has_full, ..
             },
             Modifier::Builtin { value, .. },
         ) => {
-            let &Some(mut value) = &value.strip_prefix(prefix) else {
-                return false;
-            };
-            if value.starts_with('-') {
-                value = &value[1..];
-            }
             spacing::is_matching_builtin_spacing(value)
-                || (*has_auto && value == "auto")
-                || (*has_full && value == "full")
+                || (*has_auto && *value == "auto")
+                || (*has_full && *value == "full")
         }
-        (PluginKind::Color { prefix, .. }, Modifier::Builtin { value, .. }) => {
-            let Some(mut value) = value.strip_prefix(prefix) else {
-                return false;
-            };
-            if value.starts_with('-') {
-                value = &value[1..];
-            }
+        (PluginKind::Color { .. }, Modifier::Builtin { value, .. }) => {
             color::is_matching_builtin_color(context.config, value)
         }
         (
             PluginKind::AnyNumber {
-                prefix,
                 has_empty,
                 has_negative,
                 ..
@@ -276,19 +236,13 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
                 value, is_negative, ..
             },
         ) => {
-            let Some(mut value) = value.strip_prefix(prefix) else {
-                return false;
-            };
-            if value.starts_with('-') {
-                value = &value[1..];
-            }
             let (value, template_value) = if plugin.extra_slash.is_some()
                 && let Some(index) = value.find('/')
             {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (value, plugin.extra_slash.as_ref().map(|e| e.1))
+                (*value, plugin.extra_slash.as_ref().map(|e| e.1))
             };
             plugin
                 .extra_slash
@@ -298,16 +252,14 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
                     || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative)))
         }
         (
-            PluginKind::Arbitrary { prefix, .. },
+            PluginKind::Arbitrary { .. },
             Modifier::Arbitrary {
                 hint,
                 value,
-                prefix: modifier_prefix,
+                prefix,
             },
         ) => {
-            modifier_prefix
-                .strip_prefix(prefix)
-                .is_some_and(|r| r == "-")
+            prefix.is_empty()
                 && (PluginArbitraryHint::from_str(hint).is_ok_and(|h| {
                     plugin
                         .arbitrary_hints
@@ -317,30 +269,13 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
                         .arbitrary_matcher
                         .is_none_or(|matcher| is_arbitrary_matching(&matcher, value))))
         }
-        (
-            PluginKind::ArbitraryShadow { prefix, .. },
-            Modifier::Arbitrary {
-                hint,
-                value,
-                prefix: modifier_prefix,
-            },
-        ) => {
-            modifier_prefix
-                .strip_prefix(prefix)
-                .is_some_and(|r| r == "-")
-                && (*hint == "shadow" || (hint.is_empty() && is_matching_shadow(value)))
+        (PluginKind::ArbitraryShadow { .. }, Modifier::Arbitrary { hint, value, .. }) => {
+            *hint == "shadow" || (hint.is_empty() && is_matching_shadow(value))
         }
-        (
-            PluginKind::Functional {
-                can_handle: plugin_can_handle,
-                ..
-            },
-            _,
-        ) => plugin_can_handle(context),
+        (PluginKind::Functional { class, .. }, Modifier::Builtin { value, .. }) => value == class,
         _ => false,
     }
 }
-
 pub(crate) fn parse<'a>(
     val: &'a str,
     span: Option<Range<usize>>,
@@ -356,7 +291,15 @@ pub(crate) fn parse<'a>(
         ))];
     }
 
-    parse_recursive(val, span, full_class, None, config, config_derived_variants)
+    parse_recursive(
+        val,
+        span,
+        full_class,
+        None,
+        config,
+        config_derived_variants,
+        TRIE.get_or_init(|| build_trie(config)),
+    )
 }
 
 #[allow(clippy::too_many_lines, clippy::too_many_arguments)]
@@ -654,6 +597,7 @@ fn parse_recursive<'a>(
     parent_forced_layer: Option<i8>,
     config: &Config,
     config_derived_variants: &[(Cow<'static, str>, Variant<'static>)],
+    trie: &Trie,
 ) -> Vec<Result<Selector<'a>, ParseError<'a>>> {
     let span = span.unwrap_or(0..val.len());
 
@@ -811,6 +755,7 @@ fn parse_recursive<'a>(
                     forced_layer,
                     config,
                     config_derived_variants,
+                    trie,
                 );
 
                 // Merge the common variants with each child selector variant list
@@ -892,6 +837,7 @@ fn parse_recursive<'a>(
                 is_negative,
                 is_important,
                 span,
+                trie,
             )
         }
     }
@@ -908,56 +854,67 @@ fn find_plugin_to_handle_class<'a>(
     is_negative: bool,
     is_important: bool,
     span: Range<usize>,
+    trie: &Trie,
 ) -> Vec<Result<Selector<'a>, ParseError<'a>>> {
-    // Find the modifier
-    if let Some(modifier) = parse_modifier(modifier, is_negative) {
-        for (order, layer, plugin) in BUILTIN_PLUGINS
-            .iter()
-            .enumerate()
-            .map(|p| {
-                (
-                    p.0,
-                    forced_layer.unwrap_or(parent_forced_layer.unwrap_or(LAYER_BUILTIN)),
-                    p.1,
-                )
-            })
-            .chain(
-                // Selectors generated using custom plugins are placed first to be easily
-                // overridden
-                config.custom_plugins.iter().enumerate().map(|p| {
-                    (
-                        p.0,
-                        forced_layer.unwrap_or(parent_forced_layer.unwrap_or(LAYER_CUSTOM)),
-                        p.1,
-                    )
-                }),
-            )
-        {
-            let context = ContextCanHandle {
-                config,
-                modifier: &modifier,
-            };
+    let (common_prefix, plugins) = trie.common_prefix_search(modifier);
+    let plugins = plugins.collect::<Vec<&TrieData>>();
 
-            if can_handle(plugin, &context) {
-                return variants
-                    .into_iter()
-                    .map(|variants| {
-                        Ok(Selector {
-                            layer,
-                            order,
-                            full: if let Some(full_class) = full_class {
-                                full_class
-                            } else {
-                                val
-                            },
-                            modifier: modifier.clone(),
-                            variants,
-                            is_important,
-                            plugin: *plugin,
-                        })
-                    })
-                    .collect();
+    for TrieData {
+        has_prefix,
+        is_custom,
+        order,
+        plugin,
+    } in &plugins
+    {
+        let layer = forced_layer.unwrap_or(parent_forced_layer.unwrap_or_else(|| {
+            if *is_custom {
+                LAYER_CUSTOM
+            } else {
+                LAYER_BUILTIN
             }
+        }));
+
+        // Find the modifier
+        let Some(parsed_modifier) = parse_modifier(
+            if *has_prefix {
+                modifier
+                    .strip_prefix(&*common_prefix)
+                    .expect("common_prefix_search returns a common prefix has tuple first value")
+            } else {
+                modifier
+            },
+            is_negative,
+        ) else {
+            return vec![Err(ParseError::new(
+                span,
+                ParseErrorKind::UnknownPlugin(val),
+            ))];
+        };
+
+        let context = ContextCanHandle {
+            config,
+            modifier: &parsed_modifier,
+        };
+
+        if can_handle(plugin, &context) {
+            return variants
+                .into_iter()
+                .map(|variants| {
+                    Ok(Selector {
+                        layer,
+                        order: *order,
+                        full: if let Some(full_class) = full_class {
+                            full_class
+                        } else {
+                            val
+                        },
+                        modifier: parsed_modifier.clone(),
+                        variants,
+                        is_important,
+                        plugin: plugin,
+                    })
+                })
+                .collect();
         }
     }
 

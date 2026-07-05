@@ -322,6 +322,7 @@ pub enum PropertyName {
 // TODO: Rename extra_lines -> extra_rule_lines?
 // TODO: Think about what items need to be public and/or reexported for Functional kind
 // TODO: Use tuples for multiple plugins (easier for const fns)
+// TODO: in parse_modifier, omly split by ARBITRARY_SEPARATOR if the kind is Arbitrary
 
 #[derive(Debug, PartialEq)]
 pub struct Plugin {
@@ -547,7 +548,7 @@ pub enum PluginKind {
     },
 
     Functional {
-        can_handle: fn(&ContextCanHandle) -> bool,
+        class: &'static str,
         handle: fn(&mut ContextHandle),
     },
 }

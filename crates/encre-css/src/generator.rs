@@ -115,16 +115,6 @@ fn add_extra_css(plugin: &Plugin, context: &mut ContextHandle, value: &str) {
 fn handle(plugin: &Plugin, context: &mut ContextHandle) {
     match (&plugin.kind, context.modifier) {
         (&PluginKind::ListCases { ref cases }, &Modifier::Builtin { mut value, .. }) => {
-            if let Some(prefix) = plugin.list_prefix {
-                let Some(new_value) = value.strip_prefix(prefix) else {
-                    unreachable!("can_handle previously checked that the prefix was present");
-                };
-                value = new_value;
-                if value.starts_with('-') {
-                    value = &value[1..];
-                }
-            }
-
             add_extra_css(plugin, context, value);
 
             generate_at_rules(context, |context| {
@@ -145,17 +135,13 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 );
             });
         }
-        (&PluginKind::ListValues { ref prop, ref values }, &Modifier::Builtin { mut value, .. }) => {
-            if let Some(prefix) = plugin.list_prefix {
-                let Some(new_value) = value.strip_prefix(prefix) else {
-                    unreachable!("can_handle previously checked that the prefix was present");
-                };
-                value = new_value;
-                if value.starts_with('-') {
-                    value = &value[1..];
-                }
-            }
-
+        (
+            &PluginKind::ListValues {
+                ref prop,
+                ref values,
+            },
+            &Modifier::Builtin { mut value, .. },
+        ) => {
             let (value, template_value) = if plugin.extra_slash.is_some()
                 && let Some(index) = value.find('/')
             {
@@ -208,20 +194,13 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 value, is_negative, ..
             },
         ) => {
-            let Some(mut value) = value.strip_prefix(prefix) else {
-                unreachable!("can_handle previously checked that the prefix was present");
-            };
-            if value.starts_with('-') {
-                value = &value[1..];
-            }
-
             let (value, template_value) = if plugin.extra_slash.is_some()
                 && let Some(index) = value.find('/')
             {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (value, plugin.extra_slash.as_ref().map(|e| e.1))
+                (*value, plugin.extra_slash.as_ref().map(|e| e.1))
             };
 
             add_extra_css(plugin, context, &*value);
@@ -269,20 +248,13 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 value, is_negative, ..
             },
         ) => {
-            let Some(mut value) = value.strip_prefix(prefix) else {
-                unreachable!("can_handle previously checked that the prefix was present");
-            };
-            if value.starts_with('-') {
-                value = &value[1..];
-            }
-
             let (value, template_value) = if plugin.extra_slash.is_some()
                 && let Some(index) = value.find('/')
             {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (value, plugin.extra_slash.as_ref().map(|e| e.1))
+                (*value, plugin.extra_slash.as_ref().map(|e| e.1))
             };
 
             add_extra_css(plugin, context, &*value);
@@ -319,13 +291,6 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
             });
         }
         (PluginKind::Color { prefix, prop }, Modifier::Builtin { value, .. }) => {
-            let Some(mut value) = value.strip_prefix(prefix) else {
-                unreachable!("can_handle previously checked that the prefix was present");
-            };
-            if value.starts_with('-') {
-                value = &value[1..];
-            }
-
             generate_at_rules(context, |context| {
                 generate_class(
                     context,
@@ -350,20 +315,13 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
             },
             Modifier::Builtin { value, is_negative },
         ) => {
-            let Some(mut value) = value.strip_prefix(prefix) else {
-                unreachable!("can_handle previously checked that the prefix was present");
-            };
-            if value.starts_with('-') {
-                value = &value[1..];
-            }
-
             let (value, template_value) = if plugin.extra_slash.is_some()
                 && let Some(index) = value.find('/')
             {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (value, plugin.extra_slash.as_ref().map(|e| e.1))
+                (*value, plugin.extra_slash.as_ref().map(|e| e.1))
             };
 
             add_extra_css(plugin, context, &*value);
@@ -790,7 +748,6 @@ mod tests {
                 "-top-2",
                 "-z-2",
                 "-order-2",
-                "-mb8",
                 "-translate-x-52",
                 "-rotate-90",
                 "-skew-x-2",
@@ -818,10 +775,6 @@ mod tests {
 
 .-order-2 {
   order: -2;
-}
-
-.-mb8 {
-  margin-bottom: -2rem;
 }
 
 .-translate-x-52 {
