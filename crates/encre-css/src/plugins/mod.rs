@@ -35,7 +35,7 @@
 
 use std::str::FromStr;
 
-use crate::{generator::{ContextCanHandle, ContextHandle}, plugins::PropertyName::MultipleProps};
+use crate::{generator::ContextHandle, plugins::PropertyName::MultipleProps};
 
 pub mod accessibility;
 pub mod background;
@@ -309,19 +309,17 @@ pub enum PluginArbitraryMatcher {
     SpaceSeparated(&'static PluginArbitraryMatcher),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum PropertyName {
     SingleProp(&'static str),
     MultipleProps(&'static [&'static str]),
 }
 
 // TODO: Make a StaticPlugin/DynamicPlugin (with Strings and Vecs for ser/de)
-// TODO: Rename PLUGIN_1/PLUGIN_2 -> PLUGIN_BUILTIN/PLUGIN_ARBITRARY
 // TODO: Rename Color/Sizing/Spacing -> AnyColor/AnySize/AnySpacing
 // TODO: migrate has_ to the Plugin structure
 // TODO: Rename extra_lines -> extra_rule_lines?
 // TODO: Think about what items need to be public and/or reexported for Functional kind
-// TODO: Use tuples for multiple plugins (easier for const fns)
 // TODO: in parse_modifier, omly split by ARBITRARY_SEPARATOR if the kind is Arbitrary
 
 #[derive(Debug, PartialEq)]

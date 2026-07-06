@@ -2,7 +2,7 @@
 #![doc(alias = "grid")]
 use crate::prelude::build_plugin::*;
 
-const fn builtin_plugin(prefix: &'static str, prop: PropertyName, template: &'static str) -> Plugin {
+const fn plugin(prefix: &'static str, prop: PropertyName, template: &'static str) -> Plugin {
     Plugin::new(PluginKind::AnyNumber {
         prefix,
         prop,
@@ -32,7 +32,7 @@ pub(crate) const PLUGIN_SPAN_1: Plugin = Plugin::new(PluginKind::ListValues {
     },
 });
 pub(crate) const PLUGIN_SPAN_2: Plugin =
-    builtin_plugin("row-span", SingleProp("grid-row"), "span {} / span {}");
+    plugin("row-span", SingleProp("grid-row"), "span {} / span {}");
 
 pub(crate) const PLUGIN_START_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("grid-row-start"),
@@ -40,7 +40,7 @@ pub(crate) const PLUGIN_START_1: Plugin = Plugin::new(PluginKind::ListValues {
         "row-start-auto" => "auto",
     },
 });
-pub(crate) const PLUGIN_START_2: Plugin = builtin_plugin("row-start", SingleProp("grid-row-start"), "{}");
+pub(crate) const PLUGIN_START_2: Plugin = plugin("row-start", SingleProp("grid-row-start"), "{}");
 
 pub(crate) const PLUGIN_END_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("grid-row-end"),
@@ -48,4 +48,4 @@ pub(crate) const PLUGIN_END_1: Plugin = Plugin::new(PluginKind::ListValues {
         "row-end-auto" => "auto",
     },
 });
-pub(crate) const PLUGIN_END_2: Plugin = builtin_plugin("row-end", SingleProp("grid-row-end"), "{}");
+pub(crate) const PLUGIN_END_2: Plugin = plugin("row-end", SingleProp("grid-row-end"), "{}");

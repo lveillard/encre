@@ -676,7 +676,7 @@ mod tests {
 
     #[test]
     fn not_parsing_too_loosely() {
-        let generated = generate(["flex-test-[]"], &base_config());
+        let generated = generate(["flex-test-[]", "m1", "m-1/a"], &base_config());
         assert!(generated.is_empty());
     }
 

@@ -283,8 +283,8 @@ pub(crate) fn parse<'a>(
     config: &Config,
     config_derived_variants: &[(Cow<'static, str>, Variant<'static>)],
 ) -> Vec<Result<Selector<'a>, ParseError<'a>>> {
-    // The shortest selector is `m1`
-    if val.len() < 2 {
+    // The shortest selector is `m-1`
+    if val.len() < 3 {
         return vec![Err(ParseError::new(
             span.unwrap_or(0..val.len()),
             ParseErrorKind::TooShort(val),
@@ -966,7 +966,7 @@ fn parse_modifier(mut modifier: &str, is_negative: bool) -> Option<Modifier<'_>>
     }
 }
 
-/*
+/* TODO
 #[cfg(test)]
 mod tests {
     // NOTE: In these tests, the order value of the selectors and variants are arbitrary because
