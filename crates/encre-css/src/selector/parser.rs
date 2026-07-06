@@ -255,9 +255,6 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
                         .arbitrary_matcher
                         .is_none_or(|matcher| is_arbitrary_matching(&matcher, value))))
         }
-        (PluginKind::ArbitraryShadow { .. }, Modifier::Arbitrary { hint, value, .. }) => {
-            *hint == "shadow" || (hint.is_empty() && is_matching_shadow(value))
-        }
         (PluginKind::Functional { class, .. }, Modifier::Builtin { value, .. }) => value == class,
         _ => false,
     }

@@ -317,7 +317,6 @@ pub enum PropertyName {
 
 // TODO: Make a StaticPlugin/DynamicPlugin (with Strings and Vecs for ser/de)
 // TODO: migrate has_ to the Plugin structure
-// TODO: Rename extra_lines -> extra_rule_lines?
 // TODO: Think about what items need to be public and/or reexported for Functional kind
 // TODO: in parse_modifier, omly split by ARBITRARY_SEPARATOR if the kind is Arbitrary
 
@@ -332,6 +331,7 @@ pub struct Plugin {
     pub(crate) extra_slash: Option<(phf::Map<&'static str, &'static str>, &'static str)>,
     pub(crate) arbitrary_hints: Option<&'static [PluginArbitraryHint]>,
     pub(crate) arbitrary_matcher: Option<PluginArbitraryMatcher>,
+    pub(crate) arbitrary_shadow_color_replacement: Option<&'static str>,
     pub(crate) list_prefix: Option<&'static str>,
 }
 
@@ -347,6 +347,7 @@ impl Plugin {
             template_multiple: None,
             arbitrary_hints: None,
             arbitrary_matcher: None,
+            arbitrary_shadow_color_replacement: None,
             list_prefix: None,
         }
     }
@@ -481,6 +482,19 @@ impl Plugin {
         self
     }
 
+    pub const fn shadow_color_replacement(mut self, replacement: &'static str) -> Self {
+        if !matches!(self.kind, PluginKind::Arbitrary { .. }) {
+            panic!("Plugin::shadow_color_replacement can only be used with PluginKind::Arbitrary");
+        }
+
+        if self.arbitrary_matcher.is_none() {
+            panic!("Plugin::matcher must be called before calling Plugin::shadow_color_replacement with PluginArbitraryMatcher::Shadow as argument");
+        }
+
+        self.arbitrary_shadow_color_replacement = Some(replacement);
+        self
+    }
+
     pub const fn list_prefix(mut self, list_prefix: &'static str) -> Self {
         if !matches!(self.kind, PluginKind::ListValues { .. } | PluginKind::ListCases { .. }) {
             panic!("Plugin::list_prefix can only be used with PluginKind::ListValues or PluginKind::ListCases. For other kinds, use the built-in `prefix` field");
@@ -522,11 +536,6 @@ pub enum PluginKind {
     Arbitrary {
         prefix: &'static str,
         prop: PropertyName,
-    },
-    ArbitraryShadow { // TODO: replace by Functional
-        prefix: &'static str,
-        prop: PropertyName,
-        color_replacement: &'static str,
     },
 
     Functional {

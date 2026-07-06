@@ -297,32 +297,20 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 generate_class(
                     context,
                     |context| {
-                        push_css_lines_with_templating(prop, plugin, &*value, None, context);
-
-                        if let Some(extra_lines) = plugin.extra_lines {
-                            context.buffer.lines(extra_lines);
+                        if let Some(color_replacement) = plugin.arbitrary_shadow_color_replacement {
+                            // TODO: avoid panicking (and then remove condition in Plugin::shadow_color_replacement)
+                            let mut shadow = shadow::ShadowList::parse(&value).expect("failed to parse shadow");
+                            shadow.replace_all_colors(color_replacement);
+                            push_css_lines_with_templating(
+                                prop,
+                                plugin,
+                                &shadow.to_string(),
+                                None,
+                                context,
+                            );
+                        } else {
+                            push_css_lines_with_templating(prop, plugin, &*value, None, context);
                         }
-                    },
-                    plugin.extra_class.unwrap_or(""),
-                );
-            });
-        }
-        (
-            PluginKind::ArbitraryShadow {
-                prop,
-                color_replacement,
-                ..
-            },
-            Modifier::Arbitrary { value, .. },
-        ) => {
-            generate_at_rules(context, |context| {
-                generate_class(
-                    context,
-                    |context| {
-                        let mut shadow = shadow::ShadowList::parse(value).unwrap();
-                        shadow.replace_all_colors(color_replacement);
-
-                        push_css_lines(prop, &shadow.to_string(), context);
 
                         if let Some(extra_lines) = plugin.extra_lines {
                             context.buffer.lines(extra_lines);

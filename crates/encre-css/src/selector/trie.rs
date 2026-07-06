@@ -150,8 +150,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
             PluginKind::Spacing { prefix, .. }
             | PluginKind::Color { prefix, .. }
             | PluginKind::Number { prefix, .. }
-            | PluginKind::Arbitrary { prefix, .. }
-            | PluginKind::ArbitraryShadow { prefix, .. } => {
+            | PluginKind::Arbitrary { prefix, .. } => {
                 trie.insert(
                     prefix,
                     TrieData {

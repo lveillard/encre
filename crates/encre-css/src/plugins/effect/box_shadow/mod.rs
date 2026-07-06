@@ -1,6 +1,6 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "effect")]
-use crate::prelude::build_plugin::*;
+use crate::{plugins::PluginArbitraryMatcher::*, prelude::build_plugin::*};
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("--en-shadow"),
@@ -16,11 +16,13 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     },
 }).extra_lines(&["box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow);"]);
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::ArbitraryShadow {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "shadow",
     prop: SingleProp("--en-shadow"),
-    color_replacement: "var(--en-shadow-color, {})",
-}).extra_lines(&["box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow);"]);
+})
+.extra_lines(&["box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow);"])
+.matcher(Shadow)
+.shadow_color_replacement("var(--en-shadow-color, {})");
 
 pub(crate) const PLUGIN_INSET_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("--en-inset-shadow"),
@@ -32,8 +34,11 @@ pub(crate) const PLUGIN_INSET_1: Plugin = Plugin::new(PluginKind::ListValues {
     },
 }).extra_lines(&["box-shadow: var(--en-inset-shadow), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow, 0 0 #0000);"]);
 
-pub(crate) const PLUGIN_INSET_2: Plugin = Plugin::new(PluginKind::ArbitraryShadow {
+pub(crate) const PLUGIN_INSET_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "inset-shadow",
     prop: SingleProp("--en-inset-shadow"),
-    color_replacement: "var(--en-inset-shadow-color, {})",
-}).extra_lines(&["box-shadow: var(--en-inset-shadow), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow, 0 0 #0000);"]);
+})
+.extra_lines(&["box-shadow: var(--en-inset-shadow), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow, 0 0 #0000);"])
+.hints(&[PluginArbitraryHint::Shadow])
+.matcher(Shadow)
+.shadow_color_replacement("var(--en-inset-shadow-color, {})");
