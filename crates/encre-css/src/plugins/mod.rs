@@ -316,7 +316,6 @@ pub enum PropertyName {
 }
 
 // TODO: Make a StaticPlugin/DynamicPlugin (with Strings and Vecs for ser/de)
-// TODO: Rename Color/Sizing/Spacing -> AnyColor/AnySize/AnySpacing
 // TODO: migrate has_ to the Plugin structure
 // TODO: Rename extra_lines -> extra_rule_lines?
 // TODO: Think about what items need to be public and/or reexported for Functional kind
@@ -375,12 +374,12 @@ impl Plugin {
         if !matches!(
             self.kind,
             PluginKind::ListValues { .. }
-                | PluginKind::AnyNumber { .. }
+                | PluginKind::Number { .. }
                 | PluginKind::Spacing { .. }
                 | PluginKind::Color { .. }
         ) {
             panic!(
-                "Plugin::extra_slash only works with PluginKind::ListValues or PluginKind::AnyNumber or PluginKind::{{Sizing, Spacing, Color}}"
+                "Plugin::extra_slash only works with PluginKind::ListValues or PluginKind::Number or PluginKind::{{Sizing, Spacing, Color}}"
             );
         }
 
@@ -392,12 +391,12 @@ impl Plugin {
         if !matches!(
             self.kind,
             PluginKind::Arbitrary { .. }
-                | PluginKind::AnyNumber { .. }
+                | PluginKind::Number { .. }
                 | PluginKind::Spacing { .. }
                 | PluginKind::Color { .. }
         ) {
             panic!(
-                "Plugin::template can only be used with PluginKind::Arbitrary or PluginKind::AnyNumber or PluginKind::{{Spacing, Sizing, Color}}"
+                "Plugin::template can only be used with PluginKind::Arbitrary or PluginKind::Number or PluginKind::{{Spacing, Sizing, Color}}"
             );
         }
 
@@ -409,12 +408,12 @@ impl Plugin {
         if !matches!(
             self.kind,
             PluginKind::Arbitrary { .. }
-                | PluginKind::AnyNumber { .. }
+                | PluginKind::Number { .. }
                 | PluginKind::Spacing { .. }
                 | PluginKind::Color { .. }
         ) {
             panic!(
-                "Plugin::template_multiple can only be used with PluginKind::Arbitrary or PluginKind::AnyNumber or PluginKind::{{Spacing, Sizing, Color}}"
+                "Plugin::template_multiple can only be used with PluginKind::Arbitrary or PluginKind::Number or PluginKind::{{Spacing, Sizing, Color}}"
             );
         }
 
@@ -423,7 +422,7 @@ impl Plugin {
             PluginKind::Arbitrary {
                 prop: MultipleProps(..),
                 ..
-            } | PluginKind::AnyNumber {
+            } | PluginKind::Number {
                 prop: MultipleProps(..),
                 ..
             } | PluginKind::Spacing {
@@ -444,7 +443,7 @@ impl Plugin {
             PluginKind::Arbitrary {
                 prop: MultipleProps(p),
                 ..
-            } | PluginKind::AnyNumber {
+            } | PluginKind::Number {
                 prop: MultipleProps(p),
                 ..
             } | PluginKind::Spacing {
@@ -512,7 +511,7 @@ pub enum PluginKind {
         prefix: &'static str,
         prop: PropertyName,
     },
-    AnyNumber {
+    Number {
         prefix: &'static str,
         prop: PropertyName,
         has_empty: bool,

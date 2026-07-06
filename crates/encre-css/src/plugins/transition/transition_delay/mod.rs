@@ -2,7 +2,7 @@
 #![doc(alias = "transition")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Number {
     prefix: "delay",
     prop: SingleProp("transition-delay"),
     has_empty: false,

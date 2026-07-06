@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 
 const fn plugin(prefix: &'static str, prop: PropertyName, template: &'static str) -> Plugin {
-    Plugin::new(PluginKind::AnyNumber {
+    Plugin::new(PluginKind::Number {
         prefix,
         prop,
         has_empty: false,

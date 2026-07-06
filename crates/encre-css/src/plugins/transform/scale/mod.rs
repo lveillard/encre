@@ -6,7 +6,7 @@ type P = (Plugin, Plugin);
 
 const fn plugin(prefix: &'static str, prop: PropertyName) -> P {
     (
-        Plugin::new(PluginKind::AnyNumber {
+        Plugin::new(PluginKind::Number {
             prefix,
             prop,
             has_empty: false,

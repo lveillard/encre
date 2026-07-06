@@ -10,7 +10,7 @@ pub(crate) const PLUGIN_X_1: Plugin = Plugin::new(PluginKind::ListCases {
 })
 .extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-pub(crate) const PLUGIN_X_2: Plugin = Plugin::new(PluginKind::AnyNumber {
+pub(crate) const PLUGIN_X_2: Plugin = Plugin::new(PluginKind::Number {
     prefix: "divide-x",
     prop: MultipleProps(&["border-inline-start-width", "border-inline-end-width"]),
     has_empty: true,
@@ -44,7 +44,7 @@ pub(crate) const PLUGIN_Y_1: Plugin = Plugin::new(PluginKind::ListCases {
 })
 .extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-pub(crate) const PLUGIN_Y_2: Plugin = Plugin::new(PluginKind::AnyNumber {
+pub(crate) const PLUGIN_Y_2: Plugin = Plugin::new(PluginKind::Number {
     prefix: "divide-y",
     prop: MultipleProps(&["border-block-start-width", "border-block-end-width"]),
     has_empty: true,

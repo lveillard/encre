@@ -3,7 +3,7 @@
 use super::CSS_BACKDROP_FILTER;
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::AnyNumber {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
     prefix: "backdrop-invert",
     prop: SingleProp("--en-backdrop-invert"),
     has_empty: true,

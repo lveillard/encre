@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Number {
     prefix: "ring-offset",
     prop: SingleProp("--en-ring-offset-width"),
     has_empty: false,

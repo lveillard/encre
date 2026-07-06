@@ -2,7 +2,7 @@
 #![doc(alias = "grid")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Number {
     prefix: "grid-cols",
     prop: SingleProp("grid-template-columns"),
     has_empty: false,

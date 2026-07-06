@@ -114,7 +114,7 @@ fn add_extra_css(plugin: &Plugin, context: &mut ContextHandle, value: &str) {
 
 fn handle(plugin: &Plugin, context: &mut ContextHandle) {
     match (&plugin.kind, context.modifier) {
-        (&PluginKind::ListCases { ref cases }, &Modifier::Builtin { mut value, .. }) => {
+        (&PluginKind::ListCases { ref cases }, &Modifier::Builtin { value, .. }) => {
             add_extra_css(plugin, context, value);
 
             generate_at_rules(context, |context| {
@@ -231,7 +231,7 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 );
             });
         }
-        (PluginKind::Color { prefix, prop }, Modifier::Builtin { value, .. }) => {
+        (PluginKind::Color { prop, .. }, Modifier::Builtin { value, .. }) => {
             generate_at_rules(context, |context| {
                 generate_class(
                     context,
@@ -248,11 +248,8 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
             });
         }
         (
-            PluginKind::AnyNumber {
-                prefix,
-                prop,
-                divide_by,
-                ..
+            PluginKind::Number {
+                prop, divide_by, ..
             },
             Modifier::Builtin { value, is_negative },
         ) => {

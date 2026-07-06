@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::AnyNumber {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Number {
     prefix: "decoration",
     prop: SingleProp("text-decoration-thickness"),
     has_empty: false,

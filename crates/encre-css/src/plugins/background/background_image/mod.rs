@@ -52,7 +52,7 @@ pub(crate) const PLUGIN_LINEAR_1: Plugin = Plugin::new(PluginKind::ListValues {
 })
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
-pub(crate) const PLUGIN_LINEAR_2: Plugin = Plugin::new(PluginKind::AnyNumber {
+pub(crate) const PLUGIN_LINEAR_2: Plugin = Plugin::new(PluginKind::Number {
     prefix: "bg-linear",
     prop: SingleProp("background-image"),
     has_empty: false,
@@ -90,7 +90,7 @@ pub(crate) const PLUGIN_CONIC_1: Plugin = Plugin::new(PluginKind::ListValues {
 })
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
-pub(crate) const PLUGIN_CONIC_2: Plugin = Plugin::new(PluginKind::AnyNumber {
+pub(crate) const PLUGIN_CONIC_2: Plugin = Plugin::new(PluginKind::Number {
     prefix: "bg-conic",
     prop: SingleProp("background-image"),
     has_empty: false,

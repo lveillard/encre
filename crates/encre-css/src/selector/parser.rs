@@ -213,7 +213,7 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
             color::is_matching_builtin_color(context.config, value)
         }
         (
-            PluginKind::AnyNumber {
+            PluginKind::Number {
                 has_empty,
                 has_negative,
                 ..

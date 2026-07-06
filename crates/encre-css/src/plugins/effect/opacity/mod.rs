@@ -2,7 +2,7 @@
 #![doc(alias = "effect")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::AnyNumber {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
     prefix: "opacity",
     prop: SingleProp("opacity"),
     has_empty: false,

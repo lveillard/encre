@@ -9,7 +9,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     },
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::AnyNumber {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Number {
     prefix: "underline-offset",
     prop: SingleProp("text-underline-offset"),
     has_empty: false,
