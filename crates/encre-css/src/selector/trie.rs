@@ -147,8 +147,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                     }
                 }
             }
-            PluginKind::Sizing { prefix, .. }
-            | PluginKind::Spacing { prefix, .. }
+            PluginKind::Spacing { prefix, .. }
             | PluginKind::Color { prefix, .. }
             | PluginKind::AnyNumber { prefix, .. }
             | PluginKind::Arbitrary { prefix, .. }

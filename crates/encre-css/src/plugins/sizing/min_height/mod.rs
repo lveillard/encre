@@ -1,15 +1,20 @@
 #![doc = include_str!("README.md")]
 #![doc(alias("sizing", "size"))]
-use crate::prelude::build_plugin::*;
+use crate::{plugins::sizing::CSS_SIZE_VALUES_VERTICAL, prelude::build_plugin::*};
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Sizing {
+pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Spacing {
     prefix: "min-h",
     prop: SingleProp("min-height"),
-    is_horizontal: false,
-    has_none: false,
+    has_auto: true,
+    has_full: true,
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::ListValues {
+    prop: SingleProp("min-height"),
+    values: CSS_SIZE_VALUES_VERTICAL,
+}).list_prefix("min-h");
+
+pub(crate) const PLUGIN_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "min-h",
     prop: SingleProp("min-height"),
 });

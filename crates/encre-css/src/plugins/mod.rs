@@ -376,7 +376,6 @@ impl Plugin {
             self.kind,
             PluginKind::ListValues { .. }
                 | PluginKind::AnyNumber { .. }
-                | PluginKind::Sizing { .. }
                 | PluginKind::Spacing { .. }
                 | PluginKind::Color { .. }
         ) {
@@ -395,7 +394,6 @@ impl Plugin {
             PluginKind::Arbitrary { .. }
                 | PluginKind::AnyNumber { .. }
                 | PluginKind::Spacing { .. }
-                | PluginKind::Sizing { .. }
                 | PluginKind::Color { .. }
         ) {
             panic!(
@@ -413,7 +411,6 @@ impl Plugin {
             PluginKind::Arbitrary { .. }
                 | PluginKind::AnyNumber { .. }
                 | PluginKind::Spacing { .. }
-                | PluginKind::Sizing { .. }
                 | PluginKind::Color { .. }
         ) {
             panic!(
@@ -430,9 +427,6 @@ impl Plugin {
                 prop: MultipleProps(..),
                 ..
             } | PluginKind::Spacing {
-                prop: MultipleProps(..),
-                ..
-            } | PluginKind::Sizing {
                 prop: MultipleProps(..),
                 ..
             } | PluginKind::Color {
@@ -454,9 +448,6 @@ impl Plugin {
                 prop: MultipleProps(p),
                 ..
             } | PluginKind::Spacing {
-                prop: MultipleProps(p),
-                ..
-            } | PluginKind::Sizing {
                 prop: MultipleProps(p),
                 ..
             } | PluginKind::Color {
@@ -511,12 +502,6 @@ pub enum PluginKind {
         values: phf::Map<&'static str, &'static str>,
     },
 
-    Sizing {
-        prefix: &'static str,
-        prop: PropertyName,
-        is_horizontal: bool,
-        has_none: bool,
-    },
     Spacing {
         prefix: &'static str,
         prop: PropertyName,

@@ -6,6 +6,36 @@ pub mod min_height;
 pub mod min_width;
 pub mod width;
 
+use phf::phf_map;
+
+pub(super) const CSS_SIZE_VALUES_HORIZONTAL: phf::Map<&'static str, &'static str> = phf_map! {
+    "none" => "none",
+    "screen" => "100vw",
+    "min" => "min-content",
+    "max" => "max-content",
+    "fit" => "fit-content",
+    "svw" => "100svw",
+    "lvw" => "100lvw",
+    "dvw" => "100dvw",
+    "svh" => "100svh",
+    "lvh" => "100lvh",
+    "dvh" => "100dvh",
+};
+
+pub(super) const CSS_SIZE_VALUES_VERTICAL: phf::Map<&'static str, &'static str> = phf_map! {
+    "none" => "none",
+    "screen" => "100vh",
+    "min" => "min-content",
+    "max" => "max-content",
+    "fit" => "fit-content",
+    "svw" => "100svw",
+    "lvw" => "100lvw",
+    "dvw" => "100dvw",
+    "svh" => "100svh",
+    "lvh" => "100lvh",
+    "dvh" => "100dvh",
+};
+
 #[cfg(test)]
 mod tests {
     use crate::{generate, utils::testing::base_config};

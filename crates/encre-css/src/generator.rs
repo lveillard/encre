@@ -140,7 +140,7 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 ref prop,
                 ref values,
             },
-            &Modifier::Builtin { mut value, .. },
+            &Modifier::Builtin { value, .. },
         ) => {
             let (value, template_value) = if plugin.extra_slash.is_some()
                 && let Some(index) = value.find('/')
@@ -184,66 +184,7 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
             });
         }
         (
-            PluginKind::Sizing {
-                prefix,
-                prop,
-                is_horizontal,
-                ..
-            },
-            Modifier::Builtin {
-                value, is_negative, ..
-            },
-        ) => {
-            let (value, template_value) = if plugin.extra_slash.is_some()
-                && let Some(index) = value.find('/')
-            {
-                let (before, after) = value.split_at(index);
-                (before, Some(&after[1..]))
-            } else {
-                (*value, plugin.extra_slash.as_ref().map(|e| e.1))
-            };
-
-            add_extra_css(plugin, context, &*value);
-
-            generate_at_rules(context, |context| {
-                generate_class(
-                    context,
-                    |context| {
-                        let value = match &*value {
-                            "none" => Cow::Borrowed("none"),
-                            "auto" => Cow::Borrowed("auto"),
-                            "full" => Cow::Borrowed("100%"),
-                            "screen" if *is_horizontal => Cow::Borrowed("100vw"),
-                            "screen" if !is_horizontal => Cow::Borrowed("100vh"),
-                            "min" => Cow::Borrowed("min-content"),
-                            "max" => Cow::Borrowed("max-content"),
-                            "fit" => Cow::Borrowed("fit-content"),
-                            "svw" if *is_horizontal => Cow::Borrowed("100svw"),
-                            "lvw" if *is_horizontal => Cow::Borrowed("100lvw"),
-                            "dvw" if *is_horizontal => Cow::Borrowed("100dvw"),
-                            "svh" if !is_horizontal => Cow::Borrowed("100svh"),
-                            "lvh" if !is_horizontal => Cow::Borrowed("100lvh"),
-                            "dvh" if !is_horizontal => Cow::Borrowed("100dvh"),
-                            _ => spacing::get(value, *is_negative).unwrap(),
-                        };
-                        push_css_lines_with_templating(
-                            prop,
-                            plugin,
-                            &value,
-                            template_value,
-                            context,
-                        );
-
-                        if let Some(extra_lines) = plugin.extra_lines {
-                            context.buffer.lines(extra_lines);
-                        }
-                    },
-                    plugin.extra_class.unwrap_or(""),
-                );
-            });
-        }
-        (
-            PluginKind::Spacing { prefix, prop, .. },
+            PluginKind::Spacing { prop, .. },
             Modifier::Builtin {
                 value, is_negative, ..
             },

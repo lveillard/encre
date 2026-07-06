@@ -200,20 +200,6 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
                 && values.contains_key(value)
         }
         (
-            PluginKind::Sizing {
-                is_horizontal,
-                has_none,
-                ..
-            },
-            Modifier::Builtin { value, .. },
-        ) => {
-            spacing::is_matching_builtin_spacing(value)
-                || ["full", "screen", "min", "max", "fit", "auto"].contains(&value)
-                || (*is_horizontal && ["svw", "lvw", "dvw"].contains(&value))
-                || (!is_horizontal && ["svh", "lvh", "dvh"].contains(&value))
-                || (*has_none && *value == "none")
-        }
-        (
             PluginKind::Spacing {
                 has_auto, has_full, ..
             },
