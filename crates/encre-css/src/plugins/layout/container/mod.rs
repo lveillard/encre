@@ -2,7 +2,7 @@
 #![doc(alias = "layout")]
 use crate::{
     config::BUILTIN_SCREENS,
-    generator::{ContextCanHandle, ContextHandle, generate_at_rules, generate_class},
+    generator::{ContextHandle, generate_at_rules, generate_class},
     prelude::build_plugin::*,
 };
 

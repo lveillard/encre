@@ -9,18 +9,6 @@ use crate::{
 
 use std::{borrow::Cow, collections::BTreeSet};
 
-/// The context used in the [`Plugin::can_handle`] method.
-///
-/// [`Plugin::can_handle`]: crate::plugins::Plugin::can_handle
-#[derive(Debug)]
-pub struct ContextCanHandle<'a, 'b, 'c> {
-    /// The generator's configuration.
-    pub config: &'a Config,
-
-    /// The modifier which will be checked.
-    pub modifier: &'b Modifier<'c>,
-}
-
 /// The context used in the [`Plugin::handle`] method.
 ///
 /// [`Plugin::handle`]: crate::plugins::Plugin::handle

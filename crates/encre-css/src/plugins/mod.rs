@@ -234,7 +234,7 @@ pub trait Plugin: fmt::Debug {
     fn handle(&self, _context: &mut ContextHandle);
 }*/
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord)]
 pub enum PluginArbitraryHint {
     Shadow,
     AbsoluteSize,
@@ -317,7 +317,8 @@ pub enum PropertyName {
 
 // TODO: Make a StaticPlugin/DynamicPlugin (with Strings and Vecs for ser/de)
 // TODO: Think about what items need to be public and/or reexported for Functional kind
-// TODO: in parse_modifier, omly split by ARBITRARY_SEPARATOR if the kind is Arbitrary
+// TODO: rename `prefix` in plugins with the correct `namespace` word?
+// TODO: move PluginArbitraryHint -> crate::selector::ArbitraryHint
 
 #[derive(Debug, PartialEq)]
 pub struct Plugin {

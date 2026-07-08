@@ -103,6 +103,7 @@
 //! [`BUILTIN_COLORS`]: crate::config::BUILTIN_COLORS
 pub(crate) mod parser;
 pub(super) mod trie;
+pub(super) mod find_plugin;
 
 use crate::plugins::Plugin;
 
@@ -153,11 +154,8 @@ pub enum Modifier<'a> {
     /// - `relative-size`
     /// - `shadow`
     Arbitrary {
-        /// The rest of the modifier without the arbitrary value (e.g. `bg` in `bg-[rgb(12_12_12)]`).
-        prefix: &'a str,
-
         /// The type hint needed for ambiguous values.
-        hint: &'a str,
+        hint: Option<crate::plugins::PluginArbitraryHint>,
 
         /// The inner value of the modifier.
         ///

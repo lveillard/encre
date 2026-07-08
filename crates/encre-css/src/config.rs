@@ -821,7 +821,6 @@ pub const BUILTIN_VARIANTS: phf::OrderedMap<&'static str, Variant> = {
 /// The list of all default plugins.
 ///
 /// Sorted following [Tailwind's order](https://github.com/tailwindlabs/tailwindcss/blob/master/src/corePlugins.js).
-#[rustfmt::skip]
 pub const BUILTIN_PLUGINS: &[&'static Plugin] = &[
     &layout::container::PLUGIN,
     &accessibility::screen_reader::PLUGIN,
