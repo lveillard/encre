@@ -7,10 +7,9 @@ const fn plugin(prefix: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
         Plugin::new(PluginKind::Number {
             prefix,
             prop,
-            has_empty: false,
-            has_negative: true,
             divide_by: 1.0,
         })
+        .has_negative()
         .extra_lines(&[CSS_TRANSFORM])
         .template("{}deg"),
         Plugin::new(PluginKind::Arbitrary { prefix, prop }).extra_lines(&[CSS_TRANSFORM]),

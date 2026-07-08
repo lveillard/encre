@@ -7,8 +7,6 @@ const fn plugin(prefix: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
         Plugin::new(PluginKind::Spacing {
             prefix,
             prop,
-            has_auto: false,
-            has_full: false,
         }),
         Plugin::new(PluginKind::Arbitrary { prefix, prop }),
     )

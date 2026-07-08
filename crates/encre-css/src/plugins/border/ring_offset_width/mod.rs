@@ -6,8 +6,6 @@ use PluginArbitraryMatcher::*;
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Number {
     prefix: "ring-offset",
     prop: SingleProp("--en-ring-offset-width"),
-    has_empty: false,
-    has_negative: false,
     divide_by: 1.0,
 })
 .extra_lines(&["--en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);"])

@@ -199,25 +199,16 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
                 .is_none_or(|extra_slash| extra_slash.0.contains_key(template_value.unwrap()))
                 && values.contains_key(value)
         }
-        (
-            PluginKind::Spacing {
-                has_auto, has_full, ..
-            },
-            Modifier::Builtin { value, .. },
-        ) => {
+        (PluginKind::Spacing { .. }, Modifier::Builtin { value, .. }) => {
             spacing::is_matching_builtin_spacing(value)
-                || (*has_auto && *value == "auto")
-                || (*has_full && *value == "full")
+                || (plugin.has_auto && *value == "auto")
+                || (plugin.has_full && *value == "full")
         }
         (PluginKind::Color { .. }, Modifier::Builtin { value, .. }) => {
             color::is_matching_builtin_color(context.config, value)
         }
         (
-            PluginKind::Number {
-                has_empty,
-                has_negative,
-                ..
-            },
+            PluginKind::Number { .. },
             Modifier::Builtin {
                 value, is_negative, ..
             },
@@ -234,8 +225,8 @@ fn can_handle(plugin: &Plugin, context: &ContextCanHandle) -> bool {
                 .extra_slash
                 .as_ref()
                 .is_none_or(|extra_slash| extra_slash.0.contains_key(template_value.unwrap()))
-                && ((*has_empty && value.is_empty())
-                    || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative)))
+                && ((plugin.has_empty && value.is_empty())
+                    || (value.parse::<usize>().is_ok() && (plugin.has_negative || !*is_negative)))
         }
         (
             PluginKind::Arbitrary { .. },

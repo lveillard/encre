@@ -6,10 +6,9 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Number {
     prefix: "hue-rotate",
     prop: SingleProp("--en-hue-rotate"),
-    has_empty: false,
-    has_negative: true,
     divide_by: 1.0,
 })
+.has_negative()
 .extra_lines(&[CSS_FILTER])
 .template("hue-rotate({}deg)");
 

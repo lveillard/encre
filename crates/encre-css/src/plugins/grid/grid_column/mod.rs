@@ -6,8 +6,6 @@ const fn plugin(prefix: &'static str, prop: PropertyName, template: &'static str
     Plugin::new(PluginKind::Number {
         prefix,
         prop,
-        has_empty: false,
-        has_negative: false,
         divide_by: 1.0,
     })
     .template(template)

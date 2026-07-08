@@ -4,13 +4,10 @@ use crate::{plugins::transform::CSS_TRANSFORM, prelude::build_plugin::*};
 
 const fn plugin(prefix: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
     (
-        Plugin::new(PluginKind::Spacing {
-            prefix,
-            prop,
-            has_auto: true,
-            has_full: true,
-        })
-        .extra_lines(&[CSS_TRANSFORM]),
+        Plugin::new(PluginKind::Spacing { prefix, prop })
+            .has_auto()
+            .has_full()
+            .extra_lines(&[CSS_TRANSFORM]),
         Plugin::new(PluginKind::Arbitrary { prefix, prop }).extra_lines(&[CSS_TRANSFORM]),
     )
 }

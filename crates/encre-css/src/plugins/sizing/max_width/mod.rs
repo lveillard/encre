@@ -5,8 +5,6 @@ use crate::{plugins::sizing::CSS_SIZE_VALUES_HORIZONTAL, prelude::build_plugin::
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Spacing {
     prefix: "max-w",
     prop: SingleProp("max-width"),
-    has_auto: false,
-    has_full: false,
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::ListValues {

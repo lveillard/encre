@@ -9,10 +9,9 @@ const fn plugin(prefix: &'static str, prop: PropertyName) -> P {
         Plugin::new(PluginKind::Number {
             prefix,
             prop,
-            has_empty: false,
-            has_negative: true,
             divide_by: 100.0,
         })
+        .has_negative()
         .extra_lines(&[CSS_TRANSFORM]),
         Plugin::new(PluginKind::Arbitrary { prefix, prop }).extra_lines(&[CSS_TRANSFORM]),
     )

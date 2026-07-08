@@ -6,9 +6,8 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
     prefix: "backdrop-invert",
     prop: SingleProp("--en-backdrop-invert"),
-    has_empty: true,
-    has_negative: false,
     divide_by: 100.0,
 })
+.has_empty()
 .extra_lines(&CSS_BACKDROP_FILTER)
 .template("invert({})");

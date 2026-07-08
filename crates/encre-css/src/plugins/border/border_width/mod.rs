@@ -10,10 +10,9 @@ const fn plugin(prefix: &'static str, prop: PropertyName) -> P {
         Plugin::new(PluginKind::Number {
             prefix,
             prop,
-            has_empty: true,
-            has_negative: false,
             divide_by: 1.0,
         })
+        .has_empty()
         .template("{}px"),
         Plugin::new(PluginKind::Arbitrary { prefix, prop })
             .hints(&[PluginArbitraryHint::Length, PluginArbitraryHint::LineWidth])

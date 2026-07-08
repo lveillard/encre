@@ -17,8 +17,6 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Spacing {
     prefix: "leading",
     prop: SingleProp("line-height"),
-    has_auto: false,
-    has_full: false,
 });
 
 pub(crate) const PLUGIN_3: Plugin = Plugin::new(PluginKind::Arbitrary {

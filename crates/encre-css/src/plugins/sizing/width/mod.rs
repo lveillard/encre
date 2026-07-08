@@ -5,9 +5,7 @@ use crate::{plugins::sizing::CSS_SIZE_VALUES_HORIZONTAL, prelude::build_plugin::
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Spacing {
     prefix: "w",
     prop: SingleProp("width"),
-    has_auto: true,
-    has_full: true,
-});
+}).has_auto().has_full();
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("width"),

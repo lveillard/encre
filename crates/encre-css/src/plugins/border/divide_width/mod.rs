@@ -13,10 +13,9 @@ pub(crate) const PLUGIN_X_1: Plugin = Plugin::new(PluginKind::ListCases {
 pub(crate) const PLUGIN_X_2: Plugin = Plugin::new(PluginKind::Number {
     prefix: "divide-x",
     prop: MultipleProps(&["border-inline-start-width", "border-inline-end-width"]),
-    has_empty: true,
-    has_negative: false,
     divide_by: 1.0,
 })
+.has_empty()
 .template_multiple(&[
     "calc({}px * var(--en-divide-x-reverse))",
     "calc({}px * calc(1 - var(--en-divide-x-reverse)))",
@@ -47,10 +46,9 @@ pub(crate) const PLUGIN_Y_1: Plugin = Plugin::new(PluginKind::ListCases {
 pub(crate) const PLUGIN_Y_2: Plugin = Plugin::new(PluginKind::Number {
     prefix: "divide-y",
     prop: MultipleProps(&["border-block-start-width", "border-block-end-width"]),
-    has_empty: true,
-    has_negative: false,
     divide_by: 1.0,
 })
+.has_empty()
 .template_multiple(&[
     "calc({}px * var(--en-divide-y-reverse))",
     "calc({}px * calc(1 - var(--en-divide-y-reverse)))",

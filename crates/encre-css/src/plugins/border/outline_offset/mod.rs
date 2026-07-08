@@ -6,8 +6,6 @@ use PluginArbitraryMatcher::*;
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Number {
     prefix: "outline-offset",
     prop: SingleProp("outline-offset"),
-    has_empty: false,
-    has_negative: false,
     divide_by: 1.0,
 })
 .template("{}px");

@@ -4,13 +4,9 @@ use crate::prelude::build_plugin::*;
 
 const fn plugin(prefix: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
     (
-        Plugin::new(PluginKind::Spacing {
-            prefix,
-            prop,
-            has_auto: false,
-            has_full: false,
-        })
-        .extra_lines(&["border-spacing: var(--en-border-spacing-x) var(--en-border-spacing-y);"]),
+        Plugin::new(PluginKind::Spacing { prefix, prop }).extra_lines(&[
+            "border-spacing: var(--en-border-spacing-x) var(--en-border-spacing-y);",
+        ]),
         Plugin::new(PluginKind::Arbitrary { prefix, prop }).extra_lines(&[
             "border-spacing: var(--en-border-spacing-x) var(--en-border-spacing-y);",
         ]),

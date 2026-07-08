@@ -13,8 +13,6 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListCases {
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Number {
     prefix: "line-clamp",
     prop: SingleProp("-webkit-line-clamp"),
-    has_empty: false,
-    has_negative: false,
     divide_by: 1.0,
 })
 .extra_lines(&[

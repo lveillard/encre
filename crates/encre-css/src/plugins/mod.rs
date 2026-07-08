@@ -316,13 +316,16 @@ pub enum PropertyName {
 }
 
 // TODO: Make a StaticPlugin/DynamicPlugin (with Strings and Vecs for ser/de)
-// TODO: migrate has_ to the Plugin structure
 // TODO: Think about what items need to be public and/or reexported for Functional kind
 // TODO: in parse_modifier, omly split by ARBITRARY_SEPARATOR if the kind is Arbitrary
 
 #[derive(Debug, PartialEq)]
 pub struct Plugin {
     pub(crate) kind: PluginKind,
+    pub(crate) has_auto: bool,
+    pub(crate) has_empty: bool,
+    pub(crate) has_full: bool,
+    pub(crate) has_negative: bool,
     pub(crate) extra_lines: Option<&'static [&'static str]>,
     pub(crate) extra_css: Option<phf::Map<&'static str, &'static str>>,
     pub(crate) extra_class: Option<&'static str>,
@@ -339,6 +342,10 @@ impl Plugin {
     pub const fn new(kind: PluginKind) -> Self {
         Self {
             kind,
+            has_auto: false,
+            has_empty: false,
+            has_full: false,
+            has_negative: false,
             extra_lines: None,
             extra_css: None,
             extra_class: None,
@@ -350,6 +357,42 @@ impl Plugin {
             arbitrary_shadow_color_replacement: None,
             list_prefix: None,
         }
+    }
+
+    pub const fn has_auto(mut self) -> Self {
+        if !matches!(self.kind, PluginKind::Spacing { .. }) {
+            panic!("Plugin::has_auto only works with PluginKind::Spacing");
+        }
+
+        self.has_auto = true;
+        self
+    }
+
+    pub const fn has_empty(mut self) -> Self {
+        if !matches!(self.kind, PluginKind::Number { .. }) {
+            panic!("Plugin::has_empty only works with PluginKind::Number");
+        }
+
+        self.has_empty = true;
+        self
+    }
+
+    pub const fn has_full(mut self) -> Self {
+        if !matches!(self.kind, PluginKind::Spacing { .. }) {
+            panic!("Plugin::has_full only works with PluginKind::Spacing");
+        }
+
+        self.has_full = true;
+        self
+    }
+
+    pub const fn has_negative(mut self) -> Self {
+        if !matches!(self.kind, PluginKind::Number { .. }) {
+            panic!("Plugin::has_negative only works with PluginKind::Number");
+        }
+
+        self.has_negative = true;
+        self
     }
 
     pub const fn extra_lines(mut self, extra_lines: &'static [&'static str]) -> Self {
@@ -488,7 +531,9 @@ impl Plugin {
         }
 
         if self.arbitrary_matcher.is_none() {
-            panic!("Plugin::matcher must be called before calling Plugin::shadow_color_replacement with PluginArbitraryMatcher::Shadow as argument");
+            panic!(
+                "Plugin::matcher must be called before calling Plugin::shadow_color_replacement with PluginArbitraryMatcher::Shadow as argument"
+            );
         }
 
         self.arbitrary_shadow_color_replacement = Some(replacement);
@@ -496,8 +541,13 @@ impl Plugin {
     }
 
     pub const fn list_prefix(mut self, list_prefix: &'static str) -> Self {
-        if !matches!(self.kind, PluginKind::ListValues { .. } | PluginKind::ListCases { .. }) {
-            panic!("Plugin::list_prefix can only be used with PluginKind::ListValues or PluginKind::ListCases. For other kinds, use the built-in `prefix` field");
+        if !matches!(
+            self.kind,
+            PluginKind::ListValues { .. } | PluginKind::ListCases { .. }
+        ) {
+            panic!(
+                "Plugin::list_prefix can only be used with PluginKind::ListValues or PluginKind::ListCases. For other kinds, use the built-in `prefix` field"
+            );
         }
 
         self.list_prefix = Some(list_prefix);
@@ -518,8 +568,6 @@ pub enum PluginKind {
     Spacing {
         prefix: &'static str,
         prop: PropertyName,
-        has_auto: bool,
-        has_full: bool,
     },
     Color {
         prefix: &'static str,
@@ -528,8 +576,6 @@ pub enum PluginKind {
     Number {
         prefix: &'static str,
         prop: PropertyName,
-        has_empty: bool,
-        has_negative: bool,
         divide_by: f32,
     },
 

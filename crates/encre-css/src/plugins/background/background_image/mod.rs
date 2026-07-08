@@ -55,10 +55,9 @@ pub(crate) const PLUGIN_LINEAR_1: Plugin = Plugin::new(PluginKind::ListValues {
 pub(crate) const PLUGIN_LINEAR_2: Plugin = Plugin::new(PluginKind::Number {
     prefix: "bg-linear",
     prop: SingleProp("background-image"),
-    has_empty: false,
-    has_negative: true,
     divide_by: 1.0,
 })
+.has_negative()
 .template("linear-gradient({}deg in {/}, var(--en-gradient-stops))")
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
@@ -93,10 +92,9 @@ pub(crate) const PLUGIN_CONIC_1: Plugin = Plugin::new(PluginKind::ListValues {
 pub(crate) const PLUGIN_CONIC_2: Plugin = Plugin::new(PluginKind::Number {
     prefix: "bg-conic",
     prop: SingleProp("background-image"),
-    has_empty: false,
-    has_negative: true,
     divide_by: 1.0,
 })
+.has_negative()
 .template("conic-gradient(from {}deg in {/}, var(--en-gradient-stops))")
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 

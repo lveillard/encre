@@ -4,12 +4,9 @@ use crate::prelude::build_plugin::*;
 
 const fn plugin(prefix: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
     (
-        Plugin::new(PluginKind::Spacing {
-            prefix,
-            prop,
-            has_auto: true,
-            has_full: true,
-        }),
+        Plugin::new(PluginKind::Spacing { prefix, prop })
+            .has_auto()
+            .has_full(),
         Plugin::new(PluginKind::Arbitrary { prefix, prop }),
     )
 }
