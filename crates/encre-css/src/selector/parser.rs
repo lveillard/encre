@@ -642,7 +642,6 @@ fn parse_recursive<'a>(
 
         if remaining.1.starts_with(ARBITRARY_START) && remaining.1.ends_with(ARBITRARY_END) {
             // Arbitrary CSS property (without namespace)
-            // TODO: remove this special case
             let plugin = &PLUGIN;
 
             variants

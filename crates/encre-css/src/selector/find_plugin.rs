@@ -12,8 +12,14 @@ use crate::{
     utils::{color, spacing, value_matchers::*},
 };
 
-// TODO: avoid blowing up the stack
-fn is_arbitrary_matching(matcher: &PluginArbitraryMatcher, value: &str) -> bool {
+const MAX_DEPTH: u8 = 10;
+
+fn is_arbitrary_matching(matcher: &PluginArbitraryMatcher, value: &str, max_depth: u8) -> bool {
+    if max_depth >= MAX_DEPTH {
+        // No matcher should have more depth than MAX_DEPTH
+        return false;
+    }
+
     match matcher {
         PluginArbitraryMatcher::All => true,
         PluginArbitraryMatcher::Url => is_matching_url(value),
@@ -39,18 +45,18 @@ fn is_arbitrary_matching(matcher: &PluginArbitraryMatcher, value: &str) -> bool 
         PluginArbitraryMatcher::Custom(v) => value == *v,
         PluginArbitraryMatcher::CustomMultiple(values) => values.contains(&value),
         PluginArbitraryMatcher::Or(matcher1, matcher2) => {
-            is_arbitrary_matching(matcher1, value) || is_arbitrary_matching(matcher2, value)
+            is_arbitrary_matching(matcher1, value, max_depth + 1) || is_arbitrary_matching(matcher2, value, max_depth + 1)
         }
         PluginArbitraryMatcher::OrMultiple(matchers) => matchers
             .iter()
-            .map(|m| is_arbitrary_matching(m, value))
+            .map(|m| is_arbitrary_matching(m, value, max_depth + 1))
             .any(|x| x),
         PluginArbitraryMatcher::CommaSeparated(matcher1) => value
             .split(',')
-            .all(|v| is_arbitrary_matching(matcher1, v.trim())),
+            .all(|v| is_arbitrary_matching(matcher1, v.trim(), max_depth + 1)),
         PluginArbitraryMatcher::SpaceSeparated(matcher1) => value
             .split(' ')
-            .all(|v| is_arbitrary_matching(matcher1, v.trim())),
+            .all(|v| is_arbitrary_matching(matcher1, v.trim(), max_depth + 1)),
     }
 }
 
@@ -216,7 +222,7 @@ fn can_handle(plugin: &Plugin, config: &Config, modifier: &Modifier) -> bool {
             }) || (hint.is_none()
                 && plugin
                     .arbitrary_matcher
-                    .is_none_or(|matcher| is_arbitrary_matching(&matcher, value)))
+                    .is_none_or(|matcher| is_arbitrary_matching(&matcher, value, 0)))
         }
         (PluginKind::Functional { class, .. }, Modifier::Builtin { value, .. }) => value == class,
         _ => false,
