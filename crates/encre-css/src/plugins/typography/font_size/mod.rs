@@ -22,7 +22,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListCases {
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "text",
+    namespace: "text",
     prop: SingleProp("font-size"),
 })
 .hints(&[

@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Number {
-    prefix: "decoration",
+    namespace: "decoration",
     prop: SingleProp("text-decoration-thickness"),
     divide_by: 1.0,
 })
@@ -19,7 +19,7 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::ListValues {
 });
 
 pub(crate) const PLUGIN_3: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "decoration",
+    namespace: "decoration",
     prop: SingleProp("text-decoration-thickness"),
 })
 .hints(&[ArbitraryHint::Length, ArbitraryHint::Percentage])

@@ -5,10 +5,10 @@ use PluginArbitraryMatcher::*;
 
 type P = (Plugin, Plugin);
 
-const fn plugin(prefix: &'static str, prop: PropertyName) -> P {
+const fn plugin(namespace: &'static str, prop: PropertyName) -> P {
     (
-        Plugin::new(PluginKind::Color { prefix, prop }),
-        Plugin::new(PluginKind::Arbitrary { prefix, prop })
+        Plugin::new(PluginKind::Color { namespace, prop }),
+        Plugin::new(PluginKind::Arbitrary { namespace, prop })
             .hints(&[ArbitraryHint::Color])
             .matcher(Color),
     )

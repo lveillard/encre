@@ -11,7 +11,7 @@ pub(crate) const PLUGIN_X_1: Plugin = Plugin::new(PluginKind::ListCases {
 .extra_class(" > :not([hidden]) ~ :not([hidden])");
 
 pub(crate) const PLUGIN_X_2: Plugin = Plugin::new(PluginKind::Number {
-    prefix: "divide-x",
+    namespace: "divide-x",
     prop: MultipleProps(&["border-inline-start-width", "border-inline-end-width"]),
     divide_by: 1.0,
 })
@@ -24,7 +24,7 @@ pub(crate) const PLUGIN_X_2: Plugin = Plugin::new(PluginKind::Number {
 .extra_class(" > :not([hidden]) ~ :not([hidden])");
 
 pub(crate) const PLUGIN_X_3: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "divide-x",
+    namespace: "divide-x",
     prop: MultipleProps(&["border-inline-start-width", "border-inline-end-width"]),
 })
 .hints(&[ArbitraryHint::Length])
@@ -44,7 +44,7 @@ pub(crate) const PLUGIN_Y_1: Plugin = Plugin::new(PluginKind::ListCases {
 .extra_class(" > :not([hidden]) ~ :not([hidden])");
 
 pub(crate) const PLUGIN_Y_2: Plugin = Plugin::new(PluginKind::Number {
-    prefix: "divide-y",
+    namespace: "divide-y",
     prop: MultipleProps(&["border-block-start-width", "border-block-end-width"]),
     divide_by: 1.0,
 })
@@ -57,7 +57,7 @@ pub(crate) const PLUGIN_Y_2: Plugin = Plugin::new(PluginKind::Number {
 .extra_class(" > :not([hidden]) ~ :not([hidden])");
 
 pub(crate) const PLUGIN_Y_3: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "divide-y",
+    namespace: "divide-y",
     prop: MultipleProps(&["border-block-start-width", "border-block-end-width"]),
 })
 .hints(&[ArbitraryHint::Length])

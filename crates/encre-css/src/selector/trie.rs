@@ -8,7 +8,7 @@ use crate::{
 
 #[derive(Debug, Clone)]
 pub(crate) struct TrieData {
-    pub(crate) has_prefix: bool,
+    pub(crate) has_namespace: bool,
     pub(crate) is_custom: bool,
     pub(crate) order: usize,
     pub(crate) plugin: &'static Plugin,
@@ -98,11 +98,11 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
     {
         match &plugin.kind {
             PluginKind::ListCases { cases } => {
-                if let Some(prefix) = plugin.list_prefix {
+                if let Some(namespace) = plugin.list_namespace {
                     trie.insert(
-                        prefix,
+                        namespace,
                         TrieData {
-                            has_prefix: true,
+                            has_namespace: true,
                             is_custom,
                             order,
                             plugin: *plugin,
@@ -113,7 +113,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                         trie.insert(
                             *class,
                             TrieData {
-                                has_prefix: false,
+                                has_namespace: false,
                                 is_custom,
                                 order,
                                 plugin: *plugin,
@@ -123,11 +123,11 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                 }
             }
             PluginKind::ListValues { values, .. } => {
-                if let Some(prefix) = plugin.list_prefix {
+                if let Some(namespace) = plugin.list_namespace {
                     trie.insert(
-                        prefix,
+                        namespace,
                         TrieData {
-                            has_prefix: true,
+                            has_namespace: true,
                             is_custom,
                             order,
                             plugin: *plugin,
@@ -138,7 +138,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                         trie.insert(
                             *class,
                             TrieData {
-                                has_prefix: false,
+                                has_namespace: false,
                                 is_custom,
                                 order,
                                 plugin: *plugin,
@@ -147,14 +147,14 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                     }
                 }
             }
-            PluginKind::Spacing { prefix, .. }
-            | PluginKind::Color { prefix, .. }
-            | PluginKind::Number { prefix, .. }
-            | PluginKind::Arbitrary { prefix, .. } => {
+            PluginKind::Spacing { namespace, .. }
+            | PluginKind::Color { namespace, .. }
+            | PluginKind::Number { namespace, .. }
+            | PluginKind::Arbitrary { namespace, .. } => {
                 trie.insert(
-                    prefix,
+                    namespace,
                     TrieData {
-                        has_prefix: true,
+                        has_namespace: true,
                         is_custom,
                         order,
                         plugin: *plugin,
@@ -165,7 +165,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                 trie.insert(
                     class,
                     TrieData {
-                        has_prefix: false,
+                        has_namespace: false,
                         is_custom,
                         order,
                         plugin: *plugin,

@@ -4,13 +4,13 @@ use crate::prelude::build_plugin::*;
 
 type P = (Plugin, Plugin);
 
-const fn plugin(prefix: &'static str, prop: PropertyName) -> P {
+const fn plugin(namespace: &'static str, prop: PropertyName) -> P {
     (
         Plugin::new(PluginKind::Spacing {
-            prefix,
+            namespace,
             prop,
         }),
-        Plugin::new(PluginKind::Arbitrary { prefix, prop }),
+        Plugin::new(PluginKind::Arbitrary { namespace, prop }),
     )
 }
 

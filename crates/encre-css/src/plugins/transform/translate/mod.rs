@@ -2,13 +2,13 @@
 #![doc(alias = "transform")]
 use crate::{plugins::transform::CSS_TRANSFORM, prelude::build_plugin::*};
 
-const fn plugin(prefix: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
+const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
     (
-        Plugin::new(PluginKind::Spacing { prefix, prop })
+        Plugin::new(PluginKind::Spacing { namespace, prop })
             .has_auto()
             .has_full()
             .extra_lines(&[CSS_TRANSFORM]),
-        Plugin::new(PluginKind::Arbitrary { prefix, prop }).extra_lines(&[CSS_TRANSFORM]),
+        Plugin::new(PluginKind::Arbitrary { namespace, prop }).extra_lines(&[CSS_TRANSFORM]),
     )
 }
 

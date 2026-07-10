@@ -30,7 +30,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "bg",
+    namespace: "bg",
     prop: SingleProp("background-image"),
 })
 .hints(&[ArbitraryHint::Url, ArbitraryHint::Image])
@@ -53,7 +53,7 @@ pub(crate) const PLUGIN_LINEAR_1: Plugin = Plugin::new(PluginKind::ListValues {
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
 pub(crate) const PLUGIN_LINEAR_2: Plugin = Plugin::new(PluginKind::Number {
-    prefix: "bg-linear",
+    namespace: "bg-linear",
     prop: SingleProp("background-image"),
     divide_by: 1.0,
 })
@@ -62,7 +62,7 @@ pub(crate) const PLUGIN_LINEAR_2: Plugin = Plugin::new(PluginKind::Number {
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
 pub(crate) const PLUGIN_LINEAR_3: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "bg-linear",
+    namespace: "bg-linear",
     prop: SingleProp("background-image"),
 })
 .template("linear-gradient({})");
@@ -76,7 +76,7 @@ pub(crate) const PLUGIN_RADIAL_1: Plugin = Plugin::new(PluginKind::ListValues {
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
 pub(crate) const PLUGIN_RADIAL_2: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "bg-radial",
+    namespace: "bg-radial",
     prop: SingleProp("background-image"),
 })
 .template("radial-gradient({})");
@@ -90,7 +90,7 @@ pub(crate) const PLUGIN_CONIC_1: Plugin = Plugin::new(PluginKind::ListValues {
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
 pub(crate) const PLUGIN_CONIC_2: Plugin = Plugin::new(PluginKind::Number {
-    prefix: "bg-conic",
+    namespace: "bg-conic",
     prop: SingleProp("background-image"),
     divide_by: 1.0,
 })
@@ -99,7 +99,7 @@ pub(crate) const PLUGIN_CONIC_2: Plugin = Plugin::new(PluginKind::Number {
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
 pub(crate) const PLUGIN_CONIC_3: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "bg-conic",
+    namespace: "bg-conic",
     prop: SingleProp("background-image"),
 })
 .template("conic-gradient({})");

@@ -10,7 +10,7 @@ pub(crate) const PLUGIN_X_1: Plugin = Plugin::new(PluginKind::ListValues {
 }).extra_class(" > :not(:last-child)");
 
 pub(crate) const PLUGIN_X_2: Plugin = Plugin::new(PluginKind::Spacing {
-    prefix: "space-x",
+    namespace: "space-x",
     prop: MultipleProps(&["margin-inline-start", "margin-inline-end"]),
 }).template_multiple(&[
     "calc({} * var(--en-space-x-reverse))",
@@ -20,7 +20,7 @@ pub(crate) const PLUGIN_X_2: Plugin = Plugin::new(PluginKind::Spacing {
 ]).extra_class(" > :not(:last-child)");
 
 pub(crate) const PLUGIN_X_3: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "space-x",
+    namespace: "space-x",
     prop: MultipleProps(&["margin-inline-start", "margin-inline-end"]),
 }).template_multiple(&[
     "calc({} * var(--en-space-x-reverse))",
@@ -37,7 +37,7 @@ pub(crate) const PLUGIN_Y_1: Plugin = Plugin::new(PluginKind::ListValues {
 }).extra_class(" > :not(:last-child)");
 
 pub(crate) const PLUGIN_Y_2: Plugin = Plugin::new(PluginKind::Spacing {
-    prefix: "space-y",
+    namespace: "space-y",
     prop: MultipleProps(&["margin-block-start", "margin-block-end"]),
 }).template_multiple(&[
     "calc({} * var(--en-space-y-reverse))",
@@ -47,7 +47,7 @@ pub(crate) const PLUGIN_Y_2: Plugin = Plugin::new(PluginKind::Spacing {
 ]).extra_class(" > :not(:last-child)");
 
 pub(crate) const PLUGIN_Y_3: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "space-y",
+    namespace: "space-y",
     prop: MultipleProps(&["margin-block-start", "margin-block-end"]),
 }).template_multiple(&[
     "calc({} * var(--en-space-y-reverse))",

@@ -19,7 +19,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 .extra_lines(&[CSS_FILTER]);
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "blur",
+    namespace: "blur",
     prop: SingleProp("--en-blur"),
 })
 .extra_lines(&[CSS_FILTER])

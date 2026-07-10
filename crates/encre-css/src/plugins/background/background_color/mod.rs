@@ -4,12 +4,12 @@ use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Color {
-    prefix: "bg",
+    namespace: "bg",
     prop: SingleProp("background-color"),
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "bg",
+    namespace: "bg",
     prop: SingleProp("background-color"),
 })
 .hints(&[ArbitraryHint::Color])

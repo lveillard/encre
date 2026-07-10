@@ -10,13 +10,13 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Number {
-    prefix: "underline-offset",
+    namespace: "underline-offset",
     prop: SingleProp("text-underline-offset"),
     divide_by: 1.0,
 })
 .template("{}px");
 
 pub(crate) const PLUGIN_3: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "underline-offset",
+    namespace: "underline-offset",
     prop: SingleProp("text-underline-offset"),
 });

@@ -5,16 +5,16 @@ use PluginArbitraryMatcher::*;
 
 type P = (Plugin, Plugin);
 
-const fn plugin(prefix: &'static str, prop: PropertyName) -> P {
+const fn plugin(namespace: &'static str, prop: PropertyName) -> P {
     (
         Plugin::new(PluginKind::Number {
-            prefix,
+            namespace,
             prop,
             divide_by: 1.0,
         })
         .has_empty()
         .template("{}px"),
-        Plugin::new(PluginKind::Arbitrary { prefix, prop })
+        Plugin::new(PluginKind::Arbitrary { namespace, prop })
             .hints(&[ArbitraryHint::Length, ArbitraryHint::LineWidth])
             .matcher(SpaceSeparated(&Or(&Length, &LineWidth))),
     )

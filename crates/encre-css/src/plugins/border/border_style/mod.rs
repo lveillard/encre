@@ -20,7 +20,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "border",
+    namespace: "border",
     prop: SingleProp("border-style"),
 })
 .hints(&[])

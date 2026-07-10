@@ -18,7 +18,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 .extra_lines(&CSS_BACKDROP_FILTER);
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "backdrop-blur",
+    namespace: "backdrop-blur",
     prop: SingleProp("--en-backdrop-blur"),
 })
 .extra_lines(&CSS_BACKDROP_FILTER)

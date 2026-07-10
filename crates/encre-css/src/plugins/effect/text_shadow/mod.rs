@@ -15,7 +15,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "text-shadow",
+    namespace: "text-shadow",
     prop: SingleProp("text-shadow"),
 })
 .hints(&[ArbitraryHint::Shadow])

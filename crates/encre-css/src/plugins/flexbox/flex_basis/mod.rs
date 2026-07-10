@@ -3,11 +3,11 @@
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Spacing {
-    prefix: "basis",
+    namespace: "basis",
     prop: SingleProp("flex-basis"),
 }).has_auto().has_full();
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "basis",
+    namespace: "basis",
     prop: SingleProp("flex-basis"),
 });

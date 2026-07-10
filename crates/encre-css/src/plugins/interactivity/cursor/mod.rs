@@ -45,6 +45,6 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "cursor",
+    namespace: "cursor",
     prop: SingleProp("cursor"),
 });

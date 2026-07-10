@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Number {
-    prefix: "grid-rows",
+    namespace: "grid-rows",
     prop: SingleProp("grid-template-rows"),
     divide_by: 1.0,
 })
@@ -17,6 +17,6 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::ListValues {
 });
 
 pub(crate) const PLUGIN_3: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "grid-rows",
+    namespace: "grid-rows",
     prop: SingleProp("grid-template-rows"),
 });

@@ -4,17 +4,17 @@ use crate::{plugins::transform::CSS_TRANSFORM, prelude::build_plugin::*};
 
 type P = (Plugin, Plugin);
 
-const fn plugin(prefix: &'static str, prop: PropertyName) -> P {
+const fn plugin(namespace: &'static str, prop: PropertyName) -> P {
     (
         Plugin::new(PluginKind::Number {
-            prefix,
+            namespace,
             prop,
             divide_by: 1.0,
         })
         .has_negative()
         .extra_lines(&[CSS_TRANSFORM])
         .template("{}deg"),
-        Plugin::new(PluginKind::Arbitrary { prefix, prop }).extra_lines(&[CSS_TRANSFORM]),
+        Plugin::new(PluginKind::Arbitrary { namespace, prop }).extra_lines(&[CSS_TRANSFORM]),
     )
 }
 

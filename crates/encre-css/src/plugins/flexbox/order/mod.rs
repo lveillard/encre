@@ -12,7 +12,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Number {
-    prefix: "order",
+    namespace: "order",
     prop: SingleProp("order"),
     divide_by: 1.0,
 }).has_negative();

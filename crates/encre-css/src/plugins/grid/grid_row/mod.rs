@@ -2,9 +2,9 @@
 #![doc(alias = "grid")]
 use crate::prelude::build_plugin::*;
 
-const fn plugin(prefix: &'static str, prop: PropertyName, template: &'static str) -> Plugin {
+const fn plugin(namespace: &'static str, prop: PropertyName, template: &'static str) -> Plugin {
     Plugin::new(PluginKind::Number {
-        prefix,
+        namespace,
         prop,
         divide_by: 1.0,
     })
@@ -19,7 +19,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "row",
+    namespace: "row",
     prop: SingleProp("grid-row"),
 });
 

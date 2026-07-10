@@ -4,7 +4,7 @@ use super::CSS_FILTER;
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
-    prefix: "grayscale",
+    namespace: "grayscale",
     prop: SingleProp("--en-grayscale"),
     divide_by: 100.0,
 })

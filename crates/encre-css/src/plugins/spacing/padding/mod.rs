@@ -2,10 +2,10 @@
 #![doc(alias("spacing", "space"))]
 use crate::prelude::build_plugin::*;
 
-const fn plugin(prefix: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
+const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
     (
-        Plugin::new(PluginKind::Spacing { prefix, prop }).has_auto(),
-        Plugin::new(PluginKind::Arbitrary { prefix, prop }),
+        Plugin::new(PluginKind::Spacing { namespace, prop }).has_auto(),
+        Plugin::new(PluginKind::Arbitrary { namespace, prop }),
     )
 }
 

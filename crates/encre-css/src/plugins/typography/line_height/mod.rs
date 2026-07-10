@@ -15,11 +15,11 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 });
 
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Spacing {
-    prefix: "leading",
+    namespace: "leading",
     prop: SingleProp("line-height"),
 });
 
 pub(crate) const PLUGIN_3: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "leading",
+    namespace: "leading",
     prop: SingleProp("line-height"),
 });

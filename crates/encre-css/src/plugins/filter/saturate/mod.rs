@@ -4,7 +4,7 @@ use super::CSS_FILTER;
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
-    prefix: "saturate",
+    namespace: "saturate",
     prop: SingleProp("--en-saturate"),
     divide_by: 100.0,
 })

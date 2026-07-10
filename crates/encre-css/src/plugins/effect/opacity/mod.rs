@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
-    prefix: "opacity",
+    namespace: "opacity",
     prop: SingleProp("opacity"),
     divide_by: 100.0,
 });

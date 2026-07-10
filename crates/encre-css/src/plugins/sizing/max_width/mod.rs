@@ -3,7 +3,7 @@
 use crate::{plugins::sizing::CSS_SIZE_VALUES_HORIZONTAL, prelude::build_plugin::*};
 
 pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Spacing {
-    prefix: "max-w",
+    namespace: "max-w",
     prop: SingleProp("max-width"),
 });
 
@@ -39,9 +39,9 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::ListValues {
 pub(crate) const PLUGIN_3: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("max-width"),
     values: CSS_SIZE_VALUES_HORIZONTAL,
-}).list_prefix("max-w");
+}).list_namespace("max-w");
 
 pub(crate) const PLUGIN_4: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "max-w",
+    namespace: "max-w",
     prop: SingleProp("max-width"),
 });

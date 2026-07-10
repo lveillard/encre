@@ -2,12 +2,12 @@
 #![doc(alias("layout", "inset"))]
 use crate::prelude::build_plugin::*;
 
-const fn plugin(prefix: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
+const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
     (
-        Plugin::new(PluginKind::Spacing { prefix, prop })
+        Plugin::new(PluginKind::Spacing { namespace, prop })
             .has_auto()
             .has_full(),
-        Plugin::new(PluginKind::Arbitrary { prefix, prop }),
+        Plugin::new(PluginKind::Arbitrary { namespace, prop }),
     )
 }
 

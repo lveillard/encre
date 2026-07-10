@@ -71,7 +71,7 @@ pub(super) fn find_plugin_to_handle_class<'a>(
     let plugins = plugins.collect::<Vec<&TrieData>>();
 
     for TrieData {
-        has_prefix,
+        has_namespace,
         is_custom,
         order,
         plugin,
@@ -86,7 +86,7 @@ pub(super) fn find_plugin_to_handle_class<'a>(
         }));
 
         // Find the modifier
-        let mut modifier = if *has_prefix {
+        let mut modifier = if *has_namespace {
             class
                 .strip_prefix(&*common_prefix)
                 .expect("common_prefix_search returns a common prefix has tuple first value")

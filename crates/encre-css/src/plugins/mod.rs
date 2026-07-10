@@ -111,7 +111,7 @@ pub mod typography;
 ///
 /// If you want to release your custom plugins as a crate, you can export a `register` function
 /// taking a mutable reference to a [`Config`] structure and use the [`Config::register_plugin`]
-/// function to register them. The first argument is the namespace prefixing all the
+/// function to register them. The first argument is the namespace namespaceing all the
 /// utility classes handled by the plugin.
 ///
 /// ```ignore
@@ -273,7 +273,6 @@ pub enum PropertyName {
 
 // TODO: Make a StaticPlugin/DynamicPlugin (with Strings and Vecs for ser/de)
 // TODO: Think about what items need to be public and/or reexported for Functional kind
-// TODO: rename `prefix` in plugins with the correct `namespace` word?
 
 #[derive(Debug, PartialEq)]
 pub struct Plugin {
@@ -291,7 +290,7 @@ pub struct Plugin {
     pub(crate) arbitrary_hints: Option<&'static [ArbitraryHint]>,
     pub(crate) arbitrary_matcher: Option<PluginArbitraryMatcher>,
     pub(crate) arbitrary_shadow_color_replacement: Option<&'static str>,
-    pub(crate) list_prefix: Option<&'static str>,
+    pub(crate) list_namespace: Option<&'static str>,
 }
 
 impl Plugin {
@@ -311,7 +310,7 @@ impl Plugin {
             arbitrary_hints: None,
             arbitrary_matcher: None,
             arbitrary_shadow_color_replacement: None,
-            list_prefix: None,
+            list_namespace: None,
         }
     }
 
@@ -490,17 +489,17 @@ impl Plugin {
         self
     }
 
-    pub const fn list_prefix(mut self, list_prefix: &'static str) -> Self {
+    pub const fn list_namespace(mut self, list_namespace: &'static str) -> Self {
         if !matches!(
             self.kind,
             PluginKind::ListValues { .. } | PluginKind::ListCases { .. }
         ) {
             panic!(
-                "Plugin::list_prefix can only be used with PluginKind::ListValues or PluginKind::ListCases. For other kinds, use the built-in `prefix` field"
+                "Plugin::list_namespace can only be used with PluginKind::ListValues or PluginKind::ListCases. For other kinds, use the built-in `namespace` field"
             );
         }
 
-        self.list_prefix = Some(list_prefix);
+        self.list_namespace = Some(list_namespace);
         self
     }
 }
@@ -516,21 +515,21 @@ pub enum PluginKind {
     },
 
     Spacing {
-        prefix: &'static str,
+        namespace: &'static str,
         prop: PropertyName,
     },
     Color {
-        prefix: &'static str,
+        namespace: &'static str,
         prop: PropertyName,
     },
     Number {
-        prefix: &'static str,
+        namespace: &'static str,
         prop: PropertyName,
         divide_by: f32,
     },
 
     Arbitrary {
-        prefix: &'static str,
+        namespace: &'static str,
         prop: PropertyName,
     },
 

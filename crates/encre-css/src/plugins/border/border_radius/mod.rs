@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-const fn plugin(prefix: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
+const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
     (
         Plugin::new(PluginKind::ListValues {
             prop,
@@ -19,8 +19,8 @@ const fn plugin(prefix: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
                 "full" => "9999px",
             },
         })
-        .list_prefix(prefix),
-        Plugin::new(PluginKind::Arbitrary { prefix, prop })
+        .list_namespace(namespace),
+        Plugin::new(PluginKind::Arbitrary { namespace, prop })
             .hints(&[])
             .matcher(SpaceSeparated(&Or(&Length, &Percentage))),
     )

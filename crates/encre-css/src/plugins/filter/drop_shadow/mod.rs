@@ -18,7 +18,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 
 // TODO(in tailwindcss v4.3): support changing drop shadow color with class + replace color by variable in arbitrary plugin like in box_shadow
 pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
-    prefix: "drop-shadow",
+    namespace: "drop-shadow",
     prop: SingleProp("--en-drop-shadow"),
 })
 .extra_lines(&[CSS_FILTER])

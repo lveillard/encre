@@ -2,12 +2,12 @@
 #![doc(alias = "table")]
 use crate::prelude::build_plugin::*;
 
-const fn plugin(prefix: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
+const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
     (
-        Plugin::new(PluginKind::Spacing { prefix, prop }).extra_lines(&[
+        Plugin::new(PluginKind::Spacing { namespace, prop }).extra_lines(&[
             "border-spacing: var(--en-border-spacing-x) var(--en-border-spacing-y);",
         ]),
-        Plugin::new(PluginKind::Arbitrary { prefix, prop }).extra_lines(&[
+        Plugin::new(PluginKind::Arbitrary { namespace, prop }).extra_lines(&[
             "border-spacing: var(--en-border-spacing-x) var(--en-border-spacing-y);",
         ]),
     )
