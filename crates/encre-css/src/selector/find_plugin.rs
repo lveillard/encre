@@ -205,6 +205,7 @@ fn can_handle(plugin: &Plugin, config: &Config, modifier: &Modifier) -> bool {
                 .as_ref()
                 .is_none_or(|extra_slash| extra_slash.0.contains_key(template_value.unwrap()))
                 && ((plugin.has_empty && value.is_empty())
+                    || (plugin.has_auto && value == "auto")
                     || (value.parse::<usize>().is_ok() && (plugin.has_negative || !*is_negative)))
         }
         (PluginKind::Arbitrary { .. }, Modifier::Arbitrary { hint, value }) => {

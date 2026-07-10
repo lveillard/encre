@@ -361,8 +361,8 @@ impl Plugin {
     }
 
     pub const fn has_auto(mut self) -> Self {
-        if !matches!(self.kind, PluginKind::Spacing { .. }) {
-            panic!("Plugin::has_auto only works with PluginKind::Spacing");
+        if !matches!(self.kind, PluginKind::Spacing { .. } | PluginKind::Number { .. }) {
+            panic!("Plugin::has_auto only works with PluginKind::Spacing or PluginKind::Number");
         }
 
         self.has_auto = true;

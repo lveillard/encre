@@ -256,13 +256,14 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 generate_class(
                     context,
                     |context| {
-                        let value = if value.is_empty() {
-                            1.0
-                        } else {
-                            value.parse::<usize>().unwrap() as f32 / divide_by
-                        };
                         let coeff = if *is_negative { -1.0 } else { 1.0 };
-                        let value = (value * coeff).to_string();
+                        let value = if value.is_empty() {
+                            coeff.to_string()
+                        } else if value == "auto" {
+                            String::from("auto")
+                        } else {
+                            (value.parse::<usize>().unwrap() as f32 / divide_by * coeff).to_string()
+                        };
 
                         push_css_lines_with_templating(
                             prop,

@@ -846,8 +846,7 @@ pub const BUILTIN_PLUGINS: &[&'static Plugin] = &[
     &layout::placement::PLUGIN_LEFT.0,
     &layout::placement::PLUGIN_LEFT.1,
     &layout::isolation::PLUGIN,
-    &layout::z_index::PLUGIN_1, // TODO: remove when implementing Plugin::has_auto
-    &layout::z_index::PLUGIN_2,
+    &layout::z_index::PLUGIN,
     &flexbox::order::PLUGIN_1,
     &flexbox::order::PLUGIN_2,
     &grid::grid_column::PLUGIN_1,

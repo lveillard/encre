@@ -427,6 +427,13 @@ mod tests {
   z-index: 22;
 }"
         );
+
+        assert_eq!(
+            generate(["z-auto"], &base_config()),
+            ".z-auto {
+  z-index: auto;
+}"
+        );
     }
 
     #[test]
