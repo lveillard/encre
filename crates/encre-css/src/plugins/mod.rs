@@ -531,12 +531,6 @@ impl Plugin {
             panic!("Plugin::shadow_color_replacement can only be used with PluginKind::Arbitrary");
         }
 
-        if self.arbitrary_matcher.is_none() {
-            panic!(
-                "Plugin::matcher must be called before calling Plugin::shadow_color_replacement with PluginArbitraryMatcher::Shadow as argument"
-            );
-        }
-
         self.arbitrary_shadow_color_replacement = Some(replacement);
         self
     }

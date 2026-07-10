@@ -286,20 +286,18 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
                 generate_class(
                     context,
                     |context| {
-                        if let Some(color_replacement) = plugin.arbitrary_shadow_color_replacement {
-                            // TODO: avoid panicking (and then remove condition in Plugin::shadow_color_replacement)
-                            let mut shadow = shadow::ShadowList::parse(&value).expect("failed to parse shadow");
+                        // If the shadow is malformed, just output it without modification
+                        let value = if let Some(color_replacement) =
+                            plugin.arbitrary_shadow_color_replacement
+                            && let Some(mut shadow) = shadow::ShadowList::parse(&value)
+                        {
                             shadow.replace_all_colors(color_replacement);
-                            push_css_lines_with_templating(
-                                prop,
-                                plugin,
-                                &shadow.to_string(),
-                                None,
-                                context,
-                            );
+                            &Cow::Owned(shadow.to_string())
                         } else {
-                            push_css_lines_with_templating(prop, plugin, &*value, None, context);
-                        }
+                            value
+                        };
+
+                        push_css_lines_with_templating(prop, plugin, value, None, context);
 
                         if let Some(extra_lines) = plugin.extra_lines {
                             context.buffer.lines(extra_lines);
