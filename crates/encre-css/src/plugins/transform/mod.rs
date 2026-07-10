@@ -8,6 +8,8 @@ pub mod transform_origin;
 pub mod transform_type;
 pub mod translate;
 
+// TODO(in tailwind v4.3): use transform functions in the `--en-translate/rotate/skew` variables,
+// not in the whole `transform` property
 const CSS_TRANSFORM: &str = "transform: translate3d(var(--en-translate-x), var(--en-translate-y), var(--en-translate-z)) rotateX(var(--en-rotate-x)) rotateY(var(--en-rotate-y)) rotateZ(var(--en-rotate-z)) skewX(var(--en-skew-x)) skewY(var(--en-skew-y)) scale3d(var(--en-scale-x), var(--en-scale-y), var(--en-scale-z));";
 
 #[cfg(test)]
@@ -261,7 +263,7 @@ mod tests {
     #[test]
     fn transform_type() {
         assert_eq!(generate(["transform-gpu"], &base_config()), ".transform-gpu {
-  transform: translate3d(var(--en-translate-x), var(--en-translate-y), var(--en-translate-z)) rotateX(var(--en-rotate-x)) rotateY(var(--en-rotate-y)) rotateZ(var(--en-rotate-z)) skewX(var(--en-skew-x)) skewY(var(--en-skew-y)) scale3d(var(--en-scale-x), var(--en-scale-y), var(--en-scale-z));
+  transform: translateZ(0) translate3d(var(--en-translate-x), var(--en-translate-y), var(--en-translate-z)) rotateX(var(--en-rotate-x)) rotateY(var(--en-rotate-y)) rotateZ(var(--en-rotate-z)) skewX(var(--en-skew-x)) skewY(var(--en-skew-y)) scale3d(var(--en-scale-x), var(--en-scale-y), var(--en-scale-z));
 }");
         assert_eq!(
             generate(["transform-none"], &base_config()),
