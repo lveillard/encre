@@ -246,10 +246,10 @@ pub mod prelude {
     pub mod build_plugin {
         pub use crate::{
             plugins::{
-                Plugin, PluginArbitraryHint, PluginArbitraryMatcher,
+                Plugin, PluginArbitraryMatcher,
                 PluginKind, PropertyName, PropertyName::*,
             },
-            selector::Modifier,
+            selector::{Modifier, ArbitraryHint},
             utils::{buffer::Buffer, color, shadow, spacing, value_matchers::*},
         };
         pub use phf::{self, phf_map};

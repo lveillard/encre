@@ -12,5 +12,5 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "decoration",
     prop: MultipleProps(&["-webkit-text-decoration-color", "text-decoration-color"]),
 })
-.hints(&[PluginArbitraryHint::Color])
+.hints(&[ArbitraryHint::Color])
 .matcher(Color);

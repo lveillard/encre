@@ -12,5 +12,5 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "bg",
     prop: SingleProp("background-color"),
 })
-.hints(&[PluginArbitraryHint::Color])
+.hints(&[ArbitraryHint::Color])
 .matcher(Color);

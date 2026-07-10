@@ -12,7 +12,7 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "ring",
     prop: SingleProp("--en-ring-color"),
 })
-.hints(&[PluginArbitraryHint::Color])
+.hints(&[ArbitraryHint::Color])
 .matcher(Color);
 
 pub(crate) const PLUGIN_INSET_1: Plugin = Plugin::new(PluginKind::Color {
@@ -24,5 +24,5 @@ pub(crate) const PLUGIN_INSET_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "inset-ring",
     prop: SingleProp("--en-inset-ring-color"),
 })
-.hints(&[PluginArbitraryHint::Color])
+.hints(&[ArbitraryHint::Color])
 .matcher(Color);

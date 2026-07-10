@@ -15,7 +15,7 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "ring",
     prop: SingleProp("--en-ring-shadow"),
 })
-.hints(&[PluginArbitraryHint::Length])
+.hints(&[ArbitraryHint::Length])
 .matcher(Length)
 .extra_lines(&[
     "box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow), var(--en-shadow, 0 0 #0000);",
@@ -33,7 +33,7 @@ pub(crate) const PLUGIN_INSET_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "inset-ring",
     prop: SingleProp("--en-inset-ring-shadow"),
 })
-.hints(&[PluginArbitraryHint::Length])
+.hints(&[ArbitraryHint::Length])
 .matcher(Length)
 .extra_lines(&[
     "box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow, 0 0 #0000);"

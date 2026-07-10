@@ -17,7 +17,7 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("font-family"),
 })
 .hints(&[
-    PluginArbitraryHint::GenericName,
-    PluginArbitraryHint::FamilyName,
+    ArbitraryHint::GenericName,
+    ArbitraryHint::FamilyName,
 ])
 .matcher(CommaSeparated(&FontFamilyName));

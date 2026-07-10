@@ -39,6 +39,6 @@ pub(crate) const PLUGIN_INSET_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("--en-inset-shadow"),
 })
 .extra_lines(&["box-shadow: var(--en-inset-shadow), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow, 0 0 #0000);"])
-.hints(&[PluginArbitraryHint::Shadow])
+.hints(&[ArbitraryHint::Shadow])
 .matcher(Shadow)
 .shadow_color_replacement("var(--en-inset-shadow-color, {})");

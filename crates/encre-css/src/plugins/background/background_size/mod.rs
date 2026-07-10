@@ -16,7 +16,7 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "bg",
     prop: SingleProp("background-size"),
 })
-.hints(&[PluginArbitraryHint::Length, PluginArbitraryHint::Percentage])
+.hints(&[ArbitraryHint::Length, ArbitraryHint::Percentage])
 .matcher(CommaSeparated(&OrMultiple(&[
     &SpaceSeparated(&OrMultiple(&[&Length, &Percentage, &Custom("auto")])),
     &Custom("cover"),

@@ -18,6 +18,6 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "text-shadow",
     prop: SingleProp("text-shadow"),
 })
-.hints(&[PluginArbitraryHint::Shadow])
+.hints(&[ArbitraryHint::Shadow])
 .matcher(Shadow)
 .shadow_color_replacement("var(--en-text-shadow-color, {})");

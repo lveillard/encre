@@ -12,5 +12,5 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "outline",
     prop: SingleProp("outline-color"),
 })
-.hints(&[PluginArbitraryHint::Color])
+.hints(&[ArbitraryHint::Color])
 .matcher(Color);

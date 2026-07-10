@@ -15,6 +15,6 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "ring-offset",
     prop: SingleProp("--en-ring-offset-width"),
 })
-.hints(&[PluginArbitraryHint::Length])
+.hints(&[ArbitraryHint::Length])
 .matcher(Length)
 .extra_lines(&["--en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);"]);

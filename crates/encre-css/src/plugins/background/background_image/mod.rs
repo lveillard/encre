@@ -33,7 +33,7 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "bg",
     prop: SingleProp("background-image"),
 })
-.hints(&[PluginArbitraryHint::Url, PluginArbitraryHint::Image])
+.hints(&[ArbitraryHint::Url, ArbitraryHint::Image])
 .matcher(Image);
 
 pub(crate) const PLUGIN_LINEAR_1: Plugin = Plugin::new(PluginKind::ListValues {

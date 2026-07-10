@@ -27,7 +27,7 @@ pub(crate) const PLUGIN_X_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "divide-x",
     prop: MultipleProps(&["border-inline-start-width", "border-inline-end-width"]),
 })
-.hints(&[PluginArbitraryHint::Length])
+.hints(&[ArbitraryHint::Length])
 .matcher(SpaceSeparated(&Or(&Length, &LineWidth)))
 .template_multiple(&[
     "calc({} * var(--en-divide-x-reverse))",
@@ -60,7 +60,7 @@ pub(crate) const PLUGIN_Y_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "divide-y",
     prop: MultipleProps(&["border-block-start-width", "border-block-end-width"]),
 })
-.hints(&[PluginArbitraryHint::Length])
+.hints(&[ArbitraryHint::Length])
 .matcher(SpaceSeparated(&Or(&Length, &LineWidth)))
 .template_multiple(&[
     "calc({} * var(--en-divide-y-reverse))",

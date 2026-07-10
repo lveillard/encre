@@ -22,7 +22,7 @@ pub(crate) const PLUGIN_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "decoration",
     prop: SingleProp("text-decoration-thickness"),
 })
-.hints(&[PluginArbitraryHint::Length, PluginArbitraryHint::Percentage])
+.hints(&[ArbitraryHint::Length, ArbitraryHint::Percentage])
 .matcher(OrMultiple(&[
     &Length,
     &Percentage,

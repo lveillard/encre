@@ -33,9 +33,7 @@
 //!
 //! [`Config`]: crate::Config
 
-use std::str::FromStr;
-
-use crate::{generator::ContextHandle, plugins::PropertyName::MultipleProps};
+use crate::{generator::ContextHandle, plugins::PropertyName::MultipleProps, selector::ArbitraryHint};
 
 pub mod accessibility;
 pub mod background;
@@ -234,48 +232,6 @@ pub trait Plugin: fmt::Debug {
     fn handle(&self, _context: &mut ContextHandle);
 }*/
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord)]
-pub enum PluginArbitraryHint {
-    Shadow,
-    AbsoluteSize,
-    RelativeSize,
-    Url,
-    LineWidth,
-    LineStyle,
-    Color,
-    Length,
-    Percentage,
-    Number,
-    Position,
-    Image,
-    GenericName,
-    FamilyName,
-}
-
-impl FromStr for PluginArbitraryHint {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(match s {
-            "shadow" => Self::Shadow,
-            "absolute-size" => Self::AbsoluteSize,
-            "relative-size" => Self::RelativeSize,
-            "url" => Self::Url,
-            "line-width" => Self::LineWidth,
-            "line-style" => Self::LineStyle,
-            "color" => Self::Color,
-            "length" => Self::Length,
-            "percentage" => Self::Percentage,
-            "number" => Self::Number,
-            "position" => Self::Position,
-            "image" => Self::Image,
-            "generic-name" => Self::GenericName,
-            "family-name" => Self::FamilyName,
-            _ => return Err(()),
-        })
-    }
-}
-
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum PluginArbitraryMatcher {
     All,
@@ -318,7 +274,6 @@ pub enum PropertyName {
 // TODO: Make a StaticPlugin/DynamicPlugin (with Strings and Vecs for ser/de)
 // TODO: Think about what items need to be public and/or reexported for Functional kind
 // TODO: rename `prefix` in plugins with the correct `namespace` word?
-// TODO: move PluginArbitraryHint -> crate::selector::ArbitraryHint
 
 #[derive(Debug, PartialEq)]
 pub struct Plugin {
@@ -333,7 +288,7 @@ pub struct Plugin {
     pub(crate) template: Option<&'static str>,
     pub(crate) template_multiple: Option<&'static [&'static str]>,
     pub(crate) extra_slash: Option<(phf::Map<&'static str, &'static str>, &'static str)>,
-    pub(crate) arbitrary_hints: Option<&'static [PluginArbitraryHint]>,
+    pub(crate) arbitrary_hints: Option<&'static [ArbitraryHint]>,
     pub(crate) arbitrary_matcher: Option<PluginArbitraryMatcher>,
     pub(crate) arbitrary_shadow_color_replacement: Option<&'static str>,
     pub(crate) list_prefix: Option<&'static str>,
@@ -508,7 +463,7 @@ impl Plugin {
         self
     }
 
-    pub const fn hints(mut self, hints: &'static [PluginArbitraryHint]) -> Self {
+    pub const fn hints(mut self, hints: &'static [ArbitraryHint]) -> Self {
         if !matches!(self.kind, PluginKind::Arbitrary { .. }) {
             panic!("Plugin::hints can only be used with PluginKind::Arbitrary");
         }

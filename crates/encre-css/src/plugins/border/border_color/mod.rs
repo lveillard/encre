@@ -9,7 +9,7 @@ const fn plugin(prefix: &'static str, prop: PropertyName) -> P {
     (
         Plugin::new(PluginKind::Color { prefix, prop }),
         Plugin::new(PluginKind::Arbitrary { prefix, prop })
-            .hints(&[PluginArbitraryHint::Color])
+            .hints(&[ArbitraryHint::Color])
             .matcher(Color),
     )
 }

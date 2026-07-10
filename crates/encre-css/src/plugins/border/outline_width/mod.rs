@@ -15,5 +15,5 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prefix: "outline",
     prop: SingleProp("outline-width"),
 })
-.hints(&[PluginArbitraryHint::Length])
+.hints(&[ArbitraryHint::Length])
 .matcher(Or(&Length, &LineWidth));

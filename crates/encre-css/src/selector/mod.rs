@@ -107,9 +107,51 @@ pub(super) mod find_plugin;
 
 use crate::plugins::Plugin;
 
-use std::{borrow::Cow, cmp::Ordering};
+use std::{borrow::Cow, cmp::Ordering, str::FromStr};
 
 pub(crate) use parser::parse;
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord)]
+pub enum ArbitraryHint {
+    Shadow,
+    AbsoluteSize,
+    RelativeSize,
+    Url,
+    LineWidth,
+    LineStyle,
+    Color,
+    Length,
+    Percentage,
+    Number,
+    Position,
+    Image,
+    GenericName,
+    FamilyName,
+}
+
+impl FromStr for ArbitraryHint {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
+            "shadow" => Self::Shadow,
+            "absolute-size" => Self::AbsoluteSize,
+            "relative-size" => Self::RelativeSize,
+            "url" => Self::Url,
+            "line-width" => Self::LineWidth,
+            "line-style" => Self::LineStyle,
+            "color" => Self::Color,
+            "length" => Self::Length,
+            "percentage" => Self::Percentage,
+            "number" => Self::Number,
+            "position" => Self::Position,
+            "image" => Self::Image,
+            "generic-name" => Self::GenericName,
+            "family-name" => Self::FamilyName,
+            _ => return Err(()),
+        })
+    }
+}
 
 /// The modifier is the rest of the selector after the namespace, it is used to clarify the
 /// CSS needed to be generated.
@@ -155,7 +197,7 @@ pub enum Modifier<'a> {
     /// - `shadow`
     Arbitrary {
         /// The type hint needed for ambiguous values.
-        hint: Option<crate::plugins::PluginArbitraryHint>,
+        hint: Option<ArbitraryHint>,
 
         /// The inner value of the modifier.
         ///

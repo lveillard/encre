@@ -26,10 +26,10 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("font-size"),
 })
 .hints(&[
-    PluginArbitraryHint::Length,
-    PluginArbitraryHint::Percentage,
-    PluginArbitraryHint::AbsoluteSize,
-    PluginArbitraryHint::RelativeSize,
+    ArbitraryHint::Length,
+    ArbitraryHint::Percentage,
+    ArbitraryHint::AbsoluteSize,
+    ArbitraryHint::RelativeSize,
 ])
 .matcher(OrMultiple(&[
     &Length,

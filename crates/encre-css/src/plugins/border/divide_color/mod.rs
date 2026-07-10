@@ -14,5 +14,5 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("border-color"),
 })
 .extra_class(" > :not([hidden]) ~ :not([hidden])")
-.hints(&[PluginArbitraryHint::Color])
+.hints(&[ArbitraryHint::Color])
 .matcher(Color);
