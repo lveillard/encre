@@ -3,15 +3,15 @@ use std::{borrow::Cow, collections::HashMap};
 use crate::{
     Config,
     config::BUILTIN_PLUGINS,
-    plugins::{Plugin, PluginKind},
+    plugins::{CustomPlugin, PluginKind, parsed::ParsedPluginKind},
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct TrieData {
     pub(crate) has_namespace: bool,
     pub(crate) is_custom: bool,
     pub(crate) order: usize,
-    pub(crate) plugin: &'static Plugin,
+    pub(crate) plugin: CustomPlugin,
 }
 
 #[derive(Default, Debug)]
@@ -90,11 +90,23 @@ impl Trie {
 pub(crate) fn build_trie(config: &Config) -> Trie {
     let mut trie = Trie::new();
 
-    for (order, (plugin, is_custom)) in BUILTIN_PLUGINS
+    for (order, (is_custom, plugin)) in BUILTIN_PLUGINS
         .iter()
-        .map(|r| (r, false))
+        .map(|p| (false, p))
         .enumerate()
-        .chain(config.custom_plugins.iter().map(|r| (r, true)).enumerate())
+        .chain(
+            config
+                .custom_plugins
+                .iter()
+                .enumerate()
+                .filter_map(|(i, p)| {
+                    if let CustomPlugin::Static(s) = p {
+                        Some((i, (true, s)))
+                    } else {
+                        None
+                    }
+                }),
+        )
     {
         match &plugin.kind {
             PluginKind::ListCases { cases } => {
@@ -105,7 +117,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                             has_namespace: true,
                             is_custom,
                             order,
-                            plugin: *plugin,
+                            plugin: CustomPlugin::Static(*plugin),
                         },
                     );
                 } else {
@@ -116,7 +128,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                                 has_namespace: false,
                                 is_custom,
                                 order,
-                                plugin: *plugin,
+                                plugin: CustomPlugin::Static(*plugin),
                             },
                         );
                     }
@@ -130,7 +142,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                             has_namespace: true,
                             is_custom,
                             order,
-                            plugin: *plugin,
+                            plugin: CustomPlugin::Static(*plugin),
                         },
                     );
                 } else {
@@ -141,7 +153,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                                 has_namespace: false,
                                 is_custom,
                                 order,
-                                plugin: *plugin,
+                                plugin: CustomPlugin::Static(*plugin),
                             },
                         );
                     }
@@ -157,7 +169,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                         has_namespace: true,
                         is_custom,
                         order,
-                        plugin: *plugin,
+                        plugin: CustomPlugin::Static(*plugin),
                     },
                 );
             }
@@ -165,10 +177,90 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                 trie.insert(
                     class,
                     TrieData {
-                        has_namespace: false,
+                        has_namespace: true,
                         is_custom,
                         order,
-                        plugin: *plugin,
+                        plugin: CustomPlugin::Static(*plugin),
+                    },
+                );
+            }
+        }
+    }
+
+    for (order, plugin) in config
+        .custom_plugins
+        .iter()
+        .enumerate()
+        .filter_map(|(i, p)| {
+            if let CustomPlugin::Parsed(s) = p {
+                Some((i, s))
+            } else {
+                None
+            }
+        })
+    {
+        match &plugin.kind {
+            ParsedPluginKind::ListCases { cases } => {
+                if let Some(namespace) = &plugin.list_namespace {
+                    trie.insert(
+                        &namespace,
+                        TrieData {
+                            has_namespace: true,
+                            is_custom: false,
+                            order,
+                            plugin: CustomPlugin::Parsed(plugin.clone()),
+                        },
+                    );
+                } else {
+                    for class in cases.keys() {
+                        trie.insert(
+                            &*class,
+                            TrieData {
+                                has_namespace: false,
+                                is_custom: false,
+                                order,
+                                plugin: CustomPlugin::Parsed(plugin.clone()),
+                            },
+                        );
+                    }
+                }
+            }
+            ParsedPluginKind::ListValues { values, .. } => {
+                if let Some(namespace) = &plugin.list_namespace {
+                    trie.insert(
+                        &namespace,
+                        TrieData {
+                            has_namespace: true,
+                            is_custom: false,
+                            order,
+                            plugin: CustomPlugin::Parsed(plugin.clone()),
+                        },
+                    );
+                } else {
+                    for class in values.keys() {
+                        trie.insert(
+                            &*class,
+                            TrieData {
+                                has_namespace: false,
+                                is_custom: false,
+                                order,
+                                plugin: CustomPlugin::Parsed(plugin.clone()),
+                            },
+                        );
+                    }
+                }
+            }
+            ParsedPluginKind::Spacing { namespace, .. }
+            | ParsedPluginKind::Color { namespace, .. }
+            | ParsedPluginKind::Number { namespace, .. }
+            | ParsedPluginKind::Arbitrary { namespace, .. } => {
+                trie.insert(
+                    &namespace,
+                    TrieData {
+                        has_namespace: true,
+                        is_custom: false,
+                        order,
+                        plugin: CustomPlugin::Parsed(plugin.clone()),
                     },
                 );
             }

@@ -3,7 +3,10 @@ use std::ops::Range;
 use crate::{
     Config,
     error::{ParseError, ParseErrorKind},
-    plugins::{Plugin, PluginArbitraryMatcher, PluginKind},
+    plugins::{
+        CustomPlugin, Plugin, PluginArbitraryMatcher, PluginKind,
+        parsed::{ParsedPlugin, ParsedPluginArbitraryMatcher, ParsedPluginKind},
+    },
     selector::{
         Modifier, Selector, Variant,
         parser::{ARBITRARY_END, ARBITRARY_START, LAYER_BUILTIN, LAYER_CUSTOM, to_css_value},
@@ -45,7 +48,8 @@ fn is_arbitrary_matching(matcher: &PluginArbitraryMatcher, value: &str, max_dept
         PluginArbitraryMatcher::Custom(v) => value == *v,
         PluginArbitraryMatcher::CustomMultiple(values) => values.contains(&value),
         PluginArbitraryMatcher::Or(matcher1, matcher2) => {
-            is_arbitrary_matching(matcher1, value, max_depth + 1) || is_arbitrary_matching(matcher2, value, max_depth + 1)
+            is_arbitrary_matching(matcher1, value, max_depth + 1)
+                || is_arbitrary_matching(matcher2, value, max_depth + 1)
         }
         PluginArbitraryMatcher::OrMultiple(matchers) => matchers
             .iter()
@@ -57,6 +61,57 @@ fn is_arbitrary_matching(matcher: &PluginArbitraryMatcher, value: &str, max_dept
         PluginArbitraryMatcher::SpaceSeparated(matcher1) => value
             .split(' ')
             .all(|v| is_arbitrary_matching(matcher1, v.trim(), max_depth + 1)),
+    }
+}
+
+fn is_parsed_arbitrary_matching(
+    matcher: &ParsedPluginArbitraryMatcher,
+    value: &str,
+    max_depth: u8,
+) -> bool {
+    if max_depth >= MAX_DEPTH {
+        // No matcher should have more depth than MAX_DEPTH
+        return false;
+    }
+
+    match matcher {
+        ParsedPluginArbitraryMatcher::All => true,
+        ParsedPluginArbitraryMatcher::Url => is_matching_url(value),
+        ParsedPluginArbitraryMatcher::Var => is_matching_var(value),
+        ParsedPluginArbitraryMatcher::Shadow => is_matching_shadow(value),
+        ParsedPluginArbitraryMatcher::AbsoluteSize => is_matching_absolute_size(value),
+        ParsedPluginArbitraryMatcher::RelativeSize => is_matching_relative_size(value),
+        ParsedPluginArbitraryMatcher::LineWidth => is_matching_line_width(value),
+        ParsedPluginArbitraryMatcher::LineStyle => is_matching_line_style(value),
+        ParsedPluginArbitraryMatcher::ComputationalCssFunction => {
+            is_matching_computational_css_function(value)
+        }
+        ParsedPluginArbitraryMatcher::Color => is_matching_color(value),
+        ParsedPluginArbitraryMatcher::Length => is_matching_length(value),
+        ParsedPluginArbitraryMatcher::Number => is_matching_number(value),
+        ParsedPluginArbitraryMatcher::Percentage => is_matching_percentage(value),
+        ParsedPluginArbitraryMatcher::Time => is_matching_time(value),
+        ParsedPluginArbitraryMatcher::Gradient => is_matching_gradient(value),
+        ParsedPluginArbitraryMatcher::Position => is_matching_position(value),
+        ParsedPluginArbitraryMatcher::Angle => is_matching_angle(value),
+        ParsedPluginArbitraryMatcher::Image => is_matching_image(value),
+        ParsedPluginArbitraryMatcher::FontFamilyName => is_matching_font_family_name(value),
+        ParsedPluginArbitraryMatcher::Custom(v) => value == *v,
+        ParsedPluginArbitraryMatcher::CustomMultiple(values) => values.iter().any(|v| v == value),
+        ParsedPluginArbitraryMatcher::Or(matcher1, matcher2) => {
+            is_parsed_arbitrary_matching(matcher1, value, max_depth + 1)
+                || is_parsed_arbitrary_matching(matcher2, value, max_depth + 1)
+        }
+        ParsedPluginArbitraryMatcher::OrMultiple(matchers) => matchers
+            .iter()
+            .map(|m| is_parsed_arbitrary_matching(m, value, max_depth + 1))
+            .any(|x| x),
+        ParsedPluginArbitraryMatcher::CommaSeparated(matcher1) => value
+            .split(',')
+            .all(|v| is_parsed_arbitrary_matching(matcher1, v.trim(), max_depth + 1)),
+        ParsedPluginArbitraryMatcher::SpaceSeparated(matcher1) => value
+            .split(' ')
+            .all(|v| is_parsed_arbitrary_matching(matcher1, v.trim(), max_depth + 1)),
     }
 }
 
@@ -111,7 +166,15 @@ pub(super) fn find_plugin_to_handle_class<'a>(
                     modifier = &modifier[1..];
                 }
 
-                if let PluginKind::Arbitrary { .. } = plugin.kind {
+                if let CustomPlugin::Static(Plugin {
+                    kind: PluginKind::Arbitrary { .. },
+                    ..
+                })
+                | CustomPlugin::Parsed(ParsedPlugin {
+                    kind: ParsedPluginKind::Arbitrary { .. },
+                    ..
+                }) = plugin
+                {
                     if let Some(value) = modifier.strip_prefix(ARBITRARY_START)
                         && let Some(value) = value.strip_suffix(ARBITRARY_END)
                     {
@@ -151,7 +214,7 @@ pub(super) fn find_plugin_to_handle_class<'a>(
                         modifier: parsed_modifier.clone(),
                         variants,
                         is_important,
-                        plugin: plugin,
+                        plugin: plugin.clone(),
                     })
                 })
                 .collect();
@@ -164,67 +227,193 @@ pub(super) fn find_plugin_to_handle_class<'a>(
     ))]
 }
 
-fn can_handle(plugin: &Plugin, config: &Config, modifier: &Modifier) -> bool {
-    match (&plugin.kind, modifier) {
-        (&PluginKind::ListCases { ref cases }, &Modifier::Builtin { value, .. }) => {
-            cases.contains_key(value)
-        }
-        (&PluginKind::ListValues { ref values, .. }, &Modifier::Builtin { value, .. }) => {
-            let (value, template_value) = if plugin.extra_slash.is_some()
+fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bool {
+    match (&plugin, modifier) {
+        (
+            CustomPlugin::Static(Plugin {
+                kind: PluginKind::ListCases { cases },
+                ..
+            }),
+            Modifier::Builtin { value, .. },
+        ) => cases.contains_key(value),
+        (
+            CustomPlugin::Parsed(ParsedPlugin {
+                kind: ParsedPluginKind::ListCases { cases },
+                ..
+            }),
+            Modifier::Builtin { value, .. },
+        ) => cases.contains_key(*value),
+
+        (
+            CustomPlugin::Static(Plugin {
+                kind: PluginKind::ListValues { values, .. },
+                extra_slash,
+                ..
+            }),
+            Modifier::Builtin { value, .. },
+        ) => {
+            let (value, template_value) = if extra_slash.is_some()
                 && let Some(index) = value.find('/')
             {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (value, plugin.extra_slash.as_ref().map(|e| e.1))
+                (*value, extra_slash.as_ref().map(|e| e.1))
             };
-            plugin
-                .extra_slash
+            extra_slash
                 .as_ref()
                 .is_none_or(|extra_slash| extra_slash.0.contains_key(template_value.unwrap()))
                 && values.contains_key(value)
         }
-        (PluginKind::Spacing { .. }, Modifier::Builtin { value, .. }) => {
-            spacing::is_matching_builtin_spacing(value)
-                || (plugin.has_auto && *value == "auto")
-                || (plugin.has_full && *value == "full")
-        }
-        (PluginKind::Color { .. }, Modifier::Builtin { value, .. }) => {
-            color::is_matching_builtin_color(config, value)
-        }
+
         (
-            PluginKind::Number { .. },
-            Modifier::Builtin {
-                value, is_negative, ..
-            },
+            CustomPlugin::Parsed(ParsedPlugin {
+                kind: ParsedPluginKind::ListValues { values, .. },
+                extra_slash,
+                ..
+            }),
+            Modifier::Builtin { value, .. },
         ) => {
-            let (value, template_value) = if plugin.extra_slash.is_some()
+            let (value, template_value) = if extra_slash.is_some()
                 && let Some(index) = value.find('/')
             {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (*value, plugin.extra_slash.as_ref().map(|e| e.1))
+                (*value, extra_slash.as_ref().map(|e| e.1.as_str()))
             };
-            plugin
-                .extra_slash
+            extra_slash
                 .as_ref()
                 .is_none_or(|extra_slash| extra_slash.0.contains_key(template_value.unwrap()))
-                && ((plugin.has_empty && value.is_empty())
-                    || (plugin.has_auto && value == "auto")
-                    || (value.parse::<usize>().is_ok() && (plugin.has_negative || !*is_negative)))
+                && values.contains_key(value)
         }
-        (PluginKind::Arbitrary { .. }, Modifier::Arbitrary { hint, value }) => {
-            hint.is_some_and(|h| {
-                plugin
-                    .arbitrary_hints
-                    .is_some_and(|hints| hints.contains(&h))
-            }) || (hint.is_none()
-                && plugin
-                    .arbitrary_matcher
-                    .is_none_or(|matcher| is_arbitrary_matching(&matcher, value, 0)))
+
+        (
+            CustomPlugin::Static(Plugin {
+                kind: PluginKind::Spacing { .. },
+                has_auto,
+                has_full,
+                ..
+            })
+            | CustomPlugin::Parsed(ParsedPlugin {
+                kind: ParsedPluginKind::Spacing { .. },
+                has_auto,
+                has_full,
+                ..
+            }),
+            Modifier::Builtin { value, .. },
+        ) => {
+            spacing::is_matching_builtin_spacing(value)
+                || (*has_auto && *value == "auto")
+                || (*has_full && *value == "full")
         }
-        (PluginKind::Functional { class, .. }, Modifier::Builtin { value, .. }) => value == class,
+
+        (
+            CustomPlugin::Static(Plugin {
+                kind: PluginKind::Color { .. },
+                ..
+            })
+            | CustomPlugin::Parsed(ParsedPlugin {
+                kind: ParsedPluginKind::Color { .. },
+                ..
+            }),
+            Modifier::Builtin { value, .. },
+        ) => color::is_matching_builtin_color(config, value),
+
+        (
+            CustomPlugin::Static(Plugin {
+                kind: PluginKind::Number { .. },
+                has_auto,
+                has_empty,
+                has_negative,
+                extra_slash,
+                ..
+            }),
+            Modifier::Builtin {
+                value, is_negative, ..
+            },
+        ) => {
+            let (value, template_value) = if extra_slash.is_some()
+                && let Some(index) = value.find('/')
+            {
+                let (before, after) = value.split_at(index);
+                (before, Some(&after[1..]))
+            } else {
+                (*value, extra_slash.as_ref().map(|e| e.1))
+            };
+            extra_slash
+                .as_ref()
+                .is_none_or(|extra_slash| extra_slash.0.contains_key(template_value.unwrap()))
+                && ((*has_empty && value.is_empty())
+                    || (*has_auto && value == "auto")
+                    || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative)))
+        }
+        (
+            CustomPlugin::Parsed(ParsedPlugin {
+                kind: ParsedPluginKind::Number { .. },
+                has_auto,
+                has_empty,
+                has_negative,
+                extra_slash,
+                ..
+            }),
+            Modifier::Builtin {
+                value, is_negative, ..
+            },
+        ) => {
+            let (value, template_value) = if extra_slash.is_some()
+                && let Some(index) = value.find('/')
+            {
+                let (before, after) = value.split_at(index);
+                (before, Some(&after[1..]))
+            } else {
+                (*value, extra_slash.as_ref().map(|e| e.1.as_str()))
+            };
+            extra_slash
+                .as_ref()
+                .is_none_or(|extra_slash| extra_slash.0.contains_key(template_value.unwrap()))
+                && ((*has_empty && value.is_empty())
+                    || (*has_auto && value == "auto")
+                    || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative)))
+        }
+
+        (
+            CustomPlugin::Static(Plugin {
+                kind: PluginKind::Arbitrary { .. },
+                arbitrary_hints,
+                arbitrary_matcher,
+                ..
+            }),
+            Modifier::Arbitrary { hint, value },
+        ) => {
+            hint.is_some_and(|h| arbitrary_hints.is_some_and(|hints| hints.contains(&h)))
+                || (hint.is_none()
+                    && arbitrary_matcher
+                        .is_none_or(|matcher| is_arbitrary_matching(&matcher, value, 0)))
+        }
+        (
+            CustomPlugin::Parsed(ParsedPlugin {
+                kind: ParsedPluginKind::Arbitrary { .. },
+                arbitrary_hints,
+                arbitrary_matcher,
+                ..
+            }),
+            Modifier::Arbitrary { hint, value },
+        ) => {
+            hint.is_some_and(|h| arbitrary_hints.as_ref().is_some_and(|hints| hints.contains(&h)))
+                || (hint.is_none()
+                    && arbitrary_matcher
+                        .as_ref()
+                        .is_none_or(|matcher| is_parsed_arbitrary_matching(&matcher, value, 0)))
+        }
+
+        (
+            CustomPlugin::Static(Plugin {
+                kind: PluginKind::Functional { .. },
+                ..
+            }),
+            Modifier::Builtin { value, .. },
+        ) => true, // If the prefix match, the plugin is called
         _ => false,
     }
 }

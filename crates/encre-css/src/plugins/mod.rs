@@ -33,13 +33,14 @@
 //!
 //! [`Config`]: crate::Config
 
+use serde::{Deserialize, Serialize};
+
 use crate::{generator::Context, plugins::PropertyName::MultipleProps, selector::ArbitraryHint};
 
 pub mod accessibility;
 pub mod background;
 pub mod border;
 pub mod css_property;
-pub mod custom;
 pub mod effect;
 pub mod filter;
 pub mod flexbox;
@@ -53,6 +54,8 @@ pub mod table;
 pub mod transform;
 pub mod transition;
 pub mod typography;
+
+pub(crate) mod parsed;
 
 /// A plugin is a structure capable of generating CSS styles from a modifier (contained in a
 /// context structure).
@@ -233,6 +236,14 @@ pub trait Plugin: fmt::Debug {
     fn handle(&self, _context: &mut ContextHandle);
 }*/
 
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub(crate) enum CustomPlugin {
+    #[serde(skip)]
+    Static(&'static Plugin),
+    Parsed(parsed::ParsedPlugin),
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum PluginArbitraryMatcher {
     All,
@@ -272,8 +283,40 @@ pub enum PropertyName {
     MultipleProps(&'static [&'static str]),
 }
 
-// TODO: Make a StaticPlugin/DynamicPlugin (with Strings and Vecs for ser/de)
-// TODO: Think about what items need to be public and/or reexported for Functional kind
+#[derive(Debug, PartialEq)]
+pub enum PluginKind {
+    ListCases {
+        cases: phf::Map<&'static str, &'static [&'static str]>,
+    },
+    ListValues {
+        prop: PropertyName,
+        values: phf::Map<&'static str, &'static str>,
+    },
+
+    Spacing {
+        namespace: &'static str,
+        prop: PropertyName,
+    },
+    Color {
+        namespace: &'static str,
+        prop: PropertyName,
+    },
+    Number {
+        namespace: &'static str,
+        prop: PropertyName,
+        divide_by: f32,
+    },
+
+    Arbitrary {
+        namespace: &'static str,
+        prop: PropertyName,
+    },
+
+    Functional {
+        class: &'static str,
+        handle: fn(&mut Context),
+    },
+}
 
 #[derive(Debug, PartialEq)]
 pub struct Plugin {
@@ -503,39 +546,4 @@ impl Plugin {
         self.list_namespace = Some(list_namespace);
         self
     }
-}
-
-#[derive(Debug, PartialEq)]
-pub enum PluginKind {
-    ListCases {
-        cases: phf::Map<&'static str, &'static [&'static str]>,
-    },
-    ListValues {
-        prop: PropertyName,
-        values: phf::Map<&'static str, &'static str>,
-    },
-
-    Spacing {
-        namespace: &'static str,
-        prop: PropertyName,
-    },
-    Color {
-        namespace: &'static str,
-        prop: PropertyName,
-    },
-    Number {
-        namespace: &'static str,
-        prop: PropertyName,
-        divide_by: f32,
-    },
-
-    Arbitrary {
-        namespace: &'static str,
-        prop: PropertyName,
-    },
-
-    Functional {
-        class: &'static str,
-        handle: fn(&mut ContextHandle),
-    },
 }

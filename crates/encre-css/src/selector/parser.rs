@@ -1,13 +1,9 @@
 use super::{Modifier, Selector, Variant};
 use crate::{
-    config::{BUILTIN_VARIANTS, Config},
-    error::{ParseError, ParseErrorKind},
-    plugins::css_property::PLUGIN,
-    selector::{
+    config::{BUILTIN_VARIANTS, Config}, error::{ParseError, ParseErrorKind}, plugins::{CustomPlugin, css_property::PLUGIN}, selector::{
         find_plugin::find_plugin_to_handle_class,
         trie::{Trie, build_trie},
-    },
-    utils::split_ignore_arbitrary,
+    }, utils::split_ignore_arbitrary,
 };
 
 use std::{borrow::Cow, ops::Range, sync::OnceLock};
@@ -21,8 +17,6 @@ pub(crate) const ESCAPE: char = '\\';
 pub(super) const LAYER_CUSTOM: i8 = -1;
 pub(super) const LAYER_BUILTIN: i8 = 0;
 pub(super) const LAYER_ARBITRARY: i8 = i8::MAX;
-
-static TRIE: OnceLock<Trie> = OnceLock::new();
 
 /// Remove the first and last character of a string.
 pub(crate) fn unwrap_string(val: &mut &str) {
@@ -127,6 +121,7 @@ pub(crate) fn parse<'a>(
     full_class: Option<&'a str>,
     config: &Config,
     config_derived_variants: &[(Cow<'static, str>, Variant<'static>)],
+    trie: &Trie,
 ) -> Vec<Result<Selector<'a>, ParseError<'a>>> {
     // The shortest selector is `m-1`
     if val.len() < 3 {
@@ -143,7 +138,7 @@ pub(crate) fn parse<'a>(
         None,
         config,
         config_derived_variants,
-        TRIE.get_or_init(|| build_trie(config)),
+        trie,
     )
 }
 
@@ -642,8 +637,6 @@ fn parse_recursive<'a>(
 
         if remaining.1.starts_with(ARBITRARY_START) && remaining.1.ends_with(ARBITRARY_END) {
             // Arbitrary CSS property (without namespace)
-            let plugin = &PLUGIN;
-
             variants
                 .into_iter()
                 .map(|variants| {
@@ -663,7 +656,7 @@ fn parse_recursive<'a>(
                         },
                         variants,
                         is_important,
-                        plugin,
+                        plugin: CustomPlugin::Static(&PLUGIN),
                     })
                 })
                 .collect()

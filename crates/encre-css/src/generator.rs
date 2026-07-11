@@ -1,10 +1,9 @@
 //! Define the main [`generate`] function used to scan content and to generate CSS styles.
 use crate::{
-    config::{Config, MaxShortcutDepth},
-    plugins::{Plugin, PluginKind, PropertyName},
-    preflight::Preflight,
-    selector::{Modifier, Selector, Variant, parse},
-    utils::{buffer::Buffer, color, shadow, spacing},
+    config::{Config, MaxShortcutDepth}, plugins::{
+        CustomPlugin, Plugin, PluginKind, PropertyName,
+        parsed::{ParsedPlugin, ParsedPluginKind, ParsedPropertyName},
+    }, preflight::Preflight, selector::{Modifier, Selector, Variant, parse, trie::{Trie, build_trie}}, utils::{buffer::Buffer, color, shadow, spacing},
 };
 
 use std::{borrow::Cow, collections::BTreeSet};
@@ -34,6 +33,19 @@ fn push_css_lines(prop: &PropertyName, value: &str, context: &mut Context) {
         }
         PropertyName::MultipleProps(props) => {
             for prop in *props {
+                context.buffer.line(format_args!("{prop}: {value};"));
+            }
+        }
+    }
+}
+
+fn parsed_push_css_lines(prop: &ParsedPropertyName, value: &str, context: &mut Context) {
+    match prop {
+        ParsedPropertyName::SingleProp(prop) => {
+            context.buffer.line(format_args!("{prop}: {value};"));
+        }
+        ParsedPropertyName::MultipleProps(props) => {
+            for prop in props {
                 context.buffer.line(format_args!("{prop}: {value};"));
             }
         }
@@ -88,21 +100,95 @@ fn push_css_lines_with_templating(
     }
 }
 
-fn add_extra_css(plugin: &Plugin, context: &mut Context, value: &str) {
-    if let Some(extra_css) = &plugin.extra_css {
-        let Some(css) = extra_css.get(value) else {
-            return;
-        };
+fn parsed_push_css_lines_with_templating(
+    prop: &ParsedPropertyName,
+    plugin: &ParsedPlugin,
+    value: &str,
+    slash_value: Option<&str>,
+    context: &mut Context,
+) {
+    let transform_template = |template: &str| {
+        if let Some(slash_value) = slash_value {
+            template.replace("{}", &value).replace("{/}", slash_value)
+        } else {
+            template.replace("{}", &value)
+        }
+    };
 
-        if !css.is_empty() {
-            context.buffer.raw(css);
+    match prop {
+        ParsedPropertyName::SingleProp(prop) => {
+            let value = if let Some(template) = &plugin.template {
+                Cow::Owned(transform_template(&template))
+            } else {
+                Cow::Borrowed(value)
+            };
+
+            context.buffer.line(format_args!("{prop}: {value};"));
+        }
+        ParsedPropertyName::MultipleProps(props) => {
+            if let Some(templates) = &plugin.template_multiple {
+                for (i, prop) in props.iter().enumerate() {
+                    // The length of plugin.template_multiple is asserted to be the
+                    // same as the length of the list of property names at compile
+                    // time in the method Plugin::template_multiple
+                    let value = transform_template(&templates[i]);
+                    context.buffer.line(format_args!("{prop}: {value};",));
+                }
+            } else if let Some(template) = &plugin.template {
+                let value = transform_template(&template);
+                for prop in props {
+                    context.buffer.line(format_args!("{prop}: {value};"));
+                }
+            } else {
+                for prop in props {
+                    context.buffer.line(format_args!("{prop}: {value};"));
+                }
+            }
         }
     }
 }
 
-fn handle(plugin: &Plugin, context: &mut Context) {
-    match (&plugin.kind, context.modifier) {
-        (&PluginKind::ListCases { ref cases }, &Modifier::Builtin { value, .. }) => {
+fn add_extra_css(plugin: &CustomPlugin, context: &mut Context, value: &str) {
+    match plugin {
+        CustomPlugin::Static(Plugin {
+            extra_css: Some(extra_css),
+            ..
+        }) => {
+            let Some(css) = extra_css.get(value) else {
+                return;
+            };
+
+            if !css.is_empty() {
+                context.buffer.raw(css);
+            }
+        }
+        CustomPlugin::Parsed(ParsedPlugin {
+            extra_css: Some(extra_css),
+            ..
+        }) => {
+            let Some(css) = extra_css.get(value) else {
+                return;
+            };
+
+            if !css.is_empty() {
+                context.buffer.raw(css);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn handle(plugin: &CustomPlugin, context: &mut Context) {
+    match (&plugin, context.modifier) {
+        (
+            CustomPlugin::Static(Plugin {
+                kind: PluginKind::ListCases { cases },
+                extra_lines,
+                extra_class,
+                ..
+            }),
+            Modifier::Builtin { value, .. },
+        ) => {
             add_extra_css(plugin, context, value);
 
             generate_at_rules(context, |context| {
@@ -115,28 +201,61 @@ fn handle(plugin: &Plugin, context: &mut Context) {
                                 .expect("key existence was checked in can_handle"),
                         );
 
-                        if let Some(extra_lines) = plugin.extra_lines {
-                            context.buffer.lines(extra_lines);
+                        if let Some(extra_lines) = extra_lines {
+                            context.buffer.lines(*extra_lines);
                         }
                     },
-                    plugin.extra_class.unwrap_or(""),
+                    extra_class.unwrap_or(""),
                 );
             });
         }
         (
-            &PluginKind::ListValues {
-                ref prop,
-                ref values,
-            },
-            &Modifier::Builtin { value, .. },
+            CustomPlugin::Parsed(ParsedPlugin {
+                kind: ParsedPluginKind::ListCases { cases },
+                extra_lines,
+                extra_class,
+                ..
+            }),
+            Modifier::Builtin { value, .. },
         ) => {
-            let (value, template_value) = if plugin.extra_slash.is_some()
+            add_extra_css(plugin, context, value);
+
+            generate_at_rules(context, |context| {
+                generate_class(
+                    context,
+                    |context| {
+                        context.buffer.lines(
+                            cases
+                                .get(*value)
+                                .expect("key existence was checked in can_handle"),
+                        );
+
+                        if let Some(extra_lines) = extra_lines {
+                            context.buffer.lines(extra_lines);
+                        }
+                    },
+                    extra_class.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                );
+            });
+        }
+
+        (
+            CustomPlugin::Static(Plugin {
+                kind: PluginKind::ListValues { prop, values },
+                extra_slash,
+                extra_lines,
+                extra_class,
+                ..
+            }),
+            Modifier::Builtin { value, .. },
+        ) => {
+            let (value, template_value) = if extra_slash.is_some()
                 && let Some(index) = value.find('/')
             {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (value, plugin.extra_slash.as_ref().map(|e| e.1))
+                (*value, extra_slash.as_ref().map(|e| e.1))
             };
 
             add_extra_css(plugin, context, &*value);
@@ -144,7 +263,7 @@ fn handle(plugin: &Plugin, context: &mut Context) {
                 .get(&*value)
                 .expect("key existence was checked in can_handle");
 
-            let value = if let Some((values, _)) = &plugin.extra_slash {
+            let value = if let Some((values, _)) = &extra_slash {
                 Cow::Owned(
                     value.replace(
                         "{/}",
@@ -163,27 +282,87 @@ fn handle(plugin: &Plugin, context: &mut Context) {
                     |context| {
                         push_css_lines(prop, &*value, context);
 
-                        if let Some(extra_lines) = plugin.extra_lines {
-                            context.buffer.lines(extra_lines);
+                        if let Some(extra_lines) = extra_lines {
+                            context.buffer.lines(*extra_lines);
                         }
                     },
-                    plugin.extra_class.unwrap_or(""),
+                    extra_class.unwrap_or(""),
                 );
             });
         }
         (
-            PluginKind::Spacing { prop, .. },
-            Modifier::Builtin {
-                value, is_negative, ..
-            },
+            CustomPlugin::Parsed(ParsedPlugin {
+                kind: ParsedPluginKind::ListValues { prop, values },
+                extra_slash,
+                extra_lines,
+                extra_class,
+                ..
+            }),
+            Modifier::Builtin { value, .. },
         ) => {
-            let (value, template_value) = if plugin.extra_slash.is_some()
+            let (value, template_value) = if extra_slash.is_some()
                 && let Some(index) = value.find('/')
             {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (*value, plugin.extra_slash.as_ref().map(|e| e.1))
+                (*value, extra_slash.as_ref().map(|e| e.1.as_str()))
+            };
+
+            add_extra_css(plugin, context, &*value);
+            let value = values
+                .get(&*value)
+                .expect("key existence was checked in can_handle");
+
+            let value = if let Some((values, _)) = &extra_slash {
+                Cow::Owned(
+                    value.replace(
+                        "{/}",
+                        values
+                            .get(template_value.unwrap())
+                            .expect("extra_slash values are checked in can_hamdle"),
+                    ),
+                )
+            } else {
+                Cow::Borrowed(value)
+            };
+
+            generate_at_rules(context, |context| {
+                generate_class(
+                    context,
+                    |context| {
+                        parsed_push_css_lines(prop, &*value, context);
+
+                        if let Some(extra_lines) = extra_lines {
+                            context.buffer.lines(extra_lines);
+                        }
+                    },
+                    extra_class.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                );
+            });
+        }
+
+        (
+            CustomPlugin::Static(
+                inner_plugin @ Plugin {
+                    kind: PluginKind::Spacing { prop, .. },
+                    extra_slash,
+                    extra_lines,
+                    extra_class,
+                    ..
+                },
+            ),
+            Modifier::Builtin {
+                value, is_negative, ..
+            },
+        ) => {
+            let (value, template_value) = if extra_slash.is_some()
+                && let Some(index) = value.find('/')
+            {
+                let (before, after) = value.split_at(index);
+                (before, Some(&after[1..]))
+            } else {
+                (*value, extra_slash.as_ref().map(|e| e.1))
             };
 
             add_extra_css(plugin, context, &*value);
@@ -205,49 +384,158 @@ fn handle(plugin: &Plugin, context: &mut Context) {
                         };
                         push_css_lines_with_templating(
                             prop,
-                            plugin,
+                            inner_plugin,
                             &*value,
                             template_value,
                             context,
                         );
 
-                        if let Some(extra_lines) = plugin.extra_lines {
-                            context.buffer.lines(extra_lines);
+                        if let Some(extra_lines) = extra_lines {
+                            context.buffer.lines(*extra_lines);
                         }
                     },
-                    plugin.extra_class.unwrap_or(""),
-                );
-            });
-        }
-        (PluginKind::Color { prop, .. }, Modifier::Builtin { value, .. }) => {
-            generate_at_rules(context, |context| {
-                generate_class(
-                    context,
-                    |context| {
-                        let value = color::get(context.config, &*value).unwrap();
-                        push_css_lines_with_templating(prop, plugin, &*value, None, context);
-
-                        if let Some(extra_lines) = plugin.extra_lines {
-                            context.buffer.lines(extra_lines);
-                        }
-                    },
-                    plugin.extra_class.unwrap_or(""),
+                    extra_class.unwrap_or(""),
                 );
             });
         }
         (
-            PluginKind::Number {
-                prop, divide_by, ..
+            CustomPlugin::Parsed(
+                inner_plugin @ ParsedPlugin {
+                    kind: ParsedPluginKind::Spacing { prop, .. },
+                    extra_slash,
+                    extra_lines,
+                    extra_class,
+                    ..
+                },
+            ),
+            Modifier::Builtin {
+                value, is_negative, ..
             },
-            Modifier::Builtin { value, is_negative },
         ) => {
-            let (value, template_value) = if plugin.extra_slash.is_some()
+            let (value, template_value) = if extra_slash.is_some()
                 && let Some(index) = value.find('/')
             {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (*value, plugin.extra_slash.as_ref().map(|e| e.1))
+                (*value, extra_slash.as_ref().map(|e| e.1.as_str()))
+            };
+
+            add_extra_css(plugin, context, &*value);
+
+            generate_at_rules(context, |context| {
+                generate_class(
+                    context,
+                    |context| {
+                        let value = if &*value == "auto" {
+                            Cow::Borrowed("auto")
+                        } else if &*value == "full" {
+                            if *is_negative {
+                                Cow::Borrowed("-100%")
+                            } else {
+                                Cow::Borrowed("100%")
+                            }
+                        } else {
+                            spacing::get(value, *is_negative).unwrap()
+                        };
+                        parsed_push_css_lines_with_templating(
+                            prop,
+                            inner_plugin,
+                            &*value,
+                            template_value,
+                            context,
+                        );
+
+                        if let Some(extra_lines) = extra_lines {
+                            context.buffer.lines(extra_lines);
+                        }
+                    },
+                    extra_class.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                );
+            });
+        }
+
+        (
+            CustomPlugin::Static(
+                inner_plugin @ Plugin {
+                    kind: PluginKind::Color { prop, .. },
+                    extra_class,
+                    extra_lines,
+                    ..
+                },
+            ),
+            Modifier::Builtin { value, .. },
+        ) => {
+            generate_at_rules(context, |context| {
+                generate_class(
+                    context,
+                    |context| {
+                        let value = color::get(context.config, &*value).unwrap();
+                        push_css_lines_with_templating(prop, inner_plugin, &*value, None, context);
+
+                        if let Some(extra_lines) = extra_lines {
+                            context.buffer.lines(*extra_lines);
+                        }
+                    },
+                    extra_class.unwrap_or(""),
+                );
+            });
+        }
+        (
+            CustomPlugin::Parsed(
+                inner_plugin @ ParsedPlugin {
+                    kind: ParsedPluginKind::Color { prop, .. },
+                    extra_class,
+                    extra_lines,
+                    ..
+                },
+            ),
+            Modifier::Builtin { value, .. },
+        ) => {
+            generate_at_rules(context, |context| {
+                generate_class(
+                    context,
+                    |context| {
+                        let value = color::get(context.config, &*value).unwrap();
+                        parsed_push_css_lines_with_templating(
+                            prop,
+                            inner_plugin,
+                            &*value,
+                            None,
+                            context,
+                        );
+
+                        if let Some(extra_lines) = extra_lines {
+                            context.buffer.lines(extra_lines);
+                        }
+                    },
+                    extra_class.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                );
+            });
+        }
+
+        (
+            CustomPlugin::Static(
+                inner_plugin @ Plugin {
+                    kind:
+                        PluginKind::Number {
+                            prop, divide_by, ..
+                        },
+                    extra_slash,
+                    extra_lines,
+                    extra_class,
+                    ..
+                },
+            ),
+            Modifier::Builtin { value, is_negative },
+        ) => {
+            let (value, template_value) = if extra_slash.is_some()
+                && let Some(index) = value.find('/')
+            {
+                let (before, after) = value.split_at(index);
+                (before, Some(&after[1..]))
+            } else {
+                (*value, extra_slash.as_ref().map(|e| e.1))
             };
 
             add_extra_css(plugin, context, &*value);
@@ -267,28 +555,95 @@ fn handle(plugin: &Plugin, context: &mut Context) {
 
                         push_css_lines_with_templating(
                             prop,
-                            plugin,
+                            inner_plugin,
                             &*value,
                             template_value,
                             context,
                         );
 
-                        if let Some(extra_lines) = plugin.extra_lines {
-                            context.buffer.lines(extra_lines);
+                        if let Some(extra_lines) = extra_lines {
+                            context.buffer.lines(*extra_lines);
                         }
                     },
-                    plugin.extra_class.unwrap_or(""),
+                    extra_class.unwrap_or(""),
                 );
             });
         }
-        (PluginKind::Arbitrary { prop, .. }, Modifier::Arbitrary { value, .. }) => {
+        (
+            CustomPlugin::Parsed(
+                inner_plugin @ ParsedPlugin {
+                    kind:
+                        ParsedPluginKind::Number {
+                            prop, divide_by, ..
+                        },
+                    extra_slash,
+                    extra_lines,
+                    extra_class,
+                    ..
+                },
+            ),
+            Modifier::Builtin { value, is_negative },
+        ) => {
+            let (value, template_value) = if extra_slash.is_some()
+                && let Some(index) = value.find('/')
+            {
+                let (before, after) = value.split_at(index);
+                (before, Some(&after[1..]))
+            } else {
+                (*value, extra_slash.as_ref().map(|e| e.1.as_str()))
+            };
+
+            add_extra_css(plugin, context, &*value);
+
+            generate_at_rules(context, |context| {
+                generate_class(
+                    context,
+                    |context| {
+                        let coeff = if *is_negative { -1.0 } else { 1.0 };
+                        let value = if value.is_empty() {
+                            coeff.to_string()
+                        } else if value == "auto" {
+                            String::from("auto")
+                        } else {
+                            (value.parse::<usize>().unwrap() as f32 / divide_by * coeff).to_string()
+                        };
+
+                        parsed_push_css_lines_with_templating(
+                            prop,
+                            inner_plugin,
+                            &*value,
+                            template_value,
+                            context,
+                        );
+
+                        if let Some(extra_lines) = extra_lines {
+                            context.buffer.lines(extra_lines);
+                        }
+                    },
+                    extra_class.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                );
+            });
+        }
+
+        (
+            CustomPlugin::Static(
+                inner_plugin @ Plugin {
+                    kind: PluginKind::Arbitrary { prop, .. },
+                    extra_lines,
+                    extra_class,
+                    arbitrary_shadow_color_replacement,
+                    ..
+                },
+            ),
+            Modifier::Arbitrary { value, .. },
+        ) => {
             generate_at_rules(context, |context| {
                 generate_class(
                     context,
                     |context| {
                         // If the shadow is malformed, just output it without modification
                         let value = if let Some(color_replacement) =
-                            plugin.arbitrary_shadow_color_replacement
+                            arbitrary_shadow_color_replacement
                             && let Some(mut shadow) = shadow::ShadowList::parse(&value)
                         {
                             shadow.replace_all_colors(color_replacement);
@@ -297,17 +652,67 @@ fn handle(plugin: &Plugin, context: &mut Context) {
                             value
                         };
 
-                        push_css_lines_with_templating(prop, plugin, value, None, context);
+                        push_css_lines_with_templating(prop, inner_plugin, value, None, context);
 
-                        if let Some(extra_lines) = plugin.extra_lines {
-                            context.buffer.lines(extra_lines);
+                        if let Some(extra_lines) = extra_lines {
+                            context.buffer.lines(*extra_lines);
                         }
                     },
-                    plugin.extra_class.unwrap_or(""),
+                    extra_class.unwrap_or(""),
                 );
             });
         }
-        (PluginKind::Functional { handle, .. }, _) => {
+        (
+            CustomPlugin::Parsed(
+                inner_plugin @ ParsedPlugin {
+                    kind: ParsedPluginKind::Arbitrary { prop, .. },
+                    extra_lines,
+                    extra_class,
+                    arbitrary_shadow_color_replacement,
+                    ..
+                },
+            ),
+            Modifier::Arbitrary { value, .. },
+        ) => {
+            generate_at_rules(context, |context| {
+                generate_class(
+                    context,
+                    |context| {
+                        // If the shadow is malformed, just output it without modification
+                        let value = if let Some(color_replacement) =
+                            arbitrary_shadow_color_replacement
+                            && let Some(mut shadow) = shadow::ShadowList::parse(&value)
+                        {
+                            shadow.replace_all_colors(color_replacement);
+                            &Cow::Owned(shadow.to_string())
+                        } else {
+                            value
+                        };
+
+                        parsed_push_css_lines_with_templating(
+                            prop,
+                            inner_plugin,
+                            value,
+                            None,
+                            context,
+                        );
+
+                        if let Some(extra_lines) = extra_lines {
+                            context.buffer.lines(extra_lines);
+                        }
+                    },
+                    extra_class.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                );
+            });
+        }
+
+        (
+            CustomPlugin::Static(Plugin {
+                kind: PluginKind::Functional { handle, .. },
+                ..
+            }),
+            _,
+        ) => {
             handle(context);
         }
         _ => unreachable!(
@@ -328,10 +733,7 @@ fn handle(plugin: &Plugin, context: &mut Context) {
 /// Returns [`fmt::Error`] indicating whether writing to the buffer succeeded.
 ///
 /// [`fmt::Error`]: std::fmt::Error
-pub fn generate_at_rules<T: FnOnce(&mut Context)>(
-    context: &mut Context,
-    rule_content_fn: T,
-) {
+pub fn generate_at_rules<T: FnOnce(&mut Context)>(context: &mut Context, rule_content_fn: T) {
     let Context {
         buffer, selector, ..
     } = context;
@@ -479,6 +881,7 @@ fn resolve_selector<'a>(
     config: &'a Config,
     config_derived_variants: &[(Cow<'static, str>, Variant<'static>)],
     depth: MaxShortcutDepth,
+    trie: &Trie,
 ) {
     if depth.get() == 0 {
         return;
@@ -493,11 +896,12 @@ fn resolve_selector<'a>(
                 config,
                 config_derived_variants,
                 MaxShortcutDepth::new(depth.get() - 1),
+                trie,
             );
         });
     } else {
         selectors.extend(
-            parse(selector, None, full_class, config, config_derived_variants)
+            parse(selector, None, full_class, config, config_derived_variants, trie)
                 .into_iter()
                 .filter_map(Result::ok),
         );
@@ -517,6 +921,7 @@ fn resolve_selector<'a>(
 pub fn generate<'a>(sources: impl IntoIterator<Item = &'a str>, config: &Config) -> String {
     let config_derived_variants = config.get_derived_variants();
     let mut selectors = BTreeSet::new();
+    let trie = build_trie(config);
 
     // Add selectors from the safelist
     for safe_selector in config.safelist.iter() {
@@ -529,6 +934,7 @@ pub fn generate<'a>(sources: impl IntoIterator<Item = &'a str>, config: &Config)
                         Some(safe_selector),
                         config,
                         &config_derived_variants,
+                        &trie,
                     )
                     .into_iter()
                     .filter_map(Result::ok),
@@ -536,7 +942,7 @@ pub fn generate<'a>(sources: impl IntoIterator<Item = &'a str>, config: &Config)
             });
         } else {
             selectors.extend(
-                parse(safe_selector, None, None, config, &config_derived_variants)
+                parse(safe_selector, None, None, config, &config_derived_variants, &trie)
                     .into_iter()
                     .filter_map(Result::ok),
             );
@@ -554,6 +960,7 @@ pub fn generate<'a>(sources: impl IntoIterator<Item = &'a str>, config: &Config)
                 config,
                 &config_derived_variants,
                 config.max_shortcut_depth,
+                &trie,
             );
         }
     }
@@ -574,7 +981,7 @@ pub fn generate<'a>(sources: impl IntoIterator<Item = &'a str>, config: &Config)
             selector: &selector,
         };
 
-        handle(selector.plugin, &mut context);
+        handle(&selector.plugin, &mut context);
     }
 
     buffer.into_inner()

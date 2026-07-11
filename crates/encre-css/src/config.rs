@@ -1919,17 +1919,17 @@ pub struct Config {
     #[serde(default)]
     pub extra: Extra,
 
+    /// A list of custom plugins.
+    ///
+    /// This field is skipped when deserializing from a [TOML](https://toml.io) file.
+    #[serde(default)]
+    pub(crate) custom_plugins: Vec<CustomPlugin>,
+
     /// A custom scanner used to scan content.
     ///
     /// This field is skipped when deserializing from a [TOML](https://toml.io) file.
     #[serde(skip)]
     pub scanner: Scanner,
-
-    /// A list of custom plugins.
-    ///
-    /// This field is skipped when deserializing from a [TOML](https://toml.io) file.
-    #[serde(skip)]
-    pub(crate) custom_plugins: Vec<&'static Plugin>,
 
     /// A list of custom variants.
     ///
@@ -2151,13 +2151,9 @@ impl Config {
     ///   color: #eee;
     /// }"));
     /// ```
-    // pub fn register_plugin<T: Into<Cow<'static, str>>>(
-    //     &mut self,
-    //     namespace: T,
-    //     plugin: &'static (dyn Plugin + Send + Sync),
-    // ) {
-    //     self.custom_plugins.push((namespace.into(), plugin));
-    // }
+    pub fn register_plugin(&mut self, plugin: &'static Plugin) {
+        self.custom_plugins.push(CustomPlugin::Static(plugin));
+    }
 
     /// Register a custom variant which will be used during CSS generation.
     ///
@@ -2436,100 +2432,51 @@ mod tests {
         );
     }
 
-    //     #[test]
-    //     fn gen_css_with_custom_plugin_and_extra_fields() {
-    //         use crate::prelude::build_plugin::*;
-    //         use std::collections::HashMap;
-    //
-    //         #[derive(Debug)]
-    //         struct EmojiPlugin;
-    //
-    //         impl Plugin for EmojiPlugin {
-    //             fn can_handle(&self, context: ContextCanHandle) -> bool {
-    //                 matches!(context.modifier, Modifier::Builtin { value, .. } if context.config.extra.get("emojis").map_or(false, |val| val.as_table().map_or(false, |table| table.contains_key(*value))))
-    //             }
-    //
-    //             fn handle(&self, context: &mut ContextHandle) {
-    //                 if let Modifier::Builtin { value, .. } = context.modifier {
-    //                     context.buffer.line(format_args!(
-    //                         r#"content: {};"#,
-    //                         context
-    //                             .config
-    //                             .extra
-    //                             .get("emojis")
-    //                             .unwrap()
-    //                             .as_table()
-    //                             .unwrap()
-    //                             .get(*value)
-    //                             .unwrap()
-    //                     ));
-    //                 }
-    //             }
-    //         }
-    //
-    //         let mut config = base_config();
-    //         config.register_plugin("emoji", &EmojiPlugin);
-    //         config.extra.add(
-    //             "emojis",
-    //             HashMap::from_iter([("tada", "\u{1f389}"), ("rocket", "\u{1f680}")]),
-    //         );
-    //
-    //         let generated = generate(["emoji-tada"], &config);
-    //
-    //         assert_eq!(
-    //             generated,
-    //             String::from(
-    //                 ".emoji-tada {
-    //   content: \"\u{1f389}\";
-    // }"
-    //             )
-    //         );
-    //     }
+    #[test]
+    fn gen_css_with_custom_plugin() {
+        use crate::prelude::build_plugin::*;
 
-    //     #[test]
-    //     fn gen_css_with_custom_plugin_extra_fields_and_parsed_config() {
-    //         use crate::prelude::build_plugin::*;
-    //
-    //         #[derive(Debug)]
-    //         struct EmojiPlugin;
-    //
-    //         impl Plugin for EmojiPlugin {
-    //             fn can_handle(&self, context: ContextCanHandle) -> bool {
-    //                 matches!(context.modifier, Modifier::Builtin { value, .. } if context.config.extra.get("emojis").map_or(false, |val| val.as_table().map_or(false, |table| table.contains_key(*value))))
-    //             }
-    //
-    //             fn handle(&self, context: &mut ContextHandle) {
-    //                 if let Modifier::Builtin { value, .. } = context.modifier {
-    //                     context.buffer.line(format_args!(
-    //                         r#"content: {};"#,
-    //                         context
-    //                             .config
-    //                             .extra
-    //                             .get("emojis")
-    //                             .unwrap()
-    //                             .as_table()
-    //                             .unwrap()
-    //                             .get(*value)
-    //                             .unwrap()
-    //                     ));
-    //                 }
-    //             }
-    //         }
-    //
-    //         let mut config = Config::from_file("tests/fixtures/extra-fields-config.toml").unwrap();
-    //         config.register_plugin("emoji", &EmojiPlugin);
-    //
-    //         let generated = generate(["emoji-tada"], &config);
-    //
-    //         assert_eq!(
-    //             generated,
-    //             String::from(
-    //                 ".emoji-tada {
-    //   content: \"\u{1f389}\";
-    // }"
-    //             )
-    //         );
-    //     }
+        const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
+            prop: SingleProp("content"),
+            values: phf_map! {
+                "emoji-tada" => "\"\u{1f389}\"",
+                "emoji-rocket" => "\"\u{1f680}\"",
+            },
+        });
+
+        let mut config = base_config();
+        config.register_plugin(&PLUGIN);
+
+        let generated = generate(["emoji-tada"], &config);
+
+        assert_eq!(
+            generated,
+            String::from(
+                ".emoji-tada {
+  content: \"\u{1f389}\";
+}"
+            )
+        );
+    }
+
+    #[test]
+    fn gen_css_with_custom_parsed_plugin() {
+        let mut config = match Config::from_file("tests/fixtures/custom-plugin-config.toml") {
+            Ok(c) => c,
+            Err(e) => panic!("{e}"),
+        };
+        dbg!(&config);
+        let generated = generate(["emoji-tada"], &config);
+
+        assert_eq!(
+            generated,
+            String::from(
+                ".emoji-tada {
+  content: \"\u{1f389}\";
+}"
+            )
+        );
+    }
 
     #[test]
     fn config_is_extended_and_overridden() {

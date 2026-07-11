@@ -105,13 +105,14 @@ pub(crate) mod parser;
 pub(super) mod trie;
 pub(super) mod find_plugin;
 
-use crate::plugins::Plugin;
+use crate::plugins::CustomPlugin;
 
 use std::{borrow::Cow, cmp::Ordering, str::FromStr};
 
 pub(crate) use parser::parse;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum ArbitraryHint {
     Shadow,
     AbsoluteSize,
@@ -324,7 +325,7 @@ pub(crate) struct Selector<'a> {
     pub(crate) modifier: Modifier<'a>,
     pub(crate) variants: Vec<Variant<'a>>,
     pub(crate) is_important: bool,
-    pub(crate) plugin: &'static Plugin,
+    pub(crate) plugin: CustomPlugin,
 }
 
 impl PartialEq for Selector<'_> {
@@ -413,12 +414,14 @@ mod tests {
     fn sorting_test() {
         let config = Config::default();
 
+        let trie = crate::selector::trie::build_trie(&config);
         let selectors1 = parse(
             "lg:bg-red-500",
             None,
             None,
             &config,
             &config.get_derived_variants(),
+            &trie,
         );
         let selectors2 = parse(
             "bg-red-500",
@@ -426,6 +429,7 @@ mod tests {
             None,
             &config,
             &config.get_derived_variants(),
+            &trie,
         );
 
         let mut selectors = BTreeSet::new();
@@ -443,12 +447,14 @@ mod tests {
     fn layers_test() {
         let config = Config::default();
 
+        let trie = crate::selector::trie::build_trie(&config);
         let selectors1 = parse(
             "lg:bg-red-500",
             None,
             None,
             &config,
             &config.get_derived_variants(),
+            &trie,
         );
         let mut selectors2 = parse(
             "bg-red-500",
@@ -456,6 +462,7 @@ mod tests {
             None,
             &config,
             &config.get_derived_variants(),
+            &trie,
         );
         selectors2[0].as_mut().unwrap().layer = 42;
 

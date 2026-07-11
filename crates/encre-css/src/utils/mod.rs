@@ -3,8 +3,8 @@ use crate::{
     config::Config,
     error::{ParseError, ParseErrorKind},
     selector::{
-        parser::{parse, ARBITRARY_END, ARBITRARY_START, ESCAPE, GROUP_END, GROUP_START},
         Selector,
+        parser::{ARBITRARY_END, ARBITRARY_START, ESCAPE, GROUP_END, GROUP_START, parse},
     },
 };
 
@@ -185,10 +185,18 @@ fn sort_selectors_recursive<'a>(
         }
     }
 
+    let trie = crate::selector::trie::build_trie(&config);
     let config_derived_variants = config.get_derived_variants();
     let mut selectors = val
         .filter_map(|v| {
-            let selectors = parse(v.trim(), None, None, config, &config_derived_variants);
+            let selectors = parse(
+                v.trim(),
+                None,
+                None,
+                config,
+                &config_derived_variants,
+                &trie,
+            );
 
             if selectors.len() > 1 {
                 // Sort variant groups
@@ -284,6 +292,7 @@ pub fn sort_selectors(val: &str, config: &Config) -> String {
 /// ]);
 /// ```
 pub fn check_selectors<'a>(val: &'a str, config: &Config) -> Vec<ParseError<'a>> {
+    let trie = crate::selector::trie::build_trie(&config);
     let config_derived_variants = config.get_derived_variants();
     val.char_indices()
         .chain(iter::once((val.len(), ' ')))
@@ -294,7 +303,16 @@ pub fn check_selectors<'a>(val: &'a str, config: &Config) -> Vec<ParseError<'a>>
             Some((old_i..i, &val[old_i..i]))
         })
         .filter(|(_, v)| !v.is_empty())
-        .flat_map(|(span, v)| parse(v.trim(), Some(span), None, config, &config_derived_variants))
+        .flat_map(|(span, v)| {
+            parse(
+                v.trim(),
+                Some(span),
+                None,
+                config,
+                &config_derived_variants,
+                &trie,
+            )
+        })
         .filter_map(Result::err)
         .collect::<Vec<ParseError>>()
 }
