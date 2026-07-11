@@ -13,7 +13,7 @@ use std::{borrow::Cow, collections::BTreeSet};
 ///
 /// [`Plugin::handle`]: crate::plugins::Plugin::handle
 #[derive(Debug)]
-pub struct ContextHandle<'a, 'b, 'c, 'd, 'e> {
+pub struct Context<'a, 'b, 'c, 'd, 'e> {
     /// The generator's configuration.
     pub config: &'a Config,
 
@@ -27,7 +27,7 @@ pub struct ContextHandle<'a, 'b, 'c, 'd, 'e> {
     selector: &'e Selector<'e>,
 }
 
-fn push_css_lines(prop: &PropertyName, value: &str, context: &mut ContextHandle) {
+fn push_css_lines(prop: &PropertyName, value: &str, context: &mut Context) {
     match prop {
         PropertyName::SingleProp(prop) => {
             context.buffer.line(format_args!("{prop}: {value};"));
@@ -45,7 +45,7 @@ fn push_css_lines_with_templating(
     plugin: &Plugin,
     value: &str,
     slash_value: Option<&str>,
-    context: &mut ContextHandle,
+    context: &mut Context,
 ) {
     let transform_template = |template: &str| {
         if let Some(slash_value) = slash_value {
@@ -88,7 +88,7 @@ fn push_css_lines_with_templating(
     }
 }
 
-fn add_extra_css(plugin: &Plugin, context: &mut ContextHandle, value: &str) {
+fn add_extra_css(plugin: &Plugin, context: &mut Context, value: &str) {
     if let Some(extra_css) = &plugin.extra_css {
         let Some(css) = extra_css.get(value) else {
             return;
@@ -100,7 +100,7 @@ fn add_extra_css(plugin: &Plugin, context: &mut ContextHandle, value: &str) {
     }
 }
 
-fn handle(plugin: &Plugin, context: &mut ContextHandle) {
+fn handle(plugin: &Plugin, context: &mut Context) {
     match (&plugin.kind, context.modifier) {
         (&PluginKind::ListCases { ref cases }, &Modifier::Builtin { value, .. }) => {
             add_extra_css(plugin, context, value);
@@ -328,11 +328,11 @@ fn handle(plugin: &Plugin, context: &mut ContextHandle) {
 /// Returns [`fmt::Error`] indicating whether writing to the buffer succeeded.
 ///
 /// [`fmt::Error`]: std::fmt::Error
-pub fn generate_at_rules<T: FnOnce(&mut ContextHandle)>(
-    context: &mut ContextHandle,
+pub fn generate_at_rules<T: FnOnce(&mut Context)>(
+    context: &mut Context,
     rule_content_fn: T,
 ) {
-    let ContextHandle {
+    let Context {
         buffer, selector, ..
     } = context;
 
@@ -347,7 +347,7 @@ pub fn generate_at_rules<T: FnOnce(&mut ContextHandle)>(
 
     rule_content_fn(context);
 
-    let ContextHandle { buffer, .. } = context;
+    let Context { buffer, .. } = context;
     while !buffer.is_unindented() {
         buffer.unindent();
 
@@ -372,12 +372,12 @@ pub fn generate_at_rules<T: FnOnce(&mut ContextHandle)>(
 ///
 /// [`fmt::Error`]: std::fmt::Error
 #[allow(clippy::too_many_lines)]
-pub fn generate_class<T: FnOnce(&mut ContextHandle)>(
-    context: &mut ContextHandle,
+pub fn generate_class<T: FnOnce(&mut Context)>(
+    context: &mut Context,
     rule_content_fn: T,
     custom_after_class: &str,
 ) {
-    let ContextHandle {
+    let Context {
         buffer, selector, ..
     } = context;
 
@@ -424,7 +424,7 @@ pub fn generate_class<T: FnOnce(&mut ContextHandle)>(
     buffer.indent();
     rule_content_fn(context);
 
-    let ContextHandle {
+    let Context {
         buffer, selector, ..
     } = context;
 
@@ -567,7 +567,7 @@ pub fn generate<'a>(sources: impl IntoIterator<Item = &'a str>, config: &Config)
             buffer.raw("\n\n");
         }
 
-        let mut context = ContextHandle {
+        let mut context = Context {
             config,
             modifier: &selector.modifier,
             buffer: &mut buffer,

@@ -33,12 +33,13 @@
 //!
 //! [`Config`]: crate::Config
 
-use crate::{generator::ContextHandle, plugins::PropertyName::MultipleProps, selector::ArbitraryHint};
+use crate::{generator::Context, plugins::PropertyName::MultipleProps, selector::ArbitraryHint};
 
 pub mod accessibility;
 pub mod background;
 pub mod border;
 pub mod css_property;
+pub mod custom;
 pub mod effect;
 pub mod filter;
 pub mod flexbox;
