@@ -223,12 +223,47 @@ mod tests {
 
     #[test]
     fn gradient_color_stops() {
-        // TODO: improve test
         assert_eq!(
             generate(["from-red-200"], &base_config()),
             r".from-red-200 {
   --en-gradient-from: oklch(88.5% .062 18.334);
   --en-gradient-stops: var(--en-gradient-from), var(--en-gradient-to, transparent);
+}"
+        );
+
+        assert_eq!(
+            generate(["from-[#f00]"], &base_config()),
+            r".from-\[\#f00\] {
+  --en-gradient-from: #f00;
+  --en-gradient-stops: var(--en-gradient-from), var(--en-gradient-to, transparent);
+}"
+        );
+
+        assert_eq!(
+            generate(["via-blue-200"], &base_config()),
+            r".via-blue-200 {
+  --en-gradient-stops: var(--en-gradient-from), oklch(88.2% .059 254.128), var(--en-gradient-to, transparent);
+}"
+        );
+
+        assert_eq!(
+            generate(["via-[rgb(12,12,12)]"], &base_config()),
+            r".via-\[rgb\(12\,12\,12\)\] {
+  --en-gradient-stops: var(--en-gradient-from), rgb(12,12,12), var(--en-gradient-to, transparent);
+}"
+        );
+
+        assert_eq!(
+            generate(["to-green-200"], &base_config()),
+            r".to-green-200 {
+  --en-gradient-to: oklch(92.5% .084 155.995);
+}"
+        );
+
+        assert_eq!(
+            generate(["to-[hwb(61_0%_0%)]"], &base_config()),
+            r".to-\[hwb\(61_0\%_0\%\)\] {
+  --en-gradient-to: hwb(61 0% 0%);
 }"
         );
     }
