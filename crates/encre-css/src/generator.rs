@@ -8,9 +8,9 @@ use crate::{
 
 use std::{borrow::Cow, collections::BTreeSet};
 
-/// The context used in the [`Plugin::handle`] method.
+/// The context used in the [`Functional`] plugin kind.
 ///
-/// [`Plugin::handle`]: crate::plugins::Plugin::handle
+/// [`Functional`]: crate::plugins::PluginKind::Functional
 #[derive(Debug)]
 pub struct Context<'a, 'b, 'c, 'd, 'e> {
     /// The generator's configuration.
@@ -724,7 +724,7 @@ fn handle(plugin: &CustomPlugin, context: &mut Context) {
 
 /// Generate the needed CSS at-rules (e.g @media).
 ///
-/// Note: The inner class (e.g. .foo-bar) is not handled by this function, see [`generate_wrapper`].
+/// Note: The inner class (e.g. .foo-bar) is not handled by this function, see [`generate_class`].
 ///
 /// The second argument, a closure, is called to generate the CSS content of the rule.
 ///
@@ -763,7 +763,7 @@ pub fn generate_at_rules<T: FnOnce(&mut Context)>(context: &mut Context, rule_co
 
 /// Generate a CSS rule with a class.
 ///
-/// Note: At-rules (e.g. @media) are not handled by this function, see [`generate_wrapper`].
+/// Note: At-rules (e.g. @media) are not handled by this function, see [`generate_at_rules`].
 ///
 /// The second argument, a closure, is called to generate the CSS content of the rule.
 /// The third argument is used to add a custom string just after the class (e.g. `> *`).
@@ -914,7 +914,7 @@ fn resolve_selector<'a>(
 /// each class found.
 ///
 /// By default, it splits the source by spaces, double quotes, single quotes, backticks and new
-/// lines, while ignoring the content inside arbitrary values/variants and variant groups.
+/// lines.
 ///
 /// This function also removes duplicated selectors and sorts the generated CSS classes based on
 /// the order in which they were defined to avoid conflicts.

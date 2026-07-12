@@ -2111,8 +2111,8 @@ impl Config {
     /// Note that if you are not the maintainer of a crate providing plugins, you can ignore this
     /// function, see [`crate::plugins`].
     ///
-    /// See [`crate::plugins`] to learn how to write plugins and [`crate::plugins::PluginKind`]
-    /// documentation for choosing the correct plugin kind for your use case.
+    /// See [`crate::plugins::Plugin`] to learn how to write plugins and
+    /// [`crate::plugins::PluginKind`] for choosing the correct plugin kind for your use case.
     ///
     /// # Example
     ///

@@ -6,15 +6,11 @@ use crate::selector::ArbitraryHint;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, Serialize, Deserialize)]
 pub(crate) enum ParsedPluginArbitraryMatcher {
-    All,
-    Url,
-    Var,
     Shadow,
     AbsoluteSize,
     RelativeSize,
     LineWidth,
     LineStyle,
-    ComputationalCssFunction,
     Color,
     Length,
     Number,
@@ -128,26 +124,4 @@ pub(crate) struct ParsedPlugin {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub(crate) list_namespace: Option<String>,
-}
-
-impl ParsedPlugin {
-    pub(crate) const fn new(kind: ParsedPluginKind) -> Self {
-        Self {
-            kind,
-            has_auto: false,
-            has_empty: false,
-            has_full: false,
-            has_negative: false,
-            extra_lines: None,
-            extra_css: None,
-            extra_class: None,
-            extra_slash: None,
-            template: None,
-            template_multiple: None,
-            arbitrary_hints: None,
-            arbitrary_matcher: None,
-            arbitrary_shadow_color_replacement: None,
-            list_namespace: None,
-        }
-    }
 }

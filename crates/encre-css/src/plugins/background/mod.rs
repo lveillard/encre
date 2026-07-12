@@ -219,6 +219,12 @@ mod tests {
   background-color: purple;
 }"
         );
+        assert_eq!(
+            generate(["bg-[color:var(--primary)]"], &base_config()),
+            r".bg-\[color\:var\(--primary\)\] {
+  background-color: var(--primary);
+}"
+        );
     }
 
     #[test]

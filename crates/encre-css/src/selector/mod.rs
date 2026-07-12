@@ -111,21 +111,53 @@ use std::{borrow::Cow, cmp::Ordering, str::FromStr};
 pub(crate) use parser::parse;
 use serde::{Deserialize, Serialize};
 
+/// A hint forcing the specified CSS type to be inferred for an arbitrary value.
+///
+/// Each hint is suffixed by `:` and followed by the value, e.g `bg-[color:var(--primary)]` will
+/// generate a `background-color: var(--primary);` CSS property because the hint will force the use
+/// of the `background-color` plugin even though the CSS value type cannot be inferred.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum ArbitraryHint {
+    /// A shadow CSS property value
     Shadow,
+
+    /// An absolute-size CSS property value
     AbsoluteSize,
+
+    /// A relative-size CSS property value
     RelativeSize,
+
+    /// An URL CSS property value
     Url,
+
+    /// A line width CSS property value
     LineWidth,
+
+    /// A line style CSS property value
     LineStyle,
+
+    /// A color CSS property value
     Color,
+
+    /// A length CSS property value
     Length,
+
+    /// A percentage CSS property value
     Percentage,
+
+    /// A number CSS property value
     Number,
+
+    /// A position CSS property value
     Position,
+
+    /// A image CSS property value
     Image,
+
+    /// A generic-name CSS property value
     GenericName,
+
+    /// A family-name CSS property value
     FamilyName,
 }
 

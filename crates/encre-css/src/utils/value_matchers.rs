@@ -212,11 +212,6 @@ fn is_matching_base(value: &str) -> bool {
         .contains(&value)
 }
 
-/// Match all CSS types.
-pub fn is_matching_all(_value: &str) -> bool {
-    true
-}
-
 /// Returns whether the CSS value is an [`url()`](https://developer.mozilla.org/en-US/docs/Web/CSS/url).
 ///
 /// # Example
@@ -225,7 +220,7 @@ pub fn is_matching_all(_value: &str) -> bool {
 /// use encre_css::utils::value_matchers::is_matching_url;
 /// assert!(is_matching_url("url('/hello/world.png')"));
 /// ```
-pub fn is_matching_url(value: &str) -> bool {
+fn is_matching_url(value: &str) -> bool {
     value.starts_with("url(")
 }
 
@@ -314,7 +309,7 @@ pub fn is_matching_line_style(value: &str) -> bool {
 /// use encre_css::utils::value_matchers::is_matching_computational_css_function;
 /// assert!(is_matching_computational_css_function("min(12px,10%)"));
 /// ```
-pub fn is_matching_computational_css_function(value: &str) -> bool {
+fn is_matching_computational_css_function(value: &str) -> bool {
     value.starts_with("min(")
         || value.starts_with("max(")
         || value.starts_with("clamp(")

@@ -26,5 +26,4 @@ pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
 .matcher(OrMultiple(&[
     &CustomMultiple(&["normal", "bold", "lighter", "bolder"]),
     &Number,
-    &Var,
 ]));

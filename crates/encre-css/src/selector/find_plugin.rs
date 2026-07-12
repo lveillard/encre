@@ -23,18 +23,12 @@ fn is_arbitrary_matching(matcher: &PluginArbitraryMatcher, value: &str, max_dept
         return false;
     }
 
-    match matcher {
-        PluginArbitraryMatcher::All => true,
-        PluginArbitraryMatcher::Url => is_matching_url(value),
-        PluginArbitraryMatcher::Var => is_matching_var(value),
+    (match matcher {
         PluginArbitraryMatcher::Shadow => is_matching_shadow(value),
         PluginArbitraryMatcher::AbsoluteSize => is_matching_absolute_size(value),
         PluginArbitraryMatcher::RelativeSize => is_matching_relative_size(value),
         PluginArbitraryMatcher::LineWidth => is_matching_line_width(value),
         PluginArbitraryMatcher::LineStyle => is_matching_line_style(value),
-        PluginArbitraryMatcher::ComputationalCssFunction => {
-            is_matching_computational_css_function(value)
-        }
         PluginArbitraryMatcher::Color => is_matching_color(value),
         PluginArbitraryMatcher::Length => is_matching_length(value),
         PluginArbitraryMatcher::Number => is_matching_number(value),
@@ -61,7 +55,7 @@ fn is_arbitrary_matching(matcher: &PluginArbitraryMatcher, value: &str, max_dept
         PluginArbitraryMatcher::SpaceSeparated(matcher1) => value
             .split(' ')
             .all(|v| is_arbitrary_matching(matcher1, v.trim(), max_depth + 1)),
-    }
+    }) || is_matching_var(value)
 }
 
 fn is_parsed_arbitrary_matching(
@@ -75,17 +69,11 @@ fn is_parsed_arbitrary_matching(
     }
 
     match matcher {
-        ParsedPluginArbitraryMatcher::All => true,
-        ParsedPluginArbitraryMatcher::Url => is_matching_url(value),
-        ParsedPluginArbitraryMatcher::Var => is_matching_var(value),
         ParsedPluginArbitraryMatcher::Shadow => is_matching_shadow(value),
         ParsedPluginArbitraryMatcher::AbsoluteSize => is_matching_absolute_size(value),
         ParsedPluginArbitraryMatcher::RelativeSize => is_matching_relative_size(value),
         ParsedPluginArbitraryMatcher::LineWidth => is_matching_line_width(value),
         ParsedPluginArbitraryMatcher::LineStyle => is_matching_line_style(value),
-        ParsedPluginArbitraryMatcher::ComputationalCssFunction => {
-            is_matching_computational_css_function(value)
-        }
         ParsedPluginArbitraryMatcher::Color => is_matching_color(value),
         ParsedPluginArbitraryMatcher::Length => is_matching_length(value),
         ParsedPluginArbitraryMatcher::Number => is_matching_number(value),
@@ -400,11 +388,14 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
             }),
             Modifier::Arbitrary { hint, value },
         ) => {
-            hint.is_some_and(|h| arbitrary_hints.as_ref().is_some_and(|hints| hints.contains(&h)))
-                || (hint.is_none()
-                    && arbitrary_matcher
-                        .as_ref()
-                        .is_none_or(|matcher| is_parsed_arbitrary_matching(&matcher, value, 0)))
+            hint.is_some_and(|h| {
+                arbitrary_hints
+                    .as_ref()
+                    .is_some_and(|hints| hints.contains(&h))
+            }) || (hint.is_none()
+                && arbitrary_matcher
+                    .as_ref()
+                    .is_none_or(|matcher| is_parsed_arbitrary_matching(&matcher, value, 0)))
         }
 
         (
@@ -412,7 +403,7 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
                 kind: PluginKind::Functional { .. },
                 ..
             }),
-            Modifier::Builtin { value, .. },
+            Modifier::Builtin { .. },
         ) => true, // If the prefix match, the plugin is called
         _ => false,
     }

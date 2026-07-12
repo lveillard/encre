@@ -65,36 +65,73 @@ pub(crate) enum CustomPlugin {
     Parsed(parsed::ParsedPlugin),
 }
 
+/// Accepted inferred CSS arbitrary value types for a specific plugin.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum PluginArbitraryMatcher {
-    All,
-    Url,
-    Var,
+    /// Match a [`shadow`](crate::utils::value_matchers::is_matching_shadow) CSS property value.
     Shadow,
+
+    /// Match an [`absolute size`](crate::utils::value_matchers::is_matching_absolute_size) CSS property value.
     AbsoluteSize,
+
+    /// Match an [`relative size`](crate::utils::value_matchers::is_matching_relative_size) CSS property value.
     RelativeSize,
+
+    /// Match an [`line width`](crate::utils::value_matchers::is_matching_line_width`) CSS property value.
     LineWidth,
+
+    /// Match an [`line style`](crate::utils::value_matchers::is_matching_line_style`) CSS property value.
     LineStyle,
-    ComputationalCssFunction,
+
+    /// Match a [`<color>`](crate::utils::value_matchers::is_matching_color`) CSS property value.
     Color,
+
+    /// Match a [`<length>`](crate::utils::value_matchers::is_matching_length`) CSS property value.
     Length,
+
+    /// Match a [`<number>`](crate::utils::value_matchers::is_matching_number`) CSS property value.
     Number,
+
+    /// Match a [`<percentage>`](crate::utils::value_matchers::is_matching_percentage`) CSS property value.
     Percentage,
+
+    /// Match a [`<time>`](crate::utils::value_matchers::is_matching_time`) CSS property value.
     Time,
+
+    /// Match a [`<gradient>`](crate::utils::value_matchers::is_matching_gradient`) CSS property value.
     Gradient,
+
+    /// Match a [`<position>`](crate::utils::value_matchers::is_matching_position`) CSS property value.
     Position,
+
+    /// Match a [`<angle>`](crate::utils::value_matchers::is_matching_angle`) CSS property value.
     Angle,
+
+    /// Match a [`<image>`](crate::utils::value_matchers::is_matching_image`) CSS property value.
     Image,
+
+    /// Match a [`font family name`](crate::utils::value_matchers::is_matching_font_family_name`) CSS property value.
     FontFamilyName,
+
+    /// Match a single custom value.
     Custom(&'static str),
+
+    /// Match at least one value among a list of custom values.
     CustomMultiple(&'static [&'static str]),
 
+    /// Match a [`PluginArbitraryMatcher`] or another [`PluginArbitraryMatcher`].
     Or(
         &'static PluginArbitraryMatcher,
         &'static PluginArbitraryMatcher,
     ),
+
+    /// Match at least one [`PluginArbitraryMatcher`] among a list of [`PluginArbitraryMatcher`].
     OrMultiple(&'static [&'static PluginArbitraryMatcher]),
+
+    /// Match a list of comma-separated values (e.g `CommaSeparated(&Position)` matches `left, 100px, center`).
     CommaSeparated(&'static PluginArbitraryMatcher),
+
+    /// Match a list of space-separated values (e.g `SpaceSeparated(&LineStyle)` matches `solid none dashed solid`).
     SpaceSeparated(&'static PluginArbitraryMatcher),
 }
 
@@ -128,50 +165,130 @@ pub enum PluginKind {
         divide_by: f32,
     },
 
+    // TODO(doc): by default every arbitrary value is accepted, used to disambiguate when multiple plugins of
+    // the same namespace have arbitrary values
     Arbitrary {
         namespace: &'static str,
         prop: PropertyName,
     },
 
+    /// A powerful kind allowing the use a Rust function to handle all selectors within a single
+    /// namespace.
+    ///
+    /// This plugin kind is (of course) not serializable.
+    ///
+    /// The [`handle`] field takes a [`Context`] structure containing the modifier, the current
+    /// configuration and a buffer containing the whole CSS currently generated. You can use the
+    /// [`Buffer`] structure (especially the [`Buffer::line`] and [`Buffer::lines`] functions) to
+    /// push CSS declarations to it, they will be automatically indented.
+    ///
+    /// [`generate_at_rules`] and [`generate_class`] should be called to generate the CSS rule
+    /// structure.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::{Config, generate};
+    /// use encre_css::prelude::build_plugin::*;
+    /// use std::collections::HashMap;
+    ///
+    /// const PLUGIN: Plugin = Plugin::new(PluginKind::Functional {
+    ///     namespace: "emoji",
+    ///     handle: |context| {
+    ///         // Only accept static modifiers, and dynamically fetch them from the
+    ///         // `emoji` extra field of the configuration
+    ///         if let Modifier::Builtin { value, .. } = context.modifier
+    ///         && let Some(value) = context.config.extra.get("emoji")
+    ///             .and_then(|r| r.as_table())
+    ///             .and_then(|r| r.get(*value))
+    ///             .and_then(|r| r.as_str()) {
+    ///             generate_at_rules(context, |context| {
+    ///                 generate_class(
+    ///                     context,
+    ///                     |context| {
+    ///                         context.buffer.line(format_args!("content: \"{value}\";"));
+    ///                     },
+    ///                     "",
+    ///                 );
+    ///             });
+    ///         }
+    ///     },
+    /// });
+    ///
+    /// let mut config = Config::default();
+    /// config.extra.add(
+    ///     "emoji",
+    ///     HashMap::from_iter([("tada", "\u{1f389}"), ("rocket", "\u{1f680}")]),
+    /// );
+    /// config.register_plugin(&PLUGIN);
+    ///
+    /// let generated = generate(["emoji-tada", "emoji-rocket"], &config);
+    /// dbg!(&generated);
+    ///
+    /// assert!(generated.ends_with(".emoji-rocket {
+    ///   content: \"\u{1f680}\";
+    /// }
+    ///
+    /// .emoji-tada {
+    ///   content: \"\u{1f389}\";
+    /// }"));
+    /// ```
+    ///
+    /// [`Buffer`]: crate::utils::buffer::Buffer
+    /// [`Buffer::line`]: crate::utils::buffer::Buffer::line
+    /// [`Buffer::lines`]: crate::utils::buffer::Buffer::lines
+    /// [`handle`]: PluginKind::Functional::handle
+    /// [`generate_at_rules`]: crate::generator::generate_at_rules
+    /// [`generate_class`]: crate::generator::generate_class
     Functional {
         namespace: &'static str,
         handle: fn(&mut Context),
     },
 }
 
-/// A plugin is a structure capable of generating CSS styles from a modifier (contained in a
-/// context structure).
+/// A plugin is a structure capable of generating CSS styles from a selector.
 ///
-/// Each plugin consists of two methods:
-/// - [`Plugin::new(PluginKind::can_handle`] to check if it will be able to generate CSS for a specific modifier;
-/// - [`Plugin::new(PluginKind::handle`] to generate the CSS needed.
+/// Several kinds of plugins exist and define what values are accepted as selector or modifier and
+/// what CSS is generated based on the input selector. The API is designed to be fully declarative
+/// (so that plugin declarations are serializable), except for the
+/// [functional kind](PluginKind::Functional).
 ///
-/// The [`Plugin::new(PluginKind::can_handle`] method takes a [`ContextCanHandle`] structure containing the
-/// modifier and the current configuration.
+/// Each plugin kind has a set of required parameters which are defined in the [`PluginKind`]
+/// enumeration, whereas the [`Plugin`] structure's methods allows overriding some default values
+/// for the chosen kind.
 ///
-/// The [`Plugin::new(PluginKind::handle`] method takes a [`ContextHandle`] structure containing the modifier,
-/// the current configuration and a buffer containing the whole CSS
-/// currently generated. You can use the [`Buffer`] structure (especially the [`Buffer::line`]
-/// and [`Buffer::lines`] functions) to push CSS declarations to it, they will be automatically
-/// indented.
+/// It's common to define several plugins to handle a single utility class, and to define static
+/// plugins as constants ([`Plugin::new`] as well as every [`Plugin`] methods are `const fn`s).
 ///
-/// It is common to use the [`unreachable!`] macro if the [`Plugin::new(PluginKind::handle`] method cannot be
-/// called because you are sure that [`Plugin::new(PluginKind::can_handle`] returned `false`.
+/// # Simple example (defines the static values of the `font-family` plugin)
 ///
-/// # Example (defines the `stroke-width` plugin)
+/// ```
+/// use encre_css::prelude::build_plugin::*;
+///
+/// const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
+///     prop: SingleProp("font-family"),
+///     values: phf_map! {
+///         "font-sans" => r#"ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont"#,
+///         "font-serif" => r#"Georgia, Cambria, "Times New Roman", Times, serif"#,
+///         "font-mono" => r#"Menlo, Monaco, Consolas, "Liberation Mono", monospace"#,
+///     },
+/// });
+/// ```
+///
+/// # More advanced example (defines the `stroke-width` plugin)
 ///
 /// ```
 /// use encre_css::prelude::build_plugin::*;
 /// use PluginArbitraryMatcher::*;
 ///
-/// pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
+/// const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
 ///     namespace: "stroke",
 ///     prop: SingleProp("stroke-width"),
 ///     divide_by: 1.0,
 /// })
 /// .template("{}px");
 ///
-/// pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
+/// const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
 ///     namespace: "stroke",
 ///     prop: SingleProp("stroke-width"),
 /// })
@@ -188,8 +305,7 @@ pub enum PluginKind {
 ///
 /// If you want to release your custom plugins as a crate, you can export a `register` function
 /// taking a mutable reference to a [`Config`] structure and use the [`Config::register_plugin`]
-/// function to register them. The first argument is the namespace namespaceing all the
-/// utility classes handled by the plugin.
+/// function to register them.
 ///
 /// ```ignore
 /// pub fn register(config: &mut Config) {
@@ -217,7 +333,15 @@ pub enum PluginKind {
 ///         && let Some(value) = context.config.extra.get("emoji")
 ///             .and_then(|r| r.as_table())
 ///             .and_then(|r| r.get(*value)) {
-///             context.buffer.line(format_args!("content: {value};"));
+///             generate_at_rules(context, |context| {
+///                 generate_class(
+///                     context,
+///                     |context| {
+///                         context.buffer.line(format_args!("content: {value};"));
+///                     },
+///                     "",
+///                 );
+///             });
 ///         }
 ///     },
 /// });
@@ -226,9 +350,6 @@ pub enum PluginKind {
 /// Have a look at <https://gitlab.com/encre-org/encre-css/tree/main/crates/encre-css/src/plugins>
 /// for more examples.
 ///
-/// [`Buffer`]: crate::utils::buffer::Buffer
-/// [`Buffer::line`]: crate::utils::buffer::Buffer::line
-/// [`Buffer::lines`]: crate::utils::buffer::Buffer::lines
 /// [`Config::register_plugin`]: crate::Config::register_plugin
 /// [`Config`]: crate::Config
 /// [`Functional`]: crate::plugins::PluginKind::Functional
@@ -254,6 +375,7 @@ pub struct Plugin {
 }
 
 impl Plugin {
+    /// Make a new [`Plugin`] from a [`PluginKind`] filled with the required values.
     pub const fn new(kind: PluginKind) -> Self {
         Self {
             kind,
@@ -274,8 +396,20 @@ impl Plugin {
         }
     }
 
+    /// Automatically add support for the `auto` modifier.
+    ///
+    /// If this method is called, an `auto` modifier will generate an `auto` CSS property value.
+    ///
+    /// <div class="warning">
+    ///
+    /// Only works with [`PluginKind::Spacing`] or [`PluginKind::Number`].
+    ///
+    /// </div>
     pub const fn has_auto(mut self) -> Self {
-        if !matches!(self.kind, PluginKind::Spacing { .. } | PluginKind::Number { .. }) {
+        if !matches!(
+            self.kind,
+            PluginKind::Spacing { .. } | PluginKind::Number { .. }
+        ) {
             panic!("Plugin::has_auto only works with PluginKind::Spacing or PluginKind::Number");
         }
 
@@ -283,6 +417,15 @@ impl Plugin {
         self
     }
 
+    /// Automatically add support for an empty modifier.
+    ///
+    /// If this method is called, an empty modifier will generate a `1` CSS property value.
+    ///
+    /// <div class="warning">
+    ///
+    /// Only works with [`PluginKind::Number`].
+    ///
+    /// </div>
     pub const fn has_empty(mut self) -> Self {
         if !matches!(self.kind, PluginKind::Number { .. }) {
             panic!("Plugin::has_empty only works with PluginKind::Number");
@@ -292,6 +435,15 @@ impl Plugin {
         self
     }
 
+    /// Automatically add support for the `full` modifier.
+    ///
+    /// If this method is called, a `full` modifier will generate a `100%` CSS property value.
+    ///
+    /// <div class="warning">
+    ///
+    /// Only works with [`PluginKind::Spacing`].
+    ///
+    /// </div>
     pub const fn has_full(mut self) -> Self {
         if !matches!(self.kind, PluginKind::Spacing { .. }) {
             panic!("Plugin::has_full only works with PluginKind::Spacing");
@@ -301,6 +453,13 @@ impl Plugin {
         self
     }
 
+    /// Automatically add support for negative modifiers.
+    ///
+    /// <div class="warning">
+    ///
+    /// Only works with [`PluginKind::Number`].
+    ///
+    /// </div>
     pub const fn has_negative(mut self) -> Self {
         if !matches!(self.kind, PluginKind::Number { .. }) {
             panic!("Plugin::has_negative only works with PluginKind::Number");

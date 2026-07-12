@@ -114,10 +114,10 @@
 //!
 //! There is already a lot of utility-first frameworks like [Tailwind
 //! CSS](https://tailwindcss.com), [Windi CSS](https://windicss.org), [Twind](https://twind.dev)
-//! and [Uno CSS](https://uno.antfu.me), but `encre-css` is unique because it is written in Rust and
-//! uses a new architecture, making it **the fastest utility-first framework** (according to the
-//! benchmark [here](https://gitlab.com/encre-org/encre-css-bench) based on
-//! [Uno CSS' benchmark](https://github.com/unocss/unocss/tree/main/bench)). It is also very
+//! and [Uno CSS](https://uno.antfu.me), but `encre-css` is unique because it's written in Rust and
+//! uses a new fully-declarative architecture, making it **the fastest utility-first framework**
+//! (according to the benchmark [here](https://gitlab.com/encre-org/encre-css-bench) based on
+//! [Uno CSS' benchmark](https://github.com/unocss/unocss/tree/main/bench)). It's also very
 //! [customizable](crate::plugins).
 //!
 //! ## Getting started
@@ -245,6 +245,7 @@ pub mod prelude {
     /// ```
     pub mod build_plugin {
         pub use crate::{
+            generator::{generate_at_rules, generate_class, Context},
             plugins::{
                 Plugin, PluginArbitraryMatcher,
                 PluginKind, PropertyName, PropertyName::*,
