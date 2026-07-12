@@ -313,7 +313,7 @@ pub enum PluginKind {
     },
 
     Functional {
-        class: &'static str,
+        namespace: &'static str,
         handle: fn(&mut Context),
     },
 }

@@ -173,9 +173,9 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                     },
                 );
             }
-            PluginKind::Functional { class, .. } => {
+            PluginKind::Functional { namespace, .. } => {
                 trie.insert(
-                    class,
+                    namespace,
                     TrieData {
                         has_namespace: true,
                         is_custom,

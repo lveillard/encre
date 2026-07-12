@@ -9,7 +9,7 @@ use crate::{
 use std::{borrow::Cow, cmp::Ordering};
 
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Functional {
-    class: "container",
+    namespace: "container",
     handle: |context| {
         if let Modifier::Builtin { .. } = context.modifier {
             generate_at_rules(context, |context| {
