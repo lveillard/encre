@@ -2111,32 +2111,24 @@ impl Config {
     /// Note that if you are not the maintainer of a crate providing plugins, you can ignore this
     /// function, see [`crate::plugins`].
     ///
+    /// See [`crate::plugins`] to learn how to write plugins and [`crate::plugins::PluginKind`]
+    /// documentation for choosing the correct plugin kind for your use case.
+    ///
     /// # Example
     ///
     /// ```
     /// use encre_css::{Config, prelude::build_plugin::*};
     ///
-    /// #[derive(Debug)]
-    /// struct Prose;
-    ///
-    /// impl Plugin for Prose {
-    ///     fn can_handle(&self, context: ContextCanHandle) -> bool {
-    ///         matches!(context.modifier, Modifier::Builtin { value: "" | "invert", .. })
-    ///     }
-    ///
-    ///     fn handle(&self, context: &mut ContextHandle) {
-    ///         if let Modifier::Builtin { value, .. } = context.modifier {
-    ///             match *value {
-    ///                 "" => context.buffer.line("color: #333;"),
-    ///                 "invert" => context.buffer.line("color: #eee;"),
-    ///                 _ => unreachable!(),
-    ///             }
-    ///         }
-    ///     }
-    /// }
+    /// const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
+    ///     prop: SingleProp("color"),
+    ///     values: phf_map! {
+    ///         "prose" => "#333",
+    ///         "prose-invert" => "#eee",
+    ///     },
+    /// });
     ///
     /// let mut config = Config::default();
-    /// config.register_plugin("prose", &Prose);
+    /// config.register_plugin(&PLUGIN);
     ///
     /// let generated = encre_css::generate(
     ///     ["prose", "prose-invert"],

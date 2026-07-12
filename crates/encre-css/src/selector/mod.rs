@@ -78,9 +78,8 @@
 //!    same variant but sharing the same modifier), in this case the class will be expanded to `hover:bg-blue-400` and
 //!    `focus-visible:bg-blue-400`.
 //!
-//! As you can see, by default variants are separated by `:`, modifiers by `-` (the dash after the
-//! first modifier can be omitted, e.g. `m1` instead of `m-1`), arbitrary values/variants are surrounded by `[]` and variant
-//! groups are surrounded by `()`.
+//! As you can see, by default variants are separated by `:`, modifiers by `-`,
+//! arbitrary values/variants are surrounded by `[]` and variant groups are surrounded by `()`.
 //!
 //! ### Automatic replacements
 //!

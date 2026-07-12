@@ -280,7 +280,7 @@ pub fn sort_selectors(val: &str, config: &Config) -> String {
 ///
 /// let value = "bg text-red hover:a lg: focus:() dark:(md:,shadow-8xl) bar:text-black md:foo:flex";
 /// assert_eq!(check_selectors(value, &Config::default()), vec![
-///     ParseError { span: 0..2, kind: ParseErrorKind::UnknownPlugin("bg") },
+///     ParseError { span: 0..2, kind: ParseErrorKind::TooShort("bg") },
 ///     ParseError { span: 3..11, kind: ParseErrorKind::UnknownPlugin("text-red") },
 ///     ParseError { span: 12..19, kind: ParseErrorKind::UnknownPlugin("hover:a") },
 ///     ParseError { span: 20..23, kind: ParseErrorKind::VariantsWithoutModifier("lg:") },

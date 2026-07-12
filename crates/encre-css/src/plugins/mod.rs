@@ -57,185 +57,6 @@ pub mod typography;
 
 pub(crate) mod parsed;
 
-/// A plugin is a structure capable of generating CSS styles from a modifier (contained in a
-/// context structure).
-///
-/// Each plugin consists of two methods:
-/// - [`Plugin::new(PluginKind::can_handle`] to check if it will be able to generate CSS for a specific modifier;
-/// - [`Plugin::new(PluginKind::handle`] to generate the CSS needed.
-///
-/// The [`Plugin::new(PluginKind::can_handle`] method takes a [`ContextCanHandle`] structure containing the
-/// modifier and the current configuration.
-///
-/// The [`Plugin::new(PluginKind::handle`] method takes a [`ContextHandle`] structure containing the modifier,
-/// the current configuration and a buffer containing the whole CSS
-/// currently generated. You can use the [`Buffer`] structure (especially the [`Buffer::line`]
-/// and [`Buffer::lines`] functions) to push CSS declarations to it, they will be automatically
-/// indented.
-///
-/// It is common to use the [`unreachable!`] macro if the [`Plugin::new(PluginKind::handle`] method cannot be
-/// called because you are sure that [`Plugin::new(PluginKind::can_handle`] returned `false`.
-///
-/// # Example (defines the `stroke-width` plugin)
-///
-/// ```
-/// use encre_css::prelude::build_plugin::*;
-///
-/// #[derive(Debug)]
-/// struct StrokeWidth;
-///
-/// impl Plugin for StrokeWidth {
-///     fn can_handle(&self, context: ContextCanHandle) -> bool {
-///         match context.modifier {
-///             Modifier::Builtin { value, .. } => value.parse::<usize>().is_ok(),
-///             Modifier::Arbitrary { hint, value, .. } => {
-///                 *hint == "length"
-///                     || *hint == "number"
-///                     || *hint == "percentage"
-///                     || (hint.is_empty()
-///                         && (is_matching_length(value) || is_matching_percentage(value)))
-///             }
-///         }
-///     }
-///
-///     fn handle(&self, context: &mut ContextHandle) {
-///         match context.modifier {
-///             Modifier::Builtin { value, .. } => {
-///                 context.buffer.line(format_args!("stroke-width: {value}px;"));
-///             }
-///             Modifier::Arbitrary { value, .. } => {
-///                 context.buffer.line(format_args!("stroke-width: {value});"));
-///             }
-///         }
-///     }
-/// }
-/// ```
-///
-/// # Release a plugin as a crate
-///
-/// If you want to release your custom plugins as a crate, you can export a `register` function
-/// taking a mutable reference to a [`Config`] structure and use the [`Config::register_plugin`]
-/// function to register them. The first argument is the namespace namespaceing all the
-/// utility classes handled by the plugin.
-///
-/// ```ignore
-/// pub fn register(config: &mut Config) {
-///     config.register_plugin("stroke", &StrokeWidth);
-/// }
-/// ```
-///
-/// # More powerful usage
-///
-/// If you need to have full control over the CSS **rule**, you can create a [`needs_wrapping`]
-/// method returning false and use [`generator::generate_at_rules`], [`generator::generate_class`]
-/// and [`generator::generate_wrapper`] to generate some CSS boilerplate.
-///
-/// ### Example (roughly defines the `animation` plugin)
-///
-/// ```
-/// use encre_css::prelude::build_plugin::*;
-///
-/// #[derive(Debug)]
-/// struct PluginDefinition;
-///
-/// impl Plugin for PluginDefinition {
-///     fn needs_wrapping(&self) -> bool {
-///         false
-///     }
-///
-///     fn can_handle(&self, context: ContextCanHandle) -> bool {
-///         match context.modifier {
-///             Modifier::Builtin { value, .. } => {
-///                 ["spin", "ping", "pulse", "bounce", "none"].contains(value)
-///             }
-///             Modifier::Arbitrary { value, .. } => is_matching_all(value),
-///         }
-///     }
-///
-///     fn handle(&self, context: &mut ContextHandle) {
-///         match context.modifier {
-///             Modifier::Builtin { value, .. } => {
-///                 let animation = match *value {
-///                     "none" => "none",
-///                     "spin" => {
-///                         context.buffer.lines([
-///                             "@keyframes spin",
-///                             "...",
-///                         ]);
-///                         "spin 1s linear infinite"
-///                     }
-///                     "ping" => {
-///                         context.buffer.lines([
-///                             "@keyframes ping",
-///                             "...",
-///                         ]);
-///                         "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite"
-///                     }
-///                     "pulse" => {
-///                         context.buffer.lines([
-///                             "@keyframes pulse",
-///                             "...",
-///                         ]);
-///                         "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
-///                     }
-///                     "bounce" => {
-///                         context.buffer.lines([
-///                             "@keyframes bounce",
-///                             "...",
-///                         ]);
-///                         "bounce 1s infinite"
-///                     }
-///                     _ => unreachable!(),
-///                 });
-///
-///                 generate_wrapper(context, |context| {
-///                     context.buffer.line(format_args!("animation: {animation});"));
-///                 })
-///             }
-///             Modifier::Arbitrary { value, .. } => generate_wrapper(context, |context| {
-///                 context.buffer.line(format_args!("animation: {value});"));
-///             }),
-///         }
-///     }
-/// }
-/// ```
-///
-/// Have a look at <https://gitlab.com/encre-org/encre-css/tree/main/crates/encre-css/src/plugins>
-/// for more examples.
-///
-/// [`Buffer`]: crate::utils::buffer::Buffer
-/// [`Buffer::line`]: crate::utils::buffer::Buffer::line
-/// [`Buffer::lines`]: crate::utils::buffer::Buffer::lines
-/// [`Config::register_plugin`]: crate::Config::register_plugin
-/// [`Config`]: crate::Config
-/// [`needs_wrapping`]: Plugin::new(PluginKind::needs_wrapping
-/// [`generator::generate_at_rules`]: crate::generator::generate_at_rules
-/// [`generator::generate_class`]: crate::generator::generate_class
-/// [`generator::generate_wrapper`]: crate::generator::generate_wrapper
-/*
-pub trait Plugin: fmt::Debug {
-    /// Returns whether the plugin can handle a specific modifier.
-    fn can_handle(&self, _context: ContextCanHandle) -> bool;
-
-    /// Returns whether the plugin should be wrapped inside a CSS rule or if it will manually
-    /// generate it
-    fn needs_wrapping(&self) -> bool {
-        true
-    }
-
-    /// Get the CSS code from a modifier.
-    ///
-    ///
-    /// The [`Plugin::new(PluginKind::can_handle`] method **must be** called before to know if it can handle
-    /// the modifier, otherwise this function **will panic**.
-    ///
-    /// Various notes:
-    /// - The CSS returned should end with a newline;
-    /// - Arbitrary values are already normalized (e.g. underscores are replaced by spaces);
-    /// - This function is guaranteed to be called only once per selector.
-    fn handle(&self, _context: &mut ContextHandle);
-}*/
-
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub(crate) enum CustomPlugin {
@@ -318,6 +139,101 @@ pub enum PluginKind {
     },
 }
 
+/// A plugin is a structure capable of generating CSS styles from a modifier (contained in a
+/// context structure).
+///
+/// Each plugin consists of two methods:
+/// - [`Plugin::new(PluginKind::can_handle`] to check if it will be able to generate CSS for a specific modifier;
+/// - [`Plugin::new(PluginKind::handle`] to generate the CSS needed.
+///
+/// The [`Plugin::new(PluginKind::can_handle`] method takes a [`ContextCanHandle`] structure containing the
+/// modifier and the current configuration.
+///
+/// The [`Plugin::new(PluginKind::handle`] method takes a [`ContextHandle`] structure containing the modifier,
+/// the current configuration and a buffer containing the whole CSS
+/// currently generated. You can use the [`Buffer`] structure (especially the [`Buffer::line`]
+/// and [`Buffer::lines`] functions) to push CSS declarations to it, they will be automatically
+/// indented.
+///
+/// It is common to use the [`unreachable!`] macro if the [`Plugin::new(PluginKind::handle`] method cannot be
+/// called because you are sure that [`Plugin::new(PluginKind::can_handle`] returned `false`.
+///
+/// # Example (defines the `stroke-width` plugin)
+///
+/// ```
+/// use encre_css::prelude::build_plugin::*;
+/// use PluginArbitraryMatcher::*;
+///
+/// pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
+///     namespace: "stroke",
+///     prop: SingleProp("stroke-width"),
+///     divide_by: 1.0,
+/// })
+/// .template("{}px");
+///
+/// pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
+///     namespace: "stroke",
+///     prop: SingleProp("stroke-width"),
+/// })
+/// .hints(&[ArbitraryHint::Length, ArbitraryHint::Percentage])
+/// .matcher(CommaSeparated(&OrMultiple(&[
+///     &Length,
+///     &Percentage,
+///     &LineWidth,
+///     &Number,
+/// ])));
+/// ```
+///
+/// # Release a plugin as a crate
+///
+/// If you want to release your custom plugins as a crate, you can export a `register` function
+/// taking a mutable reference to a [`Config`] structure and use the [`Config::register_plugin`]
+/// function to register them. The first argument is the namespace namespaceing all the
+/// utility classes handled by the plugin.
+///
+/// ```ignore
+/// pub fn register(config: &mut Config) {
+///     config.register_plugin(&PLUGIN);
+///     config.register_plugin(&PLUGIN_ARBITRARY);
+/// }
+/// ```
+///
+/// # More powerful usage
+///
+/// If you need to have full control over the CSS **rule** generated, you can use the [`Functional`]
+/// plugin kind. It allows executing a full-blown Rust function for each selector having a specific
+/// namespace. However, it's (of course) not serializable, and thus cannot be used in, e.g a TOML
+/// configuration.
+///
+/// ### Example
+///
+/// ```
+/// use encre_css::prelude::build_plugin::*;
+///
+/// const PLUGIN: Plugin = Plugin::new(PluginKind::Functional {
+///     namespace: "emoji",
+///     handle: |context| {
+///         if let Modifier::Builtin { value, .. } = context.modifier
+///         && let Some(value) = context.config.extra.get("emoji")
+///             .and_then(|r| r.as_table())
+///             .and_then(|r| r.get(*value)) {
+///             context.buffer.line(format_args!("content: {value};"));
+///         }
+///     },
+/// });
+/// ```
+///
+/// Have a look at <https://gitlab.com/encre-org/encre-css/tree/main/crates/encre-css/src/plugins>
+/// for more examples.
+///
+/// [`Buffer`]: crate::utils::buffer::Buffer
+/// [`Buffer::line`]: crate::utils::buffer::Buffer::line
+/// [`Buffer::lines`]: crate::utils::buffer::Buffer::lines
+/// [`Config::register_plugin`]: crate::Config::register_plugin
+/// [`Config`]: crate::Config
+/// [`Functional`]: crate::plugins::PluginKind::Functional
+/// [`generator::generate_at_rules`]: crate::generator::generate_at_rules
+/// [`generator::generate_class`]: crate::generator::generate_class
 #[derive(Debug, PartialEq)]
 pub struct Plugin {
     pub(crate) kind: PluginKind,
