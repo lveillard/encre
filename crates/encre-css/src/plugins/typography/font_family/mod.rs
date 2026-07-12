@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("font-family"),
     values: phf_map! {
         "font-sans" => r#"ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"#,
@@ -12,7 +12,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     },
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "font",
     prop: SingleProp("font-family"),
 })

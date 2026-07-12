@@ -2,14 +2,14 @@
 #![doc(alias = "transition")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
     namespace: "duration",
     prop: SingleProp("transition-duration"),
     divide_by: 1.0,
 })
 .template("{}ms");
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "duration",
     prop: SingleProp("transition-duration"),
 });

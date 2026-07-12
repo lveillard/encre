@@ -3,14 +3,14 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN_NUMBER: Plugin = Plugin::new(PluginKind::Number {
     namespace: "decoration",
     prop: SingleProp("text-decoration-thickness"),
     divide_by: 1.0,
 })
 .template("{}px");
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN_LIST: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("text-decoration-thickness"),
     values: phf_map! {
         "decoration-auto" => "auto",
@@ -18,7 +18,7 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::ListValues {
     },
 });
 
-pub(crate) const PLUGIN_3: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "decoration",
     prop: SingleProp("text-decoration-thickness"),
 })

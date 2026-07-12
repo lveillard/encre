@@ -2,7 +2,7 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("aspect-ratio"),
     values: phf_map! {
         "aspect-auto" => "auto",
@@ -11,7 +11,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     },
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "aspect",
     prop: SingleProp("aspect-ratio"),
 });

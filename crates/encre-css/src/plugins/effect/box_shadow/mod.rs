@@ -2,7 +2,7 @@
 #![doc(alias = "effect")]
 use crate::{plugins::PluginArbitraryMatcher::*, prelude::build_plugin::*};
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("--en-shadow"),
     values: phf_map! {
         "shadow-2xs" => "0 1px var(--en-shadow-color, rgb(0 0 0 / 0.05))",
@@ -16,7 +16,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     },
 }).extra_lines(&["box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow);"]);
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "shadow",
     prop: SingleProp("--en-shadow"),
 })

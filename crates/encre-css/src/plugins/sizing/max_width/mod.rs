@@ -2,12 +2,12 @@
 #![doc(alias("sizing", "size"))]
 use crate::{plugins::sizing::CSS_SIZE_VALUES_HORIZONTAL, prelude::build_plugin::*};
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Spacing {
+pub(crate) const PLUGIN_SPACING: Plugin = Plugin::new(PluginKind::Spacing {
     namespace: "max-w",
     prop: SingleProp("max-width"),
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN_LIST_1: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("max-width"),
     values: phf_map! {
         "max-w-none" => "none",
@@ -36,12 +36,12 @@ pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::ListValues {
     },
 });
 
-pub(crate) const PLUGIN_3: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN_LIST_2: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("max-width"),
     values: CSS_SIZE_VALUES_HORIZONTAL,
 }).list_namespace("max-w");
 
-pub(crate) const PLUGIN_4: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "max-w",
     prop: SingleProp("max-width"),
 });

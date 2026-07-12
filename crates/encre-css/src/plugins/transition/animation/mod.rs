@@ -73,7 +73,7 @@ const BOUNCE_ANIMATION: &str = "@-webkit-keyframes bounce {
   }
 }\n\n";
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: MultipleProps(&["-webkit-animation", "animation"]),
     values: phf_map! {
         "animate-none" => "none",
@@ -91,7 +91,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     "animate-bounce" => BOUNCE_ANIMATION,
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "animate",
     prop: MultipleProps(&["-webkit-animation", "animation"]),
 });

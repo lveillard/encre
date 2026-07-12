@@ -2,17 +2,17 @@
 #![doc(alias("sizing", "size"))]
 use crate::{plugins::sizing::CSS_SIZE_VALUES_VERTICAL, prelude::build_plugin::*};
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Spacing {
+pub(crate) const PLUGIN_SPACING: Plugin = Plugin::new(PluginKind::Spacing {
     namespace: "h",
     prop: SingleProp("height"),
 }).has_auto().has_full();
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN_LIST: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("height"),
     values: CSS_SIZE_VALUES_VERTICAL,
 }).list_namespace("h");
 
-pub(crate) const PLUGIN_3: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "h",
     prop: SingleProp("height"),
 });

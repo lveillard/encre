@@ -2,7 +2,7 @@
 #![doc(alias = "transition")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListCases {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
         "transition" => &[
             "transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;",
@@ -38,7 +38,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListCases {
     },
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "transition",
     prop: SingleProp("transition-property"),
 });

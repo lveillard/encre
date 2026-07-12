@@ -3,14 +3,14 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
     namespace: "stroke",
     prop: SingleProp("stroke-width"),
     divide_by: 1.0,
 })
 .template("{}px");
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "stroke",
     prop: SingleProp("stroke-width"),
 })

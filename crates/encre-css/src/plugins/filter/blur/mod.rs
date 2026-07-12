@@ -3,7 +3,7 @@
 use super::CSS_FILTER;
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("--en-blur"),
     values: phf_map! {
         "blur-xs" => "blur(4px)",
@@ -18,7 +18,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
 })
 .extra_lines(&[CSS_FILTER]);
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "blur",
     prop: SingleProp("--en-blur"),
 })

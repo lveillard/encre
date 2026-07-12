@@ -2,7 +2,7 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListCases {
+pub(crate) const PLUGIN_LIST: Plugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
         "line-clamp-none" => &[
             "-webkit-line-clamp: unset;"
@@ -10,7 +10,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListCases {
     },
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN_NUMBER: Plugin = Plugin::new(PluginKind::Number {
     namespace: "line-clamp",
     prop: SingleProp("-webkit-line-clamp"),
     divide_by: 1.0,

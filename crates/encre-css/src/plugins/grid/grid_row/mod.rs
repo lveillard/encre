@@ -11,14 +11,14 @@ const fn plugin(namespace: &'static str, prop: PropertyName, template: &'static 
     .template(template)
 }
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("grid-row"),
     values: phf_map! {
         "row-auto" => "auto",
     },
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "row",
     prop: SingleProp("grid-row"),
 });

@@ -679,2292 +679,2339 @@ fn parse_recursive<'a>(
     }
 }
 
-/* TODO
-#[cfg(test)]
-mod tests {
-    // NOTE: In these tests, the order value of the selectors and variants are arbitrary because
-    // the implementation of PartialEq does not take them into account, so instead they are written
-    // as Default::default()
-    use super::*;
-
-    #[allow(clippy::wildcard_imports)]
-    use crate::{config::Config, plugins::*, selector::Selector};
-
-    use pretty_assertions::assert_eq;
-
-    #[test]
-    fn underscores_to_spaces_test() {
-        assert_eq!(
-            underscores_to_spaces(Cow::Borrowed(
-                "url('/hello_world.png'),url(\"some__text.txt\")"
-            )),
-            "url('/hello_world.png'),url(\"some__text.txt\")",
-        );
-        assert_eq!(
-            underscores_to_spaces(Cow::Borrowed(r#"url("[l8""#)),
-            r#"url("[l8""#
-        );
-    }
-
-    #[test]
-    fn basic_single() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "absolute",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "absolute",
-                order: Default::default(), // order is not checked in tests
-                plugin: &layout::position::PluginDefinition,
-                variants: vec![],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "absolute",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn basic_multiple() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "text-center",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "text-center",
-                order: Default::default(),
-                plugin: &typography::text_align::PluginDefinition,
-                variants: vec![],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "center",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn basic_opacity() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "bg-red-500/25",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "bg-red-500/25",
-                order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
-                variants: vec![],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "red-500/25",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn basic_important() {
-        let config = Config::default();
-        assert_eq!(
-            parse("!px-4", None, None, &config, &config.get_derived_variants())[0]
-                .as_ref()
-                .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "!px-4",
-                order: Default::default(),
-                plugin: &spacing::padding::PluginDefinition,
-                variants: vec![],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "4",
-                },
-                is_important: true,
-            }
-        );
-    }
-
-    #[test]
-    fn basic_negative() {
-        let config = Config::default();
-        assert_eq!(
-            parse("-px-4", None, None, &config, &config.get_derived_variants())[0]
-                .as_ref()
-                .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "-px-4",
-                order: Default::default(),
-                plugin: &spacing::padding::PluginDefinition,
-                variants: vec![],
-                modifier: Modifier::Builtin {
-                    is_negative: true,
-                    value: "4",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn basic_important_and_negative() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "!-px-4",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "!-px-4",
-                order: Default::default(),
-                plugin: &spacing::padding::PluginDefinition,
-                variants: vec![],
-                modifier: Modifier::Builtin {
-                    is_negative: true,
-                    value: "4",
-                },
-                is_important: true,
-            }
-        );
-    }
-
-    #[test]
-    fn basic_integer() {
-        let config = Config::default();
-        assert_eq!(
-            parse("px-4", None, None, &config, &config.get_derived_variants())[0]
-                .as_ref()
-                .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "px-4",
-                order: Default::default(),
-                plugin: &spacing::padding::PluginDefinition,
-                variants: vec![],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "4",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn basic_float() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "px-1.5",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "px-1.5",
-                order: Default::default(),
-                plugin: &spacing::padding::PluginDefinition,
-                variants: vec![],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "1.5",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn variants_single() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "hover:text-center",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "hover:text-center",
-                order: Default::default(),
-                plugin: &typography::text_align::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::Borrowed("&:hover")
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "center",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn variants_multiple() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "marker:xl:hover:text-center",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "marker:xl:hover:text-center",
-                order: Default::default(),
-                plugin: &typography::text_align::PluginDefinition,
-                variants: vec![
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("& *::marker, &::marker")
-                    },
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("@media (width >= 80rem)"),
-                    },
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::Borrowed("&:hover")
-                    }
-                ],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "center",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn variants_negative() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "marker:xl:hover:-mx-4",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "marker:xl:hover:-mx-4",
-                order: Default::default(),
-                plugin: &spacing::margin::PluginXDefinition,
-                variants: vec![
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("& *::marker, &::marker")
-                    },
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("@media (width >= 80rem)"),
-                    },
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::Borrowed("&:hover")
-                    }
-                ],
-                modifier: Modifier::Builtin {
-                    is_negative: true,
-                    value: "4",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn arbitrary_variant() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "[&>*]:text-center",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "[&>*]:text-center",
-                order: Default::default(),
-                plugin: &typography::text_align::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::from("&>*")
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "center",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn group_and_peer() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "group-checked:block",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "group-checked:block",
-                order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::from(".group:checked &"),
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "block",
-                },
-                is_important: false,
-            }
-        );
-
-        assert_eq!(
-            parse(
-                "peer-checked:block",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "peer-checked:block",
-                order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::from(".peer:checked ~ &"),
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "block",
-                },
-                is_important: false,
-            }
-        );
-
-        assert_eq!(
-            parse(
-                "peer-not-checked:block",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "peer-not-checked:block",
-                order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::from(".peer:not(:checked) ~ &"),
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "block",
-                },
-                is_important: false,
-            }
-        );
-
-        assert_eq!(
-            parse(
-                "peer-[:focus-within]:block",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "peer-[:focus-within]:block",
-                order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::from(".peer:focus-within ~ &"),
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "block",
-                },
-                is_important: false,
-            }
-        );
-
-        assert_eq!(
-            parse(
-                "peer-[:nth-of-type(3)_&]:block",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "peer-[:nth-of-type(3)_&]:block",
-                order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::from(":nth-of-type(3) .peer ~ &"),
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "block",
-                },
-                is_important: false,
-            }
-        );
-
-        assert_eq!(
-            parse(
-                "group-has-[#test]:block",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "group-has-[#test]:block",
-                order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::from(".group:has(#test) &"),
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "block",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn arbitrary_named_group_and_peer() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "group-checked/item:block",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "group-checked/item:block",
-                order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::from(r".group\/item:checked &"),
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "block",
-                },
-                is_important: false,
-            }
-        );
-
-        assert_eq!(
-            parse(
-                "peer-checked/item:block",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "peer-checked/item:block",
-                order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::from(r".peer\/item:checked ~ &"),
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "block",
-                },
-                is_important: false,
-            }
-        );
-
-        assert_eq!(
-            parse(
-                "peer-not-checked/item:block",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "peer-not-checked/item:block",
-                order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::from(r".peer\/item:not(:checked) ~ &"),
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "block",
-                },
-                is_important: false,
-            }
-        );
-
-        assert_eq!(
-            parse(
-                "peer-[:focus-within]/item:block",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "peer-[:focus-within]/item:block",
-                order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::from(".peer\\/item:focus-within ~ &"),
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "block",
-                },
-                is_important: false,
-            }
-        );
-
-        assert_eq!(
-            parse(
-                "group-has-[#test]/item:block",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "group-has-[#test]/item:block",
-                order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: true,
-                    template: Cow::from(r".group\/item:has(#test) &"),
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "block",
-                },
-                is_important: false,
-            }
-        );
-
-        assert_eq!(
-            parse(
-                "group-has-[#page/el]/item:block",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "group-has-[#page/el]/item:block",
-                order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: true,
-                    template: Cow::from(r".group\/item:has(#page/el) &"),
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "block",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn arbitrary_variant_at_rule() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "[@supports_not_(display:grid)]:grid",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "[@supports_not_(display:grid)]:grid",
-                order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::from("@supports not (display:grid)")
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "grid",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn arbitrary_variant_multiple() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "xl:[&>*]:focus:text-center",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "xl:[&>*]:focus:text-center",
-                order: Default::default(),
-                plugin: &typography::text_align::PluginDefinition,
-                variants: vec![
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("@media (width >= 80rem)")
-                    },
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("&>*")
-                    },
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::Borrowed("&:focus")
-                    }
-                ],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "center",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn arbitrary_variant_negative() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "xl:[&>*]:focus:-m-4",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "xl:[&>*]:focus:-m-4",
-                order: Default::default(),
-                plugin: &spacing::margin::PluginDefinition,
-                variants: vec![
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("@media (width >= 80rem)")
-                    },
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("&>*")
-                    },
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::Borrowed("&:focus")
-                    }
-                ],
-                modifier: Modifier::Builtin {
-                    is_negative: true,
-                    value: "4",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn arbitrary_value() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "mx-[12px]",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "mx-[12px]",
-                order: Default::default(),
-                plugin: &spacing::margin::PluginDefinition,
-                variants: vec![],
-                modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "",
-                    value: Cow::from("12px"),
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn complex_arbitrary_value() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "bg-[url('/hello_world.png')]",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "bg-[url('/hello_world.png')]",
-                order: Default::default(),
-                plugin: &background::background_image::PluginDefinition,
-                variants: vec![],
-                modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "",
-                    value: Cow::from("url('/hello_world.png')"),
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn arbitrary_value_hint() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "bg-[color:#fff]",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "bg-[color:#fff]",
-                order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
-                variants: vec![],
-                modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "color",
-                    value: Cow::from("#fff"),
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn arbitrary_value_with_variants() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "xl:marker:bg-[#fff]",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "xl:marker:bg-[#fff]",
-                order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
-                variants: vec![
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("@media (width >= 80rem)")
-                    },
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("& *::marker, &::marker")
-                    },
-                ],
-                modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "",
-                    value: Cow::from("#fff"),
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn arbitrary_value_with_variants_and_hint() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "xl:marker:bg-[color:#fff]",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "xl:marker:bg-[color:#fff]",
-                order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
-                variants: vec![
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("@media (width >= 80rem)")
-                    },
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("& *::marker, &::marker")
-                    },
-                ],
-                modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "color",
-                    value: Cow::from("#fff"),
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn arbitrary_value_with_arbitrary_variant() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "[&>*]:bg-[#fff]",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "[&>*]:bg-[#fff]",
-                order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::from("&>*")
-                },],
-                modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "",
-                    value: Cow::from("#fff"),
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn arbitrary_variant_escaped() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                r"[&#91;type=&#39;input&#39;&#93;_&>:*]:bg-red-300",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: r"[&#91;type=&#39;input&#39;&#93;_&>:*]:bg-red-300",
-                order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::from("[type='input'] &>:*")
-                },],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "red-300",
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn arbitrary_value_with_arbitrary_variant_mixed() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "xl:[&>*]:hover:bg-[#fff]",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "xl:[&>*]:hover:bg-[#fff]",
-                order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
-                variants: vec![
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("@media (width >= 80rem)")
-                    },
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("&>*")
-                    },
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::Borrowed("&:hover")
-                    }
-                ],
-                modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "",
-                    value: Cow::from("#fff"),
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn arbitrary_value_with_arbitrary_variant_and_hint() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "xl:[&>*]:hover:bg-[color:#fff]",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: "xl:[&>*]:hover:bg-[color:#fff]",
-                order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
-                variants: vec![
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("@media (width >= 80rem)")
-                    },
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("&>*")
-                    },
-                    Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::Borrowed("&:hover")
-                    }
-                ],
-                modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "color",
-                    value: Cow::from("#fff"),
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn arbitrary_value_escaped() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                r"bg-[url(&#34;/url_with_&#93;&#41;&#39;.png&#34;)]",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 0,
-                full: r"bg-[url(&#34;/url_with_&#93;&#41;&#39;.png&#34;)]",
-                order: Default::default(),
-                plugin: &background::background_image::PluginDefinition,
-                variants: vec![],
-                modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "",
-                    value: Cow::from(r#"url("/url_with_])'.png")"#),
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn arbitrary_css_property() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "hover:[mask-type:luminance]",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            )[0]
-            .as_ref()
-            .unwrap(),
-            &Selector {
-                layer: 127,
-                full: "hover:[mask-type:luminance]",
-                order: Default::default(),
-                plugin: &CssPropertyPlugin,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::Borrowed("&:hover")
-                }],
-                modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "",
-                    value: Cow::from("mask-type:luminance"),
-                },
-                is_important: false,
-            }
-        );
-    }
-
-    #[test]
-    fn variant_grouping() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "hover:(focus:bg-gray-500,text-[color:black,])",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            ),
-            vec![
-                Ok(Selector {
-                    layer: 0,
-                    full: "hover:(focus:bg-gray-500,text-[color:black,])",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:hover")
-                        }
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "gray-500",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "hover:(focus:bg-gray-500,text-[color:black,])",
-                    order: Default::default(),
-                    plugin: &typography::text_color::PluginDefinition,
-                    variants: vec![Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::Borrowed("&:hover")
-                    }],
-                    modifier: Modifier::Arbitrary {
-                        prefix: "",
-                        hint: "color",
-                        value: Cow::from("black,"),
-                    },
-                    is_important: false,
-                })
-            ],
-        );
-    }
-
-    #[test]
-    fn variant_grouping_single() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "hover:(bg-gray-500)",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            ),
-            vec![Ok(Selector {
-                layer: 0,
-                full: "hover:(bg-gray-500)",
-                order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::Borrowed("&:hover")
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "gray-500",
-                },
-                is_important: false,
-            })],
-        );
-    }
-
-    #[test]
-    fn prefixed_variant() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "min:visible",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            ),
-            vec![Err(ParseError::new(
-                0..11,
-                ParseErrorKind::UnknownVariant("min", "min:visible")
-            ))],
-        );
-
-        assert_eq!(
-            parse(
-                "min-[475px]:visible",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants()
-            ),
-            vec![Ok(Selector {
-                layer: 0,
-                full: "min-[475px]:visible",
-                order: Default::default(),
-                plugin: &layout::visibility::PluginDefinition,
-                variants: vec![Variant {
-                    order: Default::default(),
-                    prefixed: false,
-                    template: Cow::from("@media (width >= 475px)")
-                }],
-                modifier: Modifier::Builtin {
-                    is_negative: false,
-                    value: "visible",
-                },
-                is_important: false,
-            })],
-        );
-    }
-
-    #[test]
-    fn variant_grouping_nested() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "focus:([&>*]:-m-4,xl:dark:(bg-red-100,rtl:text-[color:black]))",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            ),
-            vec![
-                Ok(Selector {
-                    layer: 0,
-                    full: "focus:([&>*]:-m-4,xl:dark:(bg-red-100,rtl:text-[color:black]))",
-                    order: Default::default(),
-                    plugin: &spacing::margin::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("&>*")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        },
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: true,
-                        value: "4",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "focus:([&>*]:-m-4,xl:dark:(bg-red-100,rtl:text-[color:black]))",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (width >= 80rem)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (prefers-color-scheme: dark)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        },
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-100",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "focus:([&>*]:-m-4,xl:dark:(bg-red-100,rtl:text-[color:black]))",
-                    order: Default::default(),
-                    plugin: &typography::text_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("[dir=\"rtl\"] &")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (width >= 80rem)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (prefers-color-scheme: dark)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        },
-                    ],
-                    modifier: Modifier::Arbitrary {
-                        prefix: "",
-                        hint: "color",
-                        value: Cow::from("black"),
-                    },
-                    is_important: false,
-                }),
-            ],
-        );
-    }
-
-    #[test]
-    fn variant_grouping_nested_escaped() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                r"focus:([&>*]:-m-4,xl:dark:([&#91;type=&#39;text&#39;&#93;.light_&,.foo]:bg-red-100,text-[color:black,]))",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            ),
-            vec![
-                Ok(Selector {
-                    layer: 0,
-                    full: r"focus:([&>*]:-m-4,xl:dark:([&#91;type=&#39;text&#39;&#93;.light_&,.foo]:bg-red-100,text-[color:black,]))",
-                    order: Default::default(),
-                    plugin: &spacing::margin::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("&>*")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        },
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: true,
-                        value: "4",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: r"focus:([&>*]:-m-4,xl:dark:([&#91;type=&#39;text&#39;&#93;.light_&,.foo]:bg-red-100,text-[color:black,]))",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from(r"[type='text'].light &,.foo")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (width >= 80rem)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (prefers-color-scheme: dark)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        },
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-100",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: r"focus:([&>*]:-m-4,xl:dark:([&#91;type=&#39;text&#39;&#93;.light_&,.foo]:bg-red-100,text-[color:black,]))",
-                    order: Default::default(),
-                    plugin: &typography::text_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (width >= 80rem)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (prefers-color-scheme: dark)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        },
-                    ],
-                    modifier: Modifier::Arbitrary {
-                        prefix: "",
-                        hint: "color",
-                        value: Cow::from("black,"),
-                    },
-                    is_important: false,
-                }),
-            ],
-        );
-    }
-
-    #[test]
-    fn variant_grouping_complex_nested() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            ),
-            vec![
-                Ok(Selector {
-                    layer: 0,
-                    full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
-                    order: Default::default(),
-                    plugin: &border::outline_style::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (width >= 80rem)")
-                        }
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
-                    order: Default::default(),
-                    plugin: &border::outline_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (width >= 80rem)")
-                        }
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-200",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (prefers-color-scheme: dark)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (width >= 80rem)")
-                        },
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "black",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
-                    order: Default::default(),
-                    plugin: &typography::text_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (prefers-color-scheme: dark)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (width >= 80rem)")
-                        },
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "white",
-                    },
-                    is_important: false,
-                }),
-            ],
-        );
-    }
-
-    #[test]
-    #[allow(clippy::too_many_lines)]
-    fn variant_grouping_without_modifier() {
-        let config = Config::default();
-        assert_eq!(
-            parse(
-                "(hover,focus):bg-red-400",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            ),
-            vec![
-                Ok(Selector {
-                    layer: 0,
-                    full: "(hover,focus):bg-red-400",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::Borrowed("&:hover")
-                    }],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-400",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "(hover,focus):bg-red-400",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::Borrowed("&:focus")
-                    },],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-400",
-                    },
-                    is_important: false,
-                })
-            ],
-        );
-
-        assert_eq!(
-            parse(
-                "([@supports_(display:flex)],focus-visible):flex",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            ),
-            vec![
-                Ok(Selector {
-                    layer: 0,
-                    full: "([@supports_(display:flex)],focus-visible):flex",
-                    order: Default::default(),
-                    plugin: &flexbox::flex::PluginDefinition,
-                    variants: vec![Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("@supports (display:flex)")
-                    }],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "flex",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "([@supports_(display:flex)],focus-visible):flex",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::Borrowed("&:focus-visible")
-                    },],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "flex",
-                    },
-                    is_important: false,
-                })
-            ],
-        );
-
-        assert_eq!(
-            parse(
-                "([@supports_(display:flex)],focus-visible):!-m-4",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            ),
-            vec![
-                Ok(Selector {
-                    layer: 0,
-                    full: "([@supports_(display:flex)],focus-visible):!-m-4",
-                    order: Default::default(),
-                    plugin: &spacing::margin::PluginDefinition,
-                    variants: vec![Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::from("@supports (display:flex)")
-                    }],
-                    modifier: Modifier::Builtin {
-                        is_negative: true,
-                        value: "4",
-                    },
-                    is_important: true,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "([@supports_(display:flex)],focus-visible):!-m-4",
-                    order: Default::default(),
-                    plugin: &spacing::margin::PluginDefinition,
-                    variants: vec![Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::Borrowed("&:focus-visible")
-                    },],
-                    modifier: Modifier::Builtin {
-                        is_negative: true,
-                        value: "4",
-                    },
-                    is_important: true,
-                })
-            ],
-        );
-
-        assert_eq!(
-            parse(
-                "xl:(hover,focus):bg-red-400",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            ),
-            vec![
-                Ok(Selector {
-                    layer: 0,
-                    full: "xl:(hover,focus):bg-red-400",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("@media (width >= 80rem)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:hover")
-                        }
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-400",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "xl:(hover,focus):bg-red-400",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("@media (width >= 80rem)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        },
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-400",
-                    },
-                    is_important: false,
-                })
-            ],
-        );
-
-        // Not a variant without a modifier but we need to make sure it is correctly interpreted as
-        // variants **with** a modifier
-        assert_eq!(
-            parse(
-                "(hover:bg-red-400,focus:bg-green-400)",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            ),
-            vec![
-                Ok(Selector {
-                    layer: 0,
-                    full: "(hover:bg-red-400,focus:bg-green-400)",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::Borrowed("&:hover")
-                    }],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-400",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "(hover:bg-red-400,focus:bg-green-400)",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::Borrowed("&:focus")
-                    },],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "green-400",
-                    },
-                    is_important: false,
-                })
-            ],
-        );
-
-        assert_eq!(
-            parse(
-                "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            ),
-            vec![
-                Ok(Selector {
-                    layer: 0,
-                    full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (prefers-color-scheme: dark)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("@media (width >= 80rem)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:hover")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:target")
-                        },
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-400",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::from("@media (prefers-color-scheme: dark)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("@media (width >= 80rem)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:target")
-                        },
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-400",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("@media (width >= 80rem)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:hover")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:target")
-                        }
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "green-400",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("@media (width >= 80rem)")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:target")
-                        }
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "green-400",
-                    },
-                    is_important: false,
-                }),
-            ],
-        );
-
-        assert_eq!(
-            parse(
-                "(hover,focus):(focus-within,target):bg-red-400",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            ),
-            vec![
-                Ok(Selector {
-                    layer: 0,
-                    full: "(hover,focus):(focus-within,target):bg-red-400",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:hover")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus-within")
-                        },
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-400",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "(hover,focus):(focus-within,target):bg-red-400",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus-within")
-                        }
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-400",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "(hover,focus):(focus-within,target):bg-red-400",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:hover")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:target")
-                        },
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-400",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "(hover,focus):(focus-within,target):bg-red-400",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:target")
-                        }
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-400",
-                    },
-                    is_important: false,
-                })
-            ],
-        );
-
-        assert_eq!(
-            parse(
-                "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
-                None,
-                None,
-                &config,
-                &config.get_derived_variants(),
-            ),
-            vec![
-                Ok(Selector {
-                    layer: 0,
-                    full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::Borrowed("&:hover")
-                    },],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-400",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![Variant {
-                        order: Default::default(),
-                        prefixed: false,
-                        template: Cow::Borrowed("&:focus")
-                    },],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "red-400",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:target")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:hover")
-                        },
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "green-400",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:target")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        },
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "green-400",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus-within")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:hover")
-                        }
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "green-400",
-                    },
-                    is_important: false,
-                }),
-                Ok(Selector {
-                    layer: 0,
-                    full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
-                    order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
-                    variants: vec![
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus-within")
-                        },
-                        Variant {
-                            order: Default::default(),
-                            prefixed: false,
-                            template: Cow::Borrowed("&:focus")
-                        }
-                    ],
-                    modifier: Modifier::Builtin {
-                        is_negative: false,
-                        value: "green-400",
-                    },
-                    is_important: false,
-                }),
-            ],
-        );
-    }
-}
-*/
+// #[cfg(test)]
+// mod tests {
+//     // NOTE: In these tests, the order value of the selectors and variants are arbitrary because
+//     // the implementation of PartialEq does not take them into account, so instead they are written
+//     // as Default::default()
+//     use super::*;
+//
+//     #[allow(clippy::wildcard_imports)]
+//     use crate::{config::Config, plugins::*, selector::Selector};
+//
+//     use pretty_assertions::assert_eq;
+//
+//     #[test]
+//     fn underscores_to_spaces_test() {
+//         assert_eq!(
+//             underscores_to_spaces(Cow::Borrowed(
+//                 "url('/hello_world.png'),url(\"some__text.txt\")"
+//             )),
+//             "url('/hello_world.png'),url(\"some__text.txt\")",
+//         );
+//         assert_eq!(
+//             underscores_to_spaces(Cow::Borrowed(r#"url("[l8""#)),
+//             r#"url("[l8""#
+//         );
+//     }
+//
+//     #[test]
+//     fn basic_single() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "absolute",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "absolute",
+//                 order: Default::default(), // order is not checked in tests
+//                 plugin: CustomPlugin::Static(&layout::position::PLUGIN),
+//                 variants: vec![],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "absolute",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn basic_multiple() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "text-center",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "text-center",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&typography::text_align::PLUGIN),
+//                 variants: vec![],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "center",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn basic_opacity() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "bg-red-500/25",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "bg-red-500/25",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                 variants: vec![],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "red-500/25",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn basic_important() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse("!px-4", None, None, &config, &config.get_derived_variants(), &build_trie(&config))[0]
+//                 .as_ref()
+//                 .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "!px-4",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&spacing::padding::PLUGIN),
+//                 variants: vec![],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "4",
+//                 },
+//                 is_important: true,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn basic_negative() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse("-px-4", None, None, &config, &config.get_derived_variants(), &build_trie(&config))[0]
+//                 .as_ref()
+//                 .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "-px-4",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&spacing::padding::PLUGIN),
+//                 variants: vec![],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: true,
+//                     value: "4",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn basic_important_and_negative() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "!-px-4",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "!-px-4",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&spacing::padding::PLUGIN),
+//                 variants: vec![],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: true,
+//                     value: "4",
+//                 },
+//                 is_important: true,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn basic_integer() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse("px-4", None, None, &config, &config.get_derived_variants(), &build_trie(&config))[0]
+//                 .as_ref()
+//                 .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "px-4",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&spacing::padding::PLUGIN),
+//                 variants: vec![],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "4",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn basic_float() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "px-1.5",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "px-1.5",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&spacing::padding::PLUGIN),
+//                 variants: vec![],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "1.5",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn variants_single() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "hover:text-center",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "hover:text-center",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&typography::text_align::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::Borrowed("&:hover")
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "center",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn variants_multiple() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "marker:xl:hover:text-center",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "marker:xl:hover:text-center",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&typography::text_align::PLUGIN),
+//                 variants: vec![
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("& *::marker, &::marker")
+//                     },
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("@media (width >= 80rem)"),
+//                     },
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::Borrowed("&:hover")
+//                     }
+//                 ],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "center",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn variants_negative() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "marker:xl:hover:-mx-4",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "marker:xl:hover:-mx-4",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&spacing::margin::PluginXDefinition),
+//                 variants: vec![
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("& *::marker, &::marker")
+//                     },
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("@media (width >= 80rem)"),
+//                     },
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::Borrowed("&:hover")
+//                     }
+//                 ],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: true,
+//                     value: "4",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn arbitrary_variant() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "[&>*]:text-center",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "[&>*]:text-center",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&typography::text_align::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::from("&>*")
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "center",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn group_and_peer() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "group-checked:block",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "group-checked:block",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&layout::display::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::from(".group:checked &"),
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "block",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "peer-checked:block",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "peer-checked:block",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&layout::display::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::from(".peer:checked ~ &"),
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "block",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "peer-not-checked:block",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "peer-not-checked:block",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&layout::display::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::from(".peer:not(:checked) ~ &"),
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "block",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "peer-[:focus-within]:block",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "peer-[:focus-within]:block",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&layout::display::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::from(".peer:focus-within ~ &"),
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "block",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "peer-[:nth-of-type(3)_&]:block",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "peer-[:nth-of-type(3)_&]:block",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&layout::display::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::from(":nth-of-type(3) .peer ~ &"),
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "block",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "group-has-[#test]:block",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "group-has-[#test]:block",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&layout::display::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::from(".group:has(#test) &"),
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "block",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn arbitrary_named_group_and_peer() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "group-checked/item:block",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "group-checked/item:block",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&layout::display::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::from(r".group\/item:checked &"),
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "block",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "peer-checked/item:block",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "peer-checked/item:block",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&layout::display::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::from(r".peer\/item:checked ~ &"),
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "block",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "peer-not-checked/item:block",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "peer-not-checked/item:block",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&layout::display::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::from(r".peer\/item:not(:checked) ~ &"),
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "block",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "peer-[:focus-within]/item:block",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "peer-[:focus-within]/item:block",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&layout::display::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::from(".peer\\/item:focus-within ~ &"),
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "block",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "group-has-[#test]/item:block",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "group-has-[#test]/item:block",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&layout::display::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: true,
+//                     template: Cow::from(r".group\/item:has(#test) &"),
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "block",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "group-has-[#page/el]/item:block",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "group-has-[#page/el]/item:block",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&layout::display::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: true,
+//                     template: Cow::from(r".group\/item:has(#page/el) &"),
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "block",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn arbitrary_variant_at_rule() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "[@supports_not_(display:grid)]:grid",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "[@supports_not_(display:grid)]:grid",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&layout::display::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::from("@supports not (display:grid)")
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "grid",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn arbitrary_variant_multiple() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "xl:[&>*]:focus:text-center",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "xl:[&>*]:focus:text-center",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&typography::text_align::PLUGIN),
+//                 variants: vec![
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("@media (width >= 80rem)")
+//                     },
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("&>*")
+//                     },
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::Borrowed("&:focus")
+//                     }
+//                 ],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "center",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn arbitrary_variant_negative() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "xl:[&>*]:focus:-m-4",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "xl:[&>*]:focus:-m-4",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&spacing::margin::PLUGIN),
+//                 variants: vec![
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("@media (width >= 80rem)")
+//                     },
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("&>*")
+//                     },
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::Borrowed("&:focus")
+//                     }
+//                 ],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: true,
+//                     value: "4",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn arbitrary_value() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "mx-[12px]",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "mx-[12px]",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&spacing::margin::PLUGIN),
+//                 variants: vec![],
+//                 modifier: Modifier::Arbitrary {
+//                     prefix: "",
+//                     hint: "",
+//                     value: Cow::from("12px"),
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn complex_arbitrary_value() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "bg-[url('/hello_world.png')]",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "bg-[url('/hello_world.png')]",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&background::background_image::PLUGIN),
+//                 variants: vec![],
+//                 modifier: Modifier::Arbitrary {
+//                     prefix: "",
+//                     hint: "",
+//                     value: Cow::from("url('/hello_world.png')"),
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn arbitrary_value_hint() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "bg-[color:#fff]",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "bg-[color:#fff]",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                 variants: vec![],
+//                 modifier: Modifier::Arbitrary {
+//                     prefix: "",
+//                     hint: "color",
+//                     value: Cow::from("#fff"),
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn arbitrary_value_with_variants() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "xl:marker:bg-[#fff]",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "xl:marker:bg-[#fff]",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                 variants: vec![
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("@media (width >= 80rem)")
+//                     },
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("& *::marker, &::marker")
+//                     },
+//                 ],
+//                 modifier: Modifier::Arbitrary {
+//                     prefix: "",
+//                     hint: "",
+//                     value: Cow::from("#fff"),
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn arbitrary_value_with_variants_and_hint() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "xl:marker:bg-[color:#fff]",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "xl:marker:bg-[color:#fff]",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                 variants: vec![
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("@media (width >= 80rem)")
+//                     },
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("& *::marker, &::marker")
+//                     },
+//                 ],
+//                 modifier: Modifier::Arbitrary {
+//                     prefix: "",
+//                     hint: "color",
+//                     value: Cow::from("#fff"),
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn arbitrary_value_with_arbitrary_variant() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "[&>*]:bg-[#fff]",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "[&>*]:bg-[#fff]",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::from("&>*")
+//                 },],
+//                 modifier: Modifier::Arbitrary {
+//                     prefix: "",
+//                     hint: "",
+//                     value: Cow::from("#fff"),
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn arbitrary_variant_escaped() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 r"[&#91;type=&#39;input&#39;&#93;_&>:*]:bg-red-300",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: r"[&#91;type=&#39;input&#39;&#93;_&>:*]:bg-red-300",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::from("[type='input'] &>:*")
+//                 },],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "red-300",
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn arbitrary_value_with_arbitrary_variant_mixed() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "xl:[&>*]:hover:bg-[#fff]",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "xl:[&>*]:hover:bg-[#fff]",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                 variants: vec![
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("@media (width >= 80rem)")
+//                     },
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("&>*")
+//                     },
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::Borrowed("&:hover")
+//                     }
+//                 ],
+//                 modifier: Modifier::Arbitrary {
+//                     prefix: "",
+//                     hint: "",
+//                     value: Cow::from("#fff"),
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn arbitrary_value_with_arbitrary_variant_and_hint() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "xl:[&>*]:hover:bg-[color:#fff]",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: "xl:[&>*]:hover:bg-[color:#fff]",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                 variants: vec![
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("@media (width >= 80rem)")
+//                     },
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("&>*")
+//                     },
+//                     Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::Borrowed("&:hover")
+//                     }
+//                 ],
+//                 modifier: Modifier::Arbitrary {
+//                     prefix: "",
+//                     hint: "color",
+//                     value: Cow::from("#fff"),
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn arbitrary_value_escaped() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 r"bg-[url(&#34;/url_with_&#93;&#41;&#39;.png&#34;)]",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 0,
+//                 full: r"bg-[url(&#34;/url_with_&#93;&#41;&#39;.png&#34;)]",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&background::background_image::PLUGIN),
+//                 variants: vec![],
+//                 modifier: Modifier::Arbitrary {
+//                     prefix: "",
+//                     hint: "",
+//                     value: Cow::from(r#"url("/url_with_])'.png")"#),
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn arbitrary_css_property() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "hover:[mask-type:luminance]",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             )[0]
+//             .as_ref()
+//             .unwrap(),
+//             &Selector {
+//                 layer: 127,
+//                 full: "hover:[mask-type:luminance]",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&CssPropertyPlugin),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::Borrowed("&:hover")
+//                 }],
+//                 modifier: Modifier::Arbitrary {
+//                     prefix: "",
+//                     hint: "",
+//                     value: Cow::from("mask-type:luminance"),
+//                 },
+//                 is_important: false,
+//             }
+//         );
+//     }
+//
+//     #[test]
+//     fn variant_grouping() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "hover:(focus:bg-gray-500,text-[color:black,])",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             ),
+//             vec![
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "hover:(focus:bg-gray-500,text-[color:black,])",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:hover")
+//                         }
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "gray-500",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "hover:(focus:bg-gray-500,text-[color:black,])",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&typography::text_color::PLUGIN),
+//                     variants: vec![Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::Borrowed("&:hover")
+//                     }],
+//                     modifier: Modifier::Arbitrary {
+//                         prefix: "",
+//                         hint: "color",
+//                         value: Cow::from("black,"),
+//                     },
+//                     is_important: false,
+//                 })
+//             ],
+//         );
+//     }
+//
+//     #[test]
+//     fn variant_grouping_single() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "hover:(bg-gray-500)",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             ),
+//             vec![Ok(Selector {
+//                 layer: 0,
+//                 full: "hover:(bg-gray-500)",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::Borrowed("&:hover")
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "gray-500",
+//                 },
+//                 is_important: false,
+//             })],
+//         );
+//     }
+//
+//     #[test]
+//     fn prefixed_variant() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "min:visible",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             ),
+//             vec![Err(ParseError::new(
+//                 0..11,
+//                 ParseErrorKind::UnknownVariant("min", "min:visible")
+//             ))],
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "min-[475px]:visible",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants()
+//             ),
+//             vec![Ok(Selector {
+//                 layer: 0,
+//                 full: "min-[475px]:visible",
+//                 order: Default::default(),
+//                 plugin: CustomPlugin::Static(&layout::visibility::PLUGIN),
+//                 variants: vec![Variant {
+//                     order: Default::default(),
+//                     prefixed: false,
+//                     template: Cow::from("@media (width >= 475px)")
+//                 }],
+//                 modifier: Modifier::Builtin {
+//                     is_negative: false,
+//                     value: "visible",
+//                 },
+//                 is_important: false,
+//             })],
+//         );
+//     }
+//
+//     #[test]
+//     fn variant_grouping_nested() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "focus:([&>*]:-m-4,xl:dark:(bg-red-100,rtl:text-[color:black]))",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             ),
+//             vec![
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "focus:([&>*]:-m-4,xl:dark:(bg-red-100,rtl:text-[color:black]))",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&spacing::margin::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("&>*")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         },
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: true,
+//                         value: "4",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "focus:([&>*]:-m-4,xl:dark:(bg-red-100,rtl:text-[color:black]))",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (width >= 80rem)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (prefers-color-scheme: dark)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         },
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-100",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "focus:([&>*]:-m-4,xl:dark:(bg-red-100,rtl:text-[color:black]))",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&typography::text_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("[dir=\"rtl\"] &")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (width >= 80rem)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (prefers-color-scheme: dark)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         },
+//                     ],
+//                     modifier: Modifier::Arbitrary {
+//                         prefix: "",
+//                         hint: "color",
+//                         value: Cow::from("black"),
+//                     },
+//                     is_important: false,
+//                 }),
+//             ],
+//         );
+//     }
+//
+//     #[test]
+//     fn variant_grouping_nested_escaped() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 r"focus:([&>*]:-m-4,xl:dark:([&#91;type=&#39;text&#39;&#93;.light_&,.foo]:bg-red-100,text-[color:black,]))",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             ),
+//             vec![
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: r"focus:([&>*]:-m-4,xl:dark:([&#91;type=&#39;text&#39;&#93;.light_&,.foo]:bg-red-100,text-[color:black,]))",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&spacing::margin::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("&>*")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         },
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: true,
+//                         value: "4",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: r"focus:([&>*]:-m-4,xl:dark:([&#91;type=&#39;text&#39;&#93;.light_&,.foo]:bg-red-100,text-[color:black,]))",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from(r"[type='text'].light &,.foo")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (width >= 80rem)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (prefers-color-scheme: dark)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         },
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-100",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: r"focus:([&>*]:-m-4,xl:dark:([&#91;type=&#39;text&#39;&#93;.light_&,.foo]:bg-red-100,text-[color:black,]))",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&typography::text_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (width >= 80rem)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (prefers-color-scheme: dark)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         },
+//                     ],
+//                     modifier: Modifier::Arbitrary {
+//                         prefix: "",
+//                         hint: "color",
+//                         value: Cow::from("black,"),
+//                     },
+//                     is_important: false,
+//                 }),
+//             ],
+//         );
+//     }
+//
+//     #[test]
+//     fn variant_grouping_complex_nested() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             ),
+//             vec![
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&border::outline_style::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (width >= 80rem)")
+//                         }
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&border::outline_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (width >= 80rem)")
+//                         }
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-200",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (prefers-color-scheme: dark)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (width >= 80rem)")
+//                         },
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "black",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&typography::text_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (prefers-color-scheme: dark)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (width >= 80rem)")
+//                         },
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "white",
+//                     },
+//                     is_important: false,
+//                 }),
+//             ],
+//         );
+//     }
+//
+//     #[test]
+//     #[allow(clippy::too_many_lines)]
+//     fn variant_grouping_without_modifier() {
+//         let config = Config::default();
+//         assert_eq!(
+//             parse(
+//                 "(hover,focus):bg-red-400",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             ),
+//             vec![
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "(hover,focus):bg-red-400",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::Borrowed("&:hover")
+//                     }],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "(hover,focus):bg-red-400",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::Borrowed("&:focus")
+//                     },],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-400",
+//                     },
+//                     is_important: false,
+//                 })
+//             ],
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "([@supports_(display:flex)],focus-visible):flex",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             ),
+//             vec![
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "([@supports_(display:flex)],focus-visible):flex",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&flexbox::flex::PLUGIN),
+//                     variants: vec![Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("@supports (display:flex)")
+//                     }],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "flex",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "([@supports_(display:flex)],focus-visible):flex",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::Borrowed("&:focus-visible")
+//                     },],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "flex",
+//                     },
+//                     is_important: false,
+//                 })
+//             ],
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "([@supports_(display:flex)],focus-visible):!-m-4",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             ),
+//             vec![
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "([@supports_(display:flex)],focus-visible):!-m-4",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&spacing::margin::PLUGIN),
+//                     variants: vec![Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::from("@supports (display:flex)")
+//                     }],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: true,
+//                         value: "4",
+//                     },
+//                     is_important: true,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "([@supports_(display:flex)],focus-visible):!-m-4",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&spacing::margin::PLUGIN),
+//                     variants: vec![Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::Borrowed("&:focus-visible")
+//                     },],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: true,
+//                         value: "4",
+//                     },
+//                     is_important: true,
+//                 })
+//             ],
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "xl:(hover,focus):bg-red-400",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             ),
+//             vec![
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "xl:(hover,focus):bg-red-400",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("@media (width >= 80rem)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:hover")
+//                         }
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "xl:(hover,focus):bg-red-400",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("@media (width >= 80rem)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         },
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-400",
+//                     },
+//                     is_important: false,
+//                 })
+//             ],
+//         );
+//
+//         // Not a variant without a modifier but we need to make sure it is correctly interpreted as
+//         // variants **with** a modifier
+//         assert_eq!(
+//             parse(
+//                 "(hover:bg-red-400,focus:bg-green-400)",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             ),
+//             vec![
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "(hover:bg-red-400,focus:bg-green-400)",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::Borrowed("&:hover")
+//                     }],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "(hover:bg-red-400,focus:bg-green-400)",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::Borrowed("&:focus")
+//                     },],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "green-400",
+//                     },
+//                     is_important: false,
+//                 })
+//             ],
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             ),
+//             vec![
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (prefers-color-scheme: dark)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("@media (width >= 80rem)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:hover")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:target")
+//                         },
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::from("@media (prefers-color-scheme: dark)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("@media (width >= 80rem)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:target")
+//                         },
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("@media (width >= 80rem)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:hover")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:target")
+//                         }
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "green-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("@media (width >= 80rem)")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:target")
+//                         }
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "green-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//             ],
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "(hover,focus):(focus-within,target):bg-red-400",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             ),
+//             vec![
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "(hover,focus):(focus-within,target):bg-red-400",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:hover")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus-within")
+//                         },
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "(hover,focus):(focus-within,target):bg-red-400",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus-within")
+//                         }
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "(hover,focus):(focus-within,target):bg-red-400",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:hover")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:target")
+//                         },
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "(hover,focus):(focus-within,target):bg-red-400",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:target")
+//                         }
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-400",
+//                     },
+//                     is_important: false,
+//                 })
+//             ],
+//         );
+//
+//         assert_eq!(
+//             parse(
+//                 "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
+//                 None,
+//                 None,
+//                 &config,
+//                 &config.get_derived_variants(),
+//                 &build_trie(&config),
+//             ),
+//             vec![
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::Borrowed("&:hover")
+//                     },],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![Variant {
+//                         order: Default::default(),
+//                         prefixed: false,
+//                         template: Cow::Borrowed("&:focus")
+//                     },],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "red-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:target")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:hover")
+//                         },
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "green-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:target")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         },
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "green-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus-within")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:hover")
+//                         }
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "green-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//                 Ok(Selector {
+//                     layer: 0,
+//                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
+//                     order: Default::default(),
+//                     plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
+//                     variants: vec![
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus-within")
+//                         },
+//                         Variant {
+//                             order: Default::default(),
+//                             prefixed: false,
+//                             template: Cow::Borrowed("&:focus")
+//                         }
+//                     ],
+//                     modifier: Modifier::Builtin {
+//                         is_negative: false,
+//                         value: "green-400",
+//                     },
+//                     is_important: false,
+//                 }),
+//             ],
+//         );
+//     }
+// }

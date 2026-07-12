@@ -14,7 +14,7 @@ const INTERPOLATION_MODES_MAP: phf::Map<&'static str, &'static str> = phf_map! {
     "oklch" => "oklch",
 };
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-image"),
     values: phf_map! {
         "bg-none" => "none",
@@ -29,7 +29,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     },
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "bg",
     prop: SingleProp("background-image"),
 })

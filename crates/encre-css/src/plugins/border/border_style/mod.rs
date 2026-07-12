@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("border-style"),
     values: phf_map! {
         "border-solid" => "solid",
@@ -19,7 +19,7 @@ pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::ListValues {
     },
 });
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "border",
     prop: SingleProp("border-style"),
 })

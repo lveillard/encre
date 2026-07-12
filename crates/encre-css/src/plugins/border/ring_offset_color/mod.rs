@@ -3,13 +3,13 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_1: Plugin = Plugin::new(PluginKind::Color {
+pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Color {
     namespace: "ring-offset",
     prop: SingleProp("--en-ring-offset-color"),
 })
 .extra_lines(&["--en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);"]);
 
-pub(crate) const PLUGIN_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "ring-offset",
     prop: SingleProp("--en-ring-offset-color"),
 })
