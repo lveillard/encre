@@ -1,9 +1,16 @@
 //! Define the main [`generate`] function used to scan content and to generate CSS styles.
 use crate::{
-    config::{Config, MaxShortcutDepth}, plugins::{
+    config::{Config, MaxShortcutDepth},
+    plugins::{
         CustomPlugin, Plugin, PluginKind, PropertyName,
         parsed::{ParsedPlugin, ParsedPluginKind, ParsedPropertyName},
-    }, preflight::Preflight, selector::{Modifier, Selector, Variant, parse, trie::{Trie, build_trie}}, utils::{buffer::Buffer, color, shadow, spacing},
+    },
+    preflight::Preflight,
+    selector::{
+        Modifier, Selector, Variant, parse,
+        trie::{Trie, build_trie},
+    },
+    utils::{buffer::Buffer, color, shadow, spacing},
 };
 
 use std::{borrow::Cow, collections::BTreeSet};
@@ -191,23 +198,25 @@ fn handle(plugin: &CustomPlugin, context: &mut Context) {
         ) => {
             add_extra_css(plugin, context, value);
 
-            generate_at_rules(context, |context| {
-                generate_class(
-                    context,
-                    |context| {
-                        context.buffer.lines(
-                            *cases
-                                .get(value)
-                                .expect("key existence was checked in can_handle"),
-                        );
+            let lines = *cases
+                .get(value)
+                .expect("key existence was checked in can_handle");
 
-                        if let Some(extra_lines) = extra_lines {
-                            context.buffer.lines(*extra_lines);
-                        }
-                    },
-                    extra_class.unwrap_or(""),
-                );
-            });
+            if !lines.is_empty() {
+                generate_at_rules(context, |context| {
+                    generate_class(
+                        context,
+                        |context| {
+                            context.buffer.lines(lines);
+
+                            if let Some(extra_lines) = extra_lines {
+                                context.buffer.lines(*extra_lines);
+                            }
+                        },
+                        extra_class.unwrap_or(""),
+                    );
+                });
+            }
         }
         (
             CustomPlugin::Parsed(ParsedPlugin {
@@ -220,23 +229,25 @@ fn handle(plugin: &CustomPlugin, context: &mut Context) {
         ) => {
             add_extra_css(plugin, context, value);
 
-            generate_at_rules(context, |context| {
-                generate_class(
-                    context,
-                    |context| {
-                        context.buffer.lines(
-                            cases
-                                .get(*value)
-                                .expect("key existence was checked in can_handle"),
-                        );
+            let lines = cases
+                .get(*value)
+                .expect("key existence was checked in can_handle");
 
-                        if let Some(extra_lines) = extra_lines {
-                            context.buffer.lines(extra_lines);
-                        }
-                    },
-                    extra_class.as_ref().map(|s| s.as_str()).unwrap_or(""),
-                );
-            });
+            if !lines.is_empty() {
+                generate_at_rules(context, |context| {
+                    generate_class(
+                        context,
+                        |context| {
+                            context.buffer.lines(lines);
+
+                            if let Some(extra_lines) = extra_lines {
+                                context.buffer.lines(extra_lines);
+                            }
+                        },
+                        extra_class.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                    );
+                });
+            }
         }
 
         (
@@ -901,9 +912,16 @@ fn resolve_selector<'a>(
         });
     } else {
         selectors.extend(
-            parse(selector, None, full_class, config, config_derived_variants, trie)
-                .into_iter()
-                .filter_map(Result::ok),
+            parse(
+                selector,
+                None,
+                full_class,
+                config,
+                config_derived_variants,
+                trie,
+            )
+            .into_iter()
+            .filter_map(Result::ok),
         );
     }
 }
@@ -942,9 +960,16 @@ pub fn generate<'a>(sources: impl IntoIterator<Item = &'a str>, config: &Config)
             });
         } else {
             selectors.extend(
-                parse(safe_selector, None, None, config, &config_derived_variants, &trie)
-                    .into_iter()
-                    .filter_map(Result::ok),
+                parse(
+                    safe_selector,
+                    None,
+                    None,
+                    config,
+                    &config_derived_variants,
+                    &trie,
+                )
+                .into_iter()
+                .filter_map(Result::ok),
             );
         }
     }
