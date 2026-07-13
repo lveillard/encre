@@ -1081,6 +1081,13 @@ const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
 
 const PLUGIN_CUSTOMIZATION: Plugin = Plugin::new(PluginKind::Functional {
     namespace: "prose",
+    can_handle: |context| {
+        matches!(context.modifier, Modifier::Builtin { value, .. } if [
+                "", "sm", "base", "lg", "xl", "2xl", "gray", "slate", "zinc", "neutral", "stone",
+                "invert",
+            ]
+            .contains(value))
+    },
     handle: |context| {
         let css_rules = match context.modifier {
             Modifier::Builtin { value: "sm", .. } => PROSE_SM_CSS,

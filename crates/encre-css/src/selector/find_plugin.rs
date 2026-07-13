@@ -3,6 +3,7 @@ use std::ops::Range;
 use crate::{
     Config,
     error::{ParseError, ParseErrorKind},
+    generator::ContextCanHandle,
     plugins::{
         CustomPlugin, Plugin, PluginArbitraryMatcher, PluginKind,
         parsed::{ParsedPlugin, ParsedPluginArbitraryMatcher, ParsedPluginKind},
@@ -400,11 +401,11 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
 
         (
             CustomPlugin::Static(Plugin {
-                kind: PluginKind::Functional { .. },
+                kind: PluginKind::Functional { can_handle, .. },
                 ..
             }),
             Modifier::Builtin { .. },
-        ) => true, // If the prefix match, the plugin is called
+        ) => can_handle(&ContextCanHandle { config, modifier }),
         _ => false,
     }
 }

@@ -1,24 +1,16 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "layout")]
-use crate::{
-    config::BUILTIN_SCREENS,
-    prelude::build_plugin::*,
-};
+use crate::{config::BUILTIN_SCREENS, prelude::build_plugin::*};
 
 use std::{borrow::Cow, cmp::Ordering};
 
 pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Functional {
     namespace: "container",
+    can_handle: |context| matches!(context.modifier, Modifier::Builtin { value: "", .. }),
     handle: |context| {
         if let Modifier::Builtin { .. } = context.modifier {
-            generate_at_rules(context, |context| {
-                generate_class(
-                    context,
-                    |context| {
-                        context.buffer.line("width: 100%;");
-                    },
-                    "",
-                );
+            generate_wrapper(context, |context| {
+                context.buffer.line("width: 100%;");
             });
 
             context.buffer.raw("\n\n");

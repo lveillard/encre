@@ -35,7 +35,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::{generator::Context, plugins::PropertyName::MultipleProps, selector::ArbitraryHint};
+use crate::{generator::{ContextHandle, ContextCanHandle}, plugins::PropertyName::MultipleProps, selector::ArbitraryHint};
 
 pub mod accessibility;
 pub mod background;
@@ -192,16 +192,25 @@ pub enum PluginKind {
     /// use encre_css::prelude::build_plugin::*;
     /// use std::collections::HashMap;
     ///
+    /// /// Reads the `emoji` extra field of the configuration to find the replacement emoji.
+    /// fn extract_emoji_value<'a>(config: &'a Config, value: &str) -> Option<&'a str> {
+    ///     config.extra.get("emoji")
+    ///         .and_then(|r| r.as_table())
+    ///         .and_then(|r| r.get(value))
+    ///         .and_then(|r| r.as_str())
+    /// }
+    ///
     /// const PLUGIN: Plugin = Plugin::new(PluginKind::Functional {
     ///     namespace: "emoji",
+    ///     can_handle: |context| matches!(context.modifier, Modifier::Builtin {
+    ///         value,
+    ///         ..
+    ///     } if extract_emoji_value(context.config, value).is_some()),
     ///     handle: |context| {
     ///         // Only accept static modifiers, and dynamically fetch them from the
     ///         // `emoji` extra field of the configuration
     ///         if let Modifier::Builtin { value, .. } = context.modifier
-    ///         && let Some(value) = context.config.extra.get("emoji")
-    ///             .and_then(|r| r.as_table())
-    ///             .and_then(|r| r.get(*value))
-    ///             .and_then(|r| r.as_str()) {
+    ///         && let Some(value) = extract_emoji_value(&context.config, value) {
     ///             generate_at_rules(context, |context| {
     ///                 generate_class(
     ///                     context,
@@ -242,7 +251,8 @@ pub enum PluginKind {
     /// [`generate_class`]: crate::generator::generate_class
     Functional {
         namespace: &'static str,
-        handle: fn(&mut Context),
+        can_handle: fn(&ContextCanHandle) -> bool,
+        handle: fn(&mut ContextHandle),
     },
 }
 
@@ -324,20 +334,33 @@ pub enum PluginKind {
 /// ### Example
 ///
 /// ```
+/// use encre_css::Config;
 /// use encre_css::prelude::build_plugin::*;
+///
+/// /// Reads the `emoji` extra field of the configuration to find the replacement emoji.
+/// fn extract_emoji_value<'a>(config: &'a Config, value: &str) -> Option<&'a str> {
+///     config.extra.get("emoji")
+///         .and_then(|r| r.as_table())
+///         .and_then(|r| r.get(value))
+///         .and_then(|r| r.as_str())
+/// }
 ///
 /// const PLUGIN: Plugin = Plugin::new(PluginKind::Functional {
 ///     namespace: "emoji",
+///     can_handle: |context| matches!(context.modifier, Modifier::Builtin {
+///         value,
+///         ..
+///     } if extract_emoji_value(context.config, value).is_some()),
 ///     handle: |context| {
+///         // Only accept static modifiers, and dynamically fetch them from the
+///         // `emoji` extra field of the configuration
 ///         if let Modifier::Builtin { value, .. } = context.modifier
-///         && let Some(value) = context.config.extra.get("emoji")
-///             .and_then(|r| r.as_table())
-///             .and_then(|r| r.get(*value)) {
+///         && let Some(value) = extract_emoji_value(&context.config, value) {
 ///             generate_at_rules(context, |context| {
 ///                 generate_class(
 ///                     context,
 ///                     |context| {
-///                         context.buffer.line(format_args!("content: {value};"));
+///                         context.buffer.line(format_args!("content: \"{value}\";"));
 ///                     },
 ///                     "",
 ///                 );

@@ -212,16 +212,15 @@ fn is_matching_base(value: &str) -> bool {
         .contains(&value)
 }
 
-/// Returns whether the CSS value is an [`url()`](https://developer.mozilla.org/en-US/docs/Web/CSS/url).
-///
-/// # Example
-///
-/// ```
-/// use encre_css::utils::value_matchers::is_matching_url;
-/// assert!(is_matching_url("url('/hello/world.png')"));
-/// ```
 fn is_matching_url(value: &str) -> bool {
     value.starts_with("url(")
+}
+
+fn is_matching_computational_css_function(value: &str) -> bool {
+    value.starts_with("min(")
+        || value.starts_with("max(")
+        || value.starts_with("clamp(")
+        || value.starts_with("calc(")
 }
 
 /// Returns whether the CSS value is a [`var()`](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties).
@@ -294,26 +293,6 @@ pub fn is_matching_line_width(value: &str) -> bool {
 /// ```
 pub fn is_matching_line_style(value: &str) -> bool {
     LINE_STYLES.contains(&value)
-}
-
-/// Returns whether the CSS value is a computational CSS function like:
-///
-/// - [`min()`](https://developer.mozilla.org/en-US/docs/Web/CSS/min)
-/// - [`max()`](https://developer.mozilla.org/en-US/docs/Web/CSS/max)
-/// - [`clamp()`](https://developer.mozilla.org/en-US/docs/Web/CSS/clamp)
-/// - [`calc()`](https://developer.mozilla.org/en-US/docs/Web/CSS/calc)
-///
-/// # Example
-///
-/// ```
-/// use encre_css::utils::value_matchers::is_matching_computational_css_function;
-/// assert!(is_matching_computational_css_function("min(12px,10%)"));
-/// ```
-fn is_matching_computational_css_function(value: &str) -> bool {
-    value.starts_with("min(")
-        || value.starts_with("max(")
-        || value.starts_with("clamp(")
-        || value.starts_with("calc(")
 }
 
 /// Returns whether the CSS value has the [`<color>`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value) type.

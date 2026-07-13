@@ -245,7 +245,7 @@ pub mod prelude {
     /// ```
     pub mod build_plugin {
         pub use crate::{
-            generator::{generate_at_rules, generate_class, Context},
+            generator::{generate_at_rules, generate_class, generate_wrapper, ContextCanHandle, ContextHandle},
             plugins::{
                 Plugin, PluginArbitraryMatcher,
                 PluginKind, PropertyName, PropertyName::*,

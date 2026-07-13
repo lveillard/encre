@@ -15,11 +15,23 @@ use crate::{
 
 use std::{borrow::Cow, collections::BTreeSet};
 
-/// The context used in the [`Functional`] plugin kind.
+/// The context used in the [`Functional`] plugin kind `can_handle` field.
 ///
 /// [`Functional`]: crate::plugins::PluginKind::Functional
 #[derive(Debug)]
-pub struct Context<'a, 'b, 'c, 'd, 'e> {
+pub struct ContextCanHandle<'a, 'b, 'c> {
+    /// The generator's configuration.
+    pub config: &'a Config,
+
+    /// The modifier which will be checked.
+    pub modifier: &'b Modifier<'c>,
+}
+
+/// The context used in the [`Functional`] plugin kind `handle` field.
+///
+/// [`Functional`]: crate::plugins::PluginKind::Functional
+#[derive(Debug)]
+pub struct ContextHandle<'a, 'b, 'c, 'd, 'e> {
     /// The generator's configuration.
     pub config: &'a Config,
 
@@ -33,7 +45,7 @@ pub struct Context<'a, 'b, 'c, 'd, 'e> {
     selector: &'e Selector<'e>,
 }
 
-fn push_css_lines(prop: &PropertyName, value: &str, context: &mut Context) {
+fn push_css_lines(prop: &PropertyName, value: &str, context: &mut ContextHandle) {
     match prop {
         PropertyName::SingleProp(prop) => {
             context.buffer.line(format_args!("{prop}: {value};"));
@@ -46,7 +58,7 @@ fn push_css_lines(prop: &PropertyName, value: &str, context: &mut Context) {
     }
 }
 
-fn parsed_push_css_lines(prop: &ParsedPropertyName, value: &str, context: &mut Context) {
+fn parsed_push_css_lines(prop: &ParsedPropertyName, value: &str, context: &mut ContextHandle) {
     match prop {
         ParsedPropertyName::SingleProp(prop) => {
             context.buffer.line(format_args!("{prop}: {value};"));
@@ -64,7 +76,7 @@ fn push_css_lines_with_templating(
     plugin: &Plugin,
     value: &str,
     slash_value: Option<&str>,
-    context: &mut Context,
+    context: &mut ContextHandle,
 ) {
     let transform_template = |template: &str| {
         if let Some(slash_value) = slash_value {
@@ -112,7 +124,7 @@ fn parsed_push_css_lines_with_templating(
     plugin: &ParsedPlugin,
     value: &str,
     slash_value: Option<&str>,
-    context: &mut Context,
+    context: &mut ContextHandle,
 ) {
     let transform_template = |template: &str| {
         if let Some(slash_value) = slash_value {
@@ -155,7 +167,7 @@ fn parsed_push_css_lines_with_templating(
     }
 }
 
-fn add_extra_css(plugin: &CustomPlugin, context: &mut Context, value: &str) {
+fn add_extra_css(plugin: &CustomPlugin, context: &mut ContextHandle, value: &str) {
     match plugin {
         CustomPlugin::Static(Plugin {
             extra_css: Some(extra_css),
@@ -185,7 +197,7 @@ fn add_extra_css(plugin: &CustomPlugin, context: &mut Context, value: &str) {
     }
 }
 
-fn handle(plugin: &CustomPlugin, context: &mut Context) {
+fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
     match (&plugin, context.modifier) {
         (
             CustomPlugin::Static(Plugin {
@@ -744,8 +756,8 @@ fn handle(plugin: &CustomPlugin, context: &mut Context) {
 /// Returns [`fmt::Error`] indicating whether writing to the buffer succeeded.
 ///
 /// [`fmt::Error`]: std::fmt::Error
-pub fn generate_at_rules<T: FnOnce(&mut Context)>(context: &mut Context, rule_content_fn: T) {
-    let Context {
+pub fn generate_at_rules<T: FnOnce(&mut ContextHandle)>(context: &mut ContextHandle, rule_content_fn: T) {
+    let ContextHandle {
         buffer, selector, ..
     } = context;
 
@@ -760,7 +772,7 @@ pub fn generate_at_rules<T: FnOnce(&mut Context)>(context: &mut Context, rule_co
 
     rule_content_fn(context);
 
-    let Context { buffer, .. } = context;
+    let ContextHandle { buffer, .. } = context;
     while !buffer.is_unindented() {
         buffer.unindent();
 
@@ -770,6 +782,29 @@ pub fn generate_at_rules<T: FnOnce(&mut Context)>(context: &mut Context, rule_co
             buffer.line("}");
         }
     }
+}
+
+/// Generate the complete CSS wrapper needed for a single rule.
+///
+/// This function is a combination of the [`generate_at_rules`] and [`generate_class`] functions.
+///
+/// The second argument, a closure, is called to generate the CSS content of the rule.
+///
+/// If you need to customize the generated class name (e.g adding custom pseudo-classes), you can
+/// manually call [`generate_class`] nested inside [`generate_at_rules`].
+///
+/// # Errors
+///
+/// Returns [`fmt::Error`] indicating whether writing to the buffer succeeded.
+///
+/// [`fmt::Error`]: std::fmt::Error
+pub fn generate_wrapper<T: FnOnce(&mut ContextHandle)>(
+    context: &mut ContextHandle,
+    rule_content_fn: T,
+) {
+    generate_at_rules(context, |context| {
+        generate_class(context, rule_content_fn, "");
+    });
 }
 
 /// Generate a CSS rule with a class.
@@ -785,12 +820,12 @@ pub fn generate_at_rules<T: FnOnce(&mut Context)>(context: &mut Context, rule_co
 ///
 /// [`fmt::Error`]: std::fmt::Error
 #[allow(clippy::too_many_lines)]
-pub fn generate_class<T: FnOnce(&mut Context)>(
-    context: &mut Context,
+pub fn generate_class<T: FnOnce(&mut ContextHandle)>(
+    context: &mut ContextHandle,
     rule_content_fn: T,
     custom_after_class: &str,
 ) {
-    let Context {
+    let ContextHandle {
         buffer, selector, ..
     } = context;
 
@@ -837,7 +872,7 @@ pub fn generate_class<T: FnOnce(&mut Context)>(
     buffer.indent();
     rule_content_fn(context);
 
-    let Context {
+    let ContextHandle {
         buffer, selector, ..
     } = context;
 
@@ -999,7 +1034,7 @@ pub fn generate<'a>(sources: impl IntoIterator<Item = &'a str>, config: &Config)
             buffer.raw("\n\n");
         }
 
-        let mut context = Context {
+        let mut context = ContextHandle {
             config,
             modifier: &selector.modifier,
             buffer: &mut buffer,
