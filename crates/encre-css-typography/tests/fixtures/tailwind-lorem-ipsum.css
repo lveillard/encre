@@ -842,7 +842,6 @@ button, input:where([type='button'], [type='reset'], [type='submit']), ::file-se
   margin-bottom: 0;
 }
 
-
 .prose-slate {
   --en-prose-body: #334155;
   --en-prose-headings: #0f172a;

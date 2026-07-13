@@ -482,6 +482,7 @@ name = "encre-css-typography"
 version = "0.6.1"
 dependencies = [
  "encre-css",
+ "pretty_assertions",
 ]
 
 [[package]]

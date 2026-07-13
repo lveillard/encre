@@ -11,3 +11,6 @@ categories = ["web-programming"]
 
 [dependencies]
 encre-css = { path = "../encre-css", version = "0.20.1" }
+
+[dev-dependencies]
+pretty_assertions = "1.4.1"
