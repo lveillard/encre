@@ -472,6 +472,7 @@ dependencies = [
  "encre-css",
  "include_dir",
  "once_cell",
+ "pretty_assertions",
  "serde",
  "serde_json",
  "ureq",

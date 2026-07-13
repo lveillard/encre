@@ -24,3 +24,6 @@ include_dir = { version = "0.7.4", optional = true }
 default = ["fs-cache"]
 fs-cache = ["directories"]
 embed-icons = ["include_dir"]
+
+[dev-dependencies]
+pretty_assertions = "1.4.1"
