@@ -185,7 +185,7 @@ fn sort_selectors_recursive<'a>(
         }
     }
 
-    let trie = crate::selector::trie::build_trie(&config);
+    let trie = crate::selector::trie::build_trie(config);
     let config_derived_variants = config.get_derived_variants();
     let mut selectors = val
         .filter_map(|v| {
@@ -292,7 +292,7 @@ pub fn sort_selectors(val: &str, config: &Config) -> String {
 /// ]);
 /// ```
 pub fn check_selectors<'a>(val: &'a str, config: &Config) -> Vec<ParseError<'a>> {
-    let trie = crate::selector::trie::build_trie(&config);
+    let trie = crate::selector::trie::build_trie(config);
     let config_derived_variants = config.get_derived_variants();
     val.char_indices()
         .chain(iter::once((val.len(), ' ')))

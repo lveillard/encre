@@ -80,9 +80,9 @@ fn push_css_lines_with_templating(
 ) {
     let transform_template = |template: &str| {
         if let Some(slash_value) = slash_value {
-            template.replace("{}", &value).replace("{/}", slash_value)
+            template.replace("{}", value).replace("{/}", slash_value)
         } else {
-            template.replace("{}", &value)
+            template.replace("{}", value)
         }
     };
 
@@ -103,7 +103,7 @@ fn push_css_lines_with_templating(
                     // same as the length of the list of property names at compile
                     // time in the method Plugin::template_multiple
                     let value = transform_template(templates[i]);
-                    context.buffer.line(format_args!("{prop}: {value};",));
+                    context.buffer.line(format_args!("{prop}: {value};"));
                 }
             } else if let Some(template) = plugin.template {
                 let value = transform_template(template);
@@ -128,16 +128,16 @@ fn parsed_push_css_lines_with_templating(
 ) {
     let transform_template = |template: &str| {
         if let Some(slash_value) = slash_value {
-            template.replace("{}", &value).replace("{/}", slash_value)
+            template.replace("{}", value).replace("{/}", slash_value)
         } else {
-            template.replace("{}", &value)
+            template.replace("{}", value)
         }
     };
 
     match prop {
         ParsedPropertyName::SingleProp(prop) => {
             let value = if let Some(template) = &plugin.template {
-                Cow::Owned(transform_template(&template))
+                Cow::Owned(transform_template(template))
             } else {
                 Cow::Borrowed(value)
             };
@@ -151,10 +151,10 @@ fn parsed_push_css_lines_with_templating(
                     // same as the length of the list of property names at compile
                     // time in the method Plugin::template_multiple
                     let value = transform_template(&templates[i]);
-                    context.buffer.line(format_args!("{prop}: {value};",));
+                    context.buffer.line(format_args!("{prop}: {value};"));
                 }
             } else if let Some(template) = &plugin.template {
-                let value = transform_template(&template);
+                let value = transform_template(template);
                 for prop in props {
                     context.buffer.line(format_args!("{prop}: {value};"));
                 }
@@ -256,7 +256,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                                 context.buffer.lines(extra_lines);
                             }
                         },
-                        extra_class.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                        extra_class.as_ref().map_or("", String::as_str),
                     );
                 });
             }
@@ -281,9 +281,9 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 (*value, extra_slash.as_ref().map(|e| e.1))
             };
 
-            add_extra_css(plugin, context, &*value);
+            add_extra_css(plugin, context, value);
             let value = *values
-                .get(&*value)
+                .get(value)
                 .expect("key existence was checked in can_handle");
 
             let value = if let Some((values, _)) = &extra_slash {
@@ -303,7 +303,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 generate_class(
                     context,
                     |context| {
-                        push_css_lines(prop, &*value, context);
+                        push_css_lines(prop, &value, context);
 
                         if let Some(extra_lines) = extra_lines {
                             context.buffer.lines(*extra_lines);
@@ -332,9 +332,9 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 (*value, extra_slash.as_ref().map(|e| e.1.as_str()))
             };
 
-            add_extra_css(plugin, context, &*value);
+            add_extra_css(plugin, context, value);
             let value = values
-                .get(&*value)
+                .get(value)
                 .expect("key existence was checked in can_handle");
 
             let value = if let Some((values, _)) = &extra_slash {
@@ -354,13 +354,13 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 generate_class(
                     context,
                     |context| {
-                        parsed_push_css_lines(prop, &*value, context);
+                        parsed_push_css_lines(prop, &value, context);
 
                         if let Some(extra_lines) = extra_lines {
                             context.buffer.lines(extra_lines);
                         }
                     },
-                    extra_class.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                    extra_class.as_ref().map_or("", String::as_str),
                 );
             });
         }
@@ -388,7 +388,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 (*value, extra_slash.as_ref().map(|e| e.1))
             };
 
-            add_extra_css(plugin, context, &*value);
+            add_extra_css(plugin, context, value);
 
             generate_at_rules(context, |context| {
                 generate_class(
@@ -408,7 +408,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         push_css_lines_with_templating(
                             prop,
                             inner_plugin,
-                            &*value,
+                            &value,
                             template_value,
                             context,
                         );
@@ -444,7 +444,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 (*value, extra_slash.as_ref().map(|e| e.1.as_str()))
             };
 
-            add_extra_css(plugin, context, &*value);
+            add_extra_css(plugin, context, value);
 
             generate_at_rules(context, |context| {
                 generate_class(
@@ -464,7 +464,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         parsed_push_css_lines_with_templating(
                             prop,
                             inner_plugin,
-                            &*value,
+                            &value,
                             template_value,
                             context,
                         );
@@ -473,7 +473,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                             context.buffer.lines(extra_lines);
                         }
                     },
-                    extra_class.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                    extra_class.as_ref().map_or("", String::as_str),
                 );
             });
         }
@@ -493,8 +493,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 generate_class(
                     context,
                     |context| {
-                        let value = color::get(context.config, &*value).unwrap();
-                        push_css_lines_with_templating(prop, inner_plugin, &*value, None, context);
+                        let value = color::get(context.config, value).unwrap();
+                        push_css_lines_with_templating(prop, inner_plugin, &value, None, context);
 
                         if let Some(extra_lines) = extra_lines {
                             context.buffer.lines(*extra_lines);
@@ -519,7 +519,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 generate_class(
                     context,
                     |context| {
-                        let value = color::get(context.config, &*value).unwrap();
+                        let value = color::get(context.config, value).unwrap();
                         parsed_push_css_lines_with_templating(
                             prop,
                             inner_plugin,
@@ -532,7 +532,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                             context.buffer.lines(extra_lines);
                         }
                     },
-                    extra_class.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                    extra_class.as_ref().map_or("", String::as_str),
                 );
             });
         }
@@ -579,7 +579,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         push_css_lines_with_templating(
                             prop,
                             inner_plugin,
-                            &*value,
+                            &value,
                             template_value,
                             context,
                         );
@@ -616,7 +616,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 (*value, extra_slash.as_ref().map(|e| e.1.as_str()))
             };
 
-            add_extra_css(plugin, context, &*value);
+            add_extra_css(plugin, context, value);
 
             generate_at_rules(context, |context| {
                 generate_class(
@@ -643,7 +643,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                             context.buffer.lines(extra_lines);
                         }
                     },
-                    extra_class.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                    extra_class.as_ref().map_or("", String::as_str),
                 );
             });
         }
@@ -667,7 +667,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         // If the shadow is malformed, just output it without modification
                         let value = if let Some(color_replacement) =
                             arbitrary_shadow_color_replacement
-                            && let Some(mut shadow) = shadow::ShadowList::parse(&value)
+                            && let Some(mut shadow) = shadow::ShadowList::parse(value)
                         {
                             shadow.replace_all_colors(color_replacement);
                             &Cow::Owned(shadow.to_string())
@@ -704,7 +704,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         // If the shadow is malformed, just output it without modification
                         let value = if let Some(color_replacement) =
                             arbitrary_shadow_color_replacement
-                            && let Some(mut shadow) = shadow::ShadowList::parse(&value)
+                            && let Some(mut shadow) = shadow::ShadowList::parse(value)
                         {
                             shadow.replace_all_colors(color_replacement);
                             &Cow::Owned(shadow.to_string())
@@ -724,7 +724,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                             context.buffer.lines(extra_lines);
                         }
                     },
-                    extra_class.as_ref().map(|s| s.as_str()).unwrap_or(""),
+                    extra_class.as_ref().map_or("", String::as_str),
                 );
             });
         }

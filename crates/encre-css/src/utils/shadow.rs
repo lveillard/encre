@@ -275,7 +275,7 @@ impl<'a> ShadowList<'a> {
             Shadow::Shorthand1 { color, .. }
             | Shadow::Shorthand2 { color, .. }
             | Shadow::Full { color, .. } => {
-                *color = Cow::Owned(new_color.replace("{}", color))
+                *color = Cow::Owned(new_color.replace("{}", color));
             }
             _ => (),
         });

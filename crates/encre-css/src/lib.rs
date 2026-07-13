@@ -206,7 +206,7 @@
     clippy::unimplemented,
     clippy::todo
 )]
-#![allow(clippy::module_name_repetitions, clippy::must_use_candidate)]
+#![allow(clippy::module_name_repetitions, clippy::must_use_candidate, clippy::enum_glob_use, clippy::wildcard_imports)]
 
 pub mod config;
 pub mod error;

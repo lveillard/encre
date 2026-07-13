@@ -59,7 +59,7 @@ impl Trie {
                 last_data = current_node.data.as_ref();
             }
 
-            match current_node.children.get(&c) {
+            match current_node.children.get(c) {
                 Some(node) => {
                     current_node = node;
                 }
@@ -117,18 +117,18 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                             has_namespace: true,
                             is_custom,
                             order,
-                            plugin: CustomPlugin::Static(*plugin),
+                            plugin: CustomPlugin::Static(plugin),
                         },
                     );
                 } else {
                     for class in cases.keys() {
                         trie.insert(
-                            *class,
+                            class,
                             TrieData {
                                 has_namespace: false,
                                 is_custom,
                                 order,
-                                plugin: CustomPlugin::Static(*plugin),
+                                plugin: CustomPlugin::Static(plugin),
                             },
                         );
                     }
@@ -142,18 +142,18 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                             has_namespace: true,
                             is_custom,
                             order,
-                            plugin: CustomPlugin::Static(*plugin),
+                            plugin: CustomPlugin::Static(plugin),
                         },
                     );
                 } else {
                     for class in values.keys() {
                         trie.insert(
-                            *class,
+                            class,
                             TrieData {
                                 has_namespace: false,
                                 is_custom,
                                 order,
-                                plugin: CustomPlugin::Static(*plugin),
+                                plugin: CustomPlugin::Static(plugin),
                             },
                         );
                     }
@@ -162,25 +162,15 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
             PluginKind::Spacing { namespace, .. }
             | PluginKind::Color { namespace, .. }
             | PluginKind::Number { namespace, .. }
-            | PluginKind::Arbitrary { namespace, .. } => {
+            | PluginKind::Arbitrary { namespace, .. }
+            | PluginKind::Functional { namespace, .. } => {
                 trie.insert(
                     namespace,
                     TrieData {
                         has_namespace: true,
                         is_custom,
                         order,
-                        plugin: CustomPlugin::Static(*plugin),
-                    },
-                );
-            }
-            PluginKind::Functional { namespace, .. } => {
-                trie.insert(
-                    namespace,
-                    TrieData {
-                        has_namespace: true,
-                        is_custom,
-                        order,
-                        plugin: CustomPlugin::Static(*plugin),
+                        plugin: CustomPlugin::Static(plugin),
                     },
                 );
             }
@@ -203,7 +193,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
             ParsedPluginKind::ListCases { cases } => {
                 if let Some(namespace) = &plugin.list_namespace {
                     trie.insert(
-                        &namespace,
+                        namespace,
                         TrieData {
                             has_namespace: true,
                             is_custom: false,
@@ -214,7 +204,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                 } else {
                     for class in cases.keys() {
                         trie.insert(
-                            &*class,
+                            class,
                             TrieData {
                                 has_namespace: false,
                                 is_custom: false,
@@ -228,7 +218,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
             ParsedPluginKind::ListValues { values, .. } => {
                 if let Some(namespace) = &plugin.list_namespace {
                     trie.insert(
-                        &namespace,
+                        namespace,
                         TrieData {
                             has_namespace: true,
                             is_custom: false,
@@ -239,7 +229,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                 } else {
                     for class in values.keys() {
                         trie.insert(
-                            &*class,
+                            class,
                             TrieData {
                                 has_namespace: false,
                                 is_custom: false,
@@ -255,7 +245,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
             | ParsedPluginKind::Number { namespace, .. }
             | ParsedPluginKind::Arbitrary { namespace, .. } => {
                 trie.insert(
-                    &namespace,
+                    namespace,
                     TrieData {
                         has_namespace: true,
                         is_custom: false,

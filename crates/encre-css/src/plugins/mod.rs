@@ -35,7 +35,11 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::{generator::{ContextHandle, ContextCanHandle}, plugins::PropertyName::MultipleProps, selector::ArbitraryHint};
+use crate::{
+    generator::{ContextCanHandle, ContextHandle},
+    plugins::PropertyName::MultipleProps,
+    selector::ArbitraryHint,
+};
 
 pub mod accessibility;
 pub mod background;
@@ -182,8 +186,8 @@ pub enum PluginKind {
     /// [`Buffer`] structure (especially the [`Buffer::line`] and [`Buffer::lines`] functions) to
     /// push CSS declarations to it, they will be automatically indented.
     ///
-    /// [`generate_at_rules`] and [`generate_class`] should be called to generate the CSS rule
-    /// structure.
+    /// [`generate_wrapper`] (and the more powerful [`generate_at_rules`] and [`generate_class`])
+    /// should be called to generate the CSS rule wrapping.
     ///
     /// ### Example
     ///
@@ -249,6 +253,7 @@ pub enum PluginKind {
     /// [`handle`]: PluginKind::Functional::handle
     /// [`generate_at_rules`]: crate::generator::generate_at_rules
     /// [`generate_class`]: crate::generator::generate_class
+    /// [`generate_wrapper`]: crate::generator::generate_wrapper
     Functional {
         namespace: &'static str,
         can_handle: fn(&ContextCanHandle) -> bool,
@@ -399,6 +404,7 @@ pub struct Plugin {
 
 impl Plugin {
     /// Make a new [`Plugin`] from a [`PluginKind`] filled with the required values.
+    #[must_use]
     pub const fn new(kind: PluginKind) -> Self {
         Self {
             kind,
@@ -428,13 +434,15 @@ impl Plugin {
     /// Only works with [`PluginKind::Spacing`] or [`PluginKind::Number`].
     ///
     /// </div>
+    #[must_use]
     pub const fn has_auto(mut self) -> Self {
-        if !matches!(
-            self.kind,
-            PluginKind::Spacing { .. } | PluginKind::Number { .. }
-        ) {
-            panic!("Plugin::has_auto only works with PluginKind::Spacing or PluginKind::Number");
-        }
+        assert!(
+            matches!(
+                self.kind,
+                PluginKind::Spacing { .. } | PluginKind::Number { .. }
+            ),
+            "Plugin::has_auto only works with PluginKind::Spacing or PluginKind::Number"
+        );
 
         self.has_auto = true;
         self
@@ -449,10 +457,12 @@ impl Plugin {
     /// Only works with [`PluginKind::Number`].
     ///
     /// </div>
+    #[must_use]
     pub const fn has_empty(mut self) -> Self {
-        if !matches!(self.kind, PluginKind::Number { .. }) {
-            panic!("Plugin::has_empty only works with PluginKind::Number");
-        }
+        assert!(
+            matches!(self.kind, PluginKind::Number { .. }),
+            "Plugin::has_empty only works with PluginKind::Number"
+        );
 
         self.has_empty = true;
         self
@@ -467,10 +477,12 @@ impl Plugin {
     /// Only works with [`PluginKind::Spacing`].
     ///
     /// </div>
+    #[must_use]
     pub const fn has_full(mut self) -> Self {
-        if !matches!(self.kind, PluginKind::Spacing { .. }) {
-            panic!("Plugin::has_full only works with PluginKind::Spacing");
-        }
+        assert!(
+            matches!(self.kind, PluginKind::Spacing { .. }),
+            "Plugin::has_full only works with PluginKind::Spacing"
+        );
 
         self.has_full = true;
         self
@@ -483,163 +495,172 @@ impl Plugin {
     /// Only works with [`PluginKind::Number`].
     ///
     /// </div>
+    #[must_use]
     pub const fn has_negative(mut self) -> Self {
-        if !matches!(self.kind, PluginKind::Number { .. }) {
-            panic!("Plugin::has_negative only works with PluginKind::Number");
-        }
+        assert!(
+            matches!(self.kind, PluginKind::Number { .. }),
+            "Plugin::has_negative only works with PluginKind::Number"
+        );
 
         self.has_negative = true;
         self
     }
 
+    #[must_use]
     pub const fn extra_lines(mut self, extra_lines: &'static [&'static str]) -> Self {
         self.extra_lines = Some(extra_lines);
         self
     }
 
+    #[must_use]
     pub const fn extra_css(mut self, extra_css: phf::Map<&'static str, &'static str>) -> Self {
         self.extra_css = Some(extra_css);
         self
     }
 
+    #[must_use]
     pub const fn extra_class(mut self, extra_class: &'static str) -> Self {
         self.extra_class = Some(extra_class);
         self
     }
 
+    #[must_use]
     pub const fn extra_slash(
         mut self,
         values: phf::Map<&'static str, &'static str>,
         default: &'static str,
     ) -> Self {
-        if !matches!(
-            self.kind,
-            PluginKind::ListValues { .. }
-                | PluginKind::Number { .. }
-                | PluginKind::Spacing { .. }
-                | PluginKind::Color { .. }
-        ) {
-            panic!(
-                "Plugin::extra_slash only works with PluginKind::ListValues or PluginKind::Number or PluginKind::{{Sizing, Spacing, Color}}"
-            );
-        }
+        assert!(
+            matches!(
+                self.kind,
+                PluginKind::ListValues { .. }
+                    | PluginKind::Number { .. }
+                    | PluginKind::Spacing { .. }
+                    | PluginKind::Color { .. }
+            ),
+            "Plugin::extra_slash only works with PluginKind::ListValues or PluginKind::Number or PluginKind::{{Sizing, Spacing, Color}}"
+        );
 
         self.extra_slash = Some((values, default));
         self
     }
 
+    #[must_use]
     pub const fn template(mut self, template: &'static str) -> Self {
-        if !matches!(
-            self.kind,
-            PluginKind::Arbitrary { .. }
-                | PluginKind::Number { .. }
-                | PluginKind::Spacing { .. }
-                | PluginKind::Color { .. }
-        ) {
-            panic!(
-                "Plugin::template can only be used with PluginKind::Arbitrary or PluginKind::Number or PluginKind::{{Spacing, Sizing, Color}}"
-            );
-        }
+        assert!(
+            matches!(
+                self.kind,
+                PluginKind::Arbitrary { .. }
+                    | PluginKind::Number { .. }
+                    | PluginKind::Spacing { .. }
+                    | PluginKind::Color { .. }
+            ),
+            "Plugin::template can only be used with PluginKind::Arbitrary or PluginKind::Number or PluginKind::{{Spacing, Sizing, Color}}"
+        );
 
         self.template = Some(template);
         self
     }
 
+    #[must_use]
     pub const fn template_multiple(mut self, templates: &'static [&'static str]) -> Self {
-        if !matches!(
-            self.kind,
-            PluginKind::Arbitrary { .. }
-                | PluginKind::Number { .. }
-                | PluginKind::Spacing { .. }
-                | PluginKind::Color { .. }
-        ) {
-            panic!(
-                "Plugin::template_multiple can only be used with PluginKind::Arbitrary or PluginKind::Number or PluginKind::{{Spacing, Sizing, Color}}"
-            );
-        }
+        assert!(
+            matches!(
+                self.kind,
+                PluginKind::Arbitrary { .. }
+                    | PluginKind::Number { .. }
+                    | PluginKind::Spacing { .. }
+                    | PluginKind::Color { .. }
+            ),
+            "Plugin::template_multiple can only be used with PluginKind::Arbitrary or PluginKind::Number or PluginKind::{{Spacing, Sizing, Color}}"
+        );
 
-        if !matches!(
-            self.kind,
-            PluginKind::Arbitrary {
-                prop: MultipleProps(..),
-                ..
-            } | PluginKind::Number {
-                prop: MultipleProps(..),
-                ..
-            } | PluginKind::Spacing {
-                prop: MultipleProps(..),
-                ..
-            } | PluginKind::Color {
-                prop: MultipleProps(..),
-                ..
-            }
-        ) {
-            panic!(
-                "Plugin::template can only be used with a MultipleProps property name. To define a template for a single property name, use Plugin::template"
-            );
-        }
+        assert!(
+            matches!(
+                self.kind,
+                PluginKind::Arbitrary {
+                    prop: MultipleProps(..),
+                    ..
+                } | PluginKind::Number {
+                    prop: MultipleProps(..),
+                    ..
+                } | PluginKind::Spacing {
+                    prop: MultipleProps(..),
+                    ..
+                } | PluginKind::Color {
+                    prop: MultipleProps(..),
+                    ..
+                }
+            ),
+            "Plugin::template can only be used with a MultipleProps property name. To define a template for a single property name, use Plugin::template"
+        );
 
-        if !matches!(
-            self.kind,
-            PluginKind::Arbitrary {
-                prop: MultipleProps(p),
-                ..
-            } | PluginKind::Number {
-                prop: MultipleProps(p),
-                ..
-            } | PluginKind::Spacing {
-                prop: MultipleProps(p),
-                ..
-            } | PluginKind::Color {
-                prop: MultipleProps(p),
-                ..
-            } if p.len() == templates.len()
-        ) {
-            panic!(
-                "Plugin::template_multiple should have as many elements as the number of properties defined in MultipleProps. Each template will be applied for the corresponding property name in the order they are defined"
-            );
-        }
+        assert!(
+            matches!(
+                self.kind,
+                PluginKind::Arbitrary {
+                    prop: MultipleProps(p),
+                    ..
+                } | PluginKind::Number {
+                    prop: MultipleProps(p),
+                    ..
+                } | PluginKind::Spacing {
+                    prop: MultipleProps(p),
+                    ..
+                } | PluginKind::Color {
+                    prop: MultipleProps(p),
+                    ..
+                } if p.len() == templates.len()
+            ),
+            "Plugin::template_multiple should have as many elements as the number of properties defined in MultipleProps. Each template will be applied for the corresponding property name in the order they are defined"
+        );
 
         self.template_multiple = Some(templates);
         self
     }
 
+    #[must_use]
     pub const fn hints(mut self, hints: &'static [ArbitraryHint]) -> Self {
-        if !matches!(self.kind, PluginKind::Arbitrary { .. }) {
-            panic!("Plugin::hints can only be used with PluginKind::Arbitrary");
-        }
+        assert!(
+            matches!(self.kind, PluginKind::Arbitrary { .. }),
+            "Plugin::hints can only be used with PluginKind::Arbitrary"
+        );
 
         self.arbitrary_hints = Some(hints);
         self
     }
 
+    #[must_use]
     pub const fn matcher(mut self, matcher: PluginArbitraryMatcher) -> Self {
-        if !matches!(self.kind, PluginKind::Arbitrary { .. }) {
-            panic!("Plugin::matches can only be used with PluginKind::Arbitrary");
-        }
+        assert!(
+            matches!(self.kind, PluginKind::Arbitrary { .. }),
+            "Plugin::matches can only be used with PluginKind::Arbitrary"
+        );
 
         self.arbitrary_matcher = Some(matcher);
         self
     }
 
+    #[must_use]
     pub const fn shadow_color_replacement(mut self, replacement: &'static str) -> Self {
-        if !matches!(self.kind, PluginKind::Arbitrary { .. }) {
-            panic!("Plugin::shadow_color_replacement can only be used with PluginKind::Arbitrary");
-        }
+        assert!(
+            matches!(self.kind, PluginKind::Arbitrary { .. }),
+            "Plugin::shadow_color_replacement can only be used with PluginKind::Arbitrary"
+        );
 
         self.arbitrary_shadow_color_replacement = Some(replacement);
         self
     }
 
+    #[must_use]
     pub const fn list_namespace(mut self, list_namespace: &'static str) -> Self {
-        if !matches!(
-            self.kind,
-            PluginKind::ListValues { .. } | PluginKind::ListCases { .. }
-        ) {
-            panic!(
-                "Plugin::list_namespace can only be used with PluginKind::ListValues or PluginKind::ListCases. For other kinds, use the built-in `namespace` field"
-            );
-        }
+        assert!(
+            matches!(
+                self.kind,
+                PluginKind::ListValues { .. } | PluginKind::ListCases { .. }
+            ),
+            "Plugin::list_namespace can only be used with PluginKind::ListValues or PluginKind::ListCases. For other kinds, use the built-in `namespace` field"
+        );
 
         self.list_namespace = Some(list_namespace);
         self

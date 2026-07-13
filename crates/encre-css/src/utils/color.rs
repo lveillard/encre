@@ -1,5 +1,5 @@
 //! Define some color manipulation functions.
-use crate::config::{Config, BUILTIN_COLORS};
+use crate::config::{BUILTIN_COLORS, Config};
 
 use std::borrow::Cow;
 
@@ -48,13 +48,11 @@ pub fn get<'a>(config: &'a Config, modifier: &'a str) -> Option<Cow<'a, str>> {
         } else if let Some((new_modifier, opacity_suffix)) = modifier.split_once('/') {
             if let Ok(opacity_number) = opacity_suffix.parse::<usize>() {
                 (Some(Cow::Owned(format!("{opacity_number}%"))), new_modifier)
-            } else if let Some(opacity_var) = opacity_suffix
-                .strip_prefix("[")
-                .and_then(|w| w.strip_suffix("]"))
-            {
-                (Some(Cow::Borrowed(opacity_var)), new_modifier)
             } else {
-                return None;
+                let opacity_var = opacity_suffix
+                    .strip_prefix("[")
+                    .and_then(|w| w.strip_suffix("]"))?;
+                (Some(Cow::Borrowed(opacity_var)), new_modifier)
             }
         } else {
             (None, modifier)

@@ -48,8 +48,7 @@ fn is_arbitrary_matching(matcher: &PluginArbitraryMatcher, value: &str, max_dept
         }
         PluginArbitraryMatcher::OrMultiple(matchers) => matchers
             .iter()
-            .map(|m| is_arbitrary_matching(m, value, max_depth + 1))
-            .any(|x| x),
+            .any(|m| is_arbitrary_matching(m, value, max_depth + 1)),
         PluginArbitraryMatcher::CommaSeparated(matcher1) => value
             .split(',')
             .all(|v| is_arbitrary_matching(matcher1, v.trim(), max_depth + 1)),
@@ -93,8 +92,7 @@ fn is_parsed_arbitrary_matching(
         }
         ParsedPluginArbitraryMatcher::OrMultiple(matchers) => matchers
             .iter()
-            .map(|m| is_parsed_arbitrary_matching(m, value, max_depth + 1))
-            .any(|x| x),
+            .any(|m| is_parsed_arbitrary_matching(m, value, max_depth + 1)),
         ParsedPluginArbitraryMatcher::CommaSeparated(matcher1) => value
             .split(',')
             .all(|v| is_parsed_arbitrary_matching(matcher1, v.trim(), max_depth + 1)),
@@ -127,7 +125,7 @@ pub(super) fn find_plugin_to_handle_class<'a>(
         plugin,
     } in &plugins
     {
-        let layer = forced_layer.unwrap_or(parent_forced_layer.unwrap_or_else(|| {
+        let layer = forced_layer.unwrap_or(parent_forced_layer.unwrap_or({
             if *is_custom {
                 LAYER_CUSTOM
             } else {

@@ -307,29 +307,21 @@ fn get_icon(
     let icon = if let Some(icon) = collection.icons.get(icon_name) {
         Cow::Borrowed(icon)
     } else if let Some(alias) = collection.aliases.get(icon_name) {
-        if let Some(icon) = collection.icons.get(&alias.parent) {
-            // Merge optional properties following the logic described in
-            // https://docs.iconify.design/types/iconify-json.html
-            let mut icon = icon.clone();
-            icon.optional.top = alias.optional.top;
-            icon.optional.left = alias.optional.left;
-            icon.optional.width = alias.optional.width;
-            icon.optional.height = alias.optional.height;
-            icon.optional.rotate = (icon.optional.rotate + alias.optional.rotate) % 4.;
-            icon.optional.h_flip = alias.optional.h_flip != icon.optional.h_flip;
-            icon.optional.v_flip = alias.optional.v_flip != icon.optional.v_flip;
-            Cow::Owned(icon)
-        } else {
-            return None;
-        }
-    } else if let Some(character) = collection.chars.get(icon_name) {
-        if let Some(icon) = collection.icons.get(character) {
-            Cow::Borrowed(icon)
-        } else {
-            return None;
-        }
+        let icon = collection.icons.get(&alias.parent)?;
+        // Merge optional properties following the logic described in
+        // https://docs.iconify.design/types/iconify-json.html
+        let mut icon = icon.clone();
+        icon.optional.top = alias.optional.top;
+        icon.optional.left = alias.optional.left;
+        icon.optional.width = alias.optional.width;
+        icon.optional.height = alias.optional.height;
+        icon.optional.rotate = (icon.optional.rotate + alias.optional.rotate) % 4.;
+        icon.optional.h_flip = alias.optional.h_flip != icon.optional.h_flip;
+        icon.optional.v_flip = alias.optional.v_flip != icon.optional.v_flip;
+        Cow::Owned(icon)
     } else {
-        return None;
+        let character = collection.chars.get(icon_name)?;
+        Cow::Borrowed(collection.icons.get(character)?)
     };
 
     let IconOptional {
@@ -481,7 +473,7 @@ fn fetch_or_cache_collection(config: &Config, collection: &'static str) {
         // File already in cache, use it
         if let Some(content) = File::open(&collection_file)
             .ok()
-            .map(|f| BufReader::new(f))
+            .map(BufReader::new)
             .and_then(|reader| serde_json::from_reader(reader).ok())
         {
             MEM_CACHE.lock().unwrap().insert(collection, content);
