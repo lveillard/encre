@@ -2,7 +2,7 @@
 #![doc(alias = "transform")]
 use crate::{plugins::transform::CSS_TRANSFORM, prelude::build_plugin::*};
 
-const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
+const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlugin, StaticPlugin) {
     (
         Plugin::new(PluginKind::Number {
             namespace,
@@ -16,5 +16,5 @@ const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin)
     )
 }
 
-pub(crate) const PLUGIN_X: (Plugin, Plugin) = plugin("skew-x", SingleProp("--en-skew-x"));
-pub(crate) const PLUGIN_Y: (Plugin, Plugin) = plugin("skew-y", SingleProp("--en-skew-y"));
+pub(crate) const PLUGIN_X: (StaticPlugin, StaticPlugin) = plugin("skew-x", SingleProp("--en-skew-x"));
+pub(crate) const PLUGIN_Y: (StaticPlugin, StaticPlugin) = plugin("skew-y", SingleProp("--en-skew-y"));

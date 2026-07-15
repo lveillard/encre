@@ -3,7 +3,7 @@
 //! Used for arbitrary CSS properties like `[mask-type:luminance]`.
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Functional {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Functional {
     namespace: "",        // field not used for css-property
     can_handle: |_| true, // field not used for css-property
     handle: |context| match context.modifier {

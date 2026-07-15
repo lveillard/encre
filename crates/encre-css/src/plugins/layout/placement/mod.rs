@@ -2,7 +2,7 @@
 #![doc(alias("layout", "inset"))]
 use crate::prelude::build_plugin::*;
 
-const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
+const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlugin, StaticPlugin) {
     (
         Plugin::new(PluginKind::Spacing { namespace, prop })
             .has_auto()
@@ -11,12 +11,12 @@ const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin)
     )
 }
 
-pub(crate) const PLUGIN: (Plugin, Plugin) = plugin("inset", SingleProp("inset"));
-pub(crate) const PLUGIN_X: (Plugin, Plugin) = plugin("inset-x", SingleProp("inset-inline"));
-pub(crate) const PLUGIN_Y: (Plugin, Plugin) = plugin("inset-y", SingleProp("inset-block"));
-pub(crate) const PLUGIN_START: (Plugin, Plugin) = plugin("start", SingleProp("inset-inline-start"));
-pub(crate) const PLUGIN_END: (Plugin, Plugin) = plugin("end", SingleProp("inset-inline-end"));
-pub(crate) const PLUGIN_TOP: (Plugin, Plugin) = plugin("top", SingleProp("top"));
-pub(crate) const PLUGIN_BOTTOM: (Plugin, Plugin) = plugin("bottom", SingleProp("bottom"));
-pub(crate) const PLUGIN_LEFT: (Plugin, Plugin) = plugin("left", SingleProp("left"));
-pub(crate) const PLUGIN_RIGHT: (Plugin, Plugin) = plugin("right", SingleProp("right"));
+pub(crate) const PLUGIN: (StaticPlugin, StaticPlugin) = plugin("inset", SingleProp("inset"));
+pub(crate) const PLUGIN_X: (StaticPlugin, StaticPlugin) = plugin("inset-x", SingleProp("inset-inline"));
+pub(crate) const PLUGIN_Y: (StaticPlugin, StaticPlugin) = plugin("inset-y", SingleProp("inset-block"));
+pub(crate) const PLUGIN_START: (StaticPlugin, StaticPlugin) = plugin("start", SingleProp("inset-inline-start"));
+pub(crate) const PLUGIN_END: (StaticPlugin, StaticPlugin) = plugin("end", SingleProp("inset-inline-end"));
+pub(crate) const PLUGIN_TOP: (StaticPlugin, StaticPlugin) = plugin("top", SingleProp("top"));
+pub(crate) const PLUGIN_BOTTOM: (StaticPlugin, StaticPlugin) = plugin("bottom", SingleProp("bottom"));
+pub(crate) const PLUGIN_LEFT: (StaticPlugin, StaticPlugin) = plugin("left", SingleProp("left"));
+pub(crate) const PLUGIN_RIGHT: (StaticPlugin, StaticPlugin) = plugin("right", SingleProp("right"));

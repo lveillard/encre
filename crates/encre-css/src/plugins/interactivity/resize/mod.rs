@@ -2,7 +2,7 @@
 #![doc(alias = "interactivity")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("resize"),
     values: phf_map! {
         "resize" => "both",

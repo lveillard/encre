@@ -3,7 +3,7 @@ use std::{borrow::Cow, collections::HashMap};
 use crate::{
     Config,
     config::BUILTIN_PLUGINS,
-    plugins::{CustomPlugin, PluginKind, parsed::ParsedPluginKind},
+    plugins::{CustomPlugin, PluginKind},
 };
 
 #[derive(Debug)]
@@ -177,12 +177,13 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
         }
     }
 
+    // TODO: merge these cases together
     for (order, plugin) in config
         .custom_plugins
         .iter()
         .enumerate()
         .filter_map(|(i, p)| {
-            if let CustomPlugin::Parsed(s) = p {
+            if let CustomPlugin::Dynamic(s) = p {
                 Some((i, s))
             } else {
                 None
@@ -190,7 +191,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
         })
     {
         match &plugin.kind {
-            ParsedPluginKind::ListCases { cases } => {
+            PluginKind::ListCases { cases } => {
                 if let Some(namespace) = &plugin.list_namespace {
                     trie.insert(
                         namespace,
@@ -198,7 +199,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                             has_namespace: true,
                             is_custom: false,
                             order,
-                            plugin: CustomPlugin::Parsed(plugin.clone()),
+                            plugin: CustomPlugin::Dynamic(plugin.clone()),
                         },
                     );
                 } else {
@@ -209,13 +210,13 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                                 has_namespace: false,
                                 is_custom: false,
                                 order,
-                                plugin: CustomPlugin::Parsed(plugin.clone()),
+                                plugin: CustomPlugin::Dynamic(plugin.clone()),
                             },
                         );
                     }
                 }
             }
-            ParsedPluginKind::ListValues { values, .. } => {
+            PluginKind::ListValues { values, .. } => {
                 if let Some(namespace) = &plugin.list_namespace {
                     trie.insert(
                         namespace,
@@ -223,7 +224,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                             has_namespace: true,
                             is_custom: false,
                             order,
-                            plugin: CustomPlugin::Parsed(plugin.clone()),
+                            plugin: CustomPlugin::Dynamic(plugin.clone()),
                         },
                     );
                 } else {
@@ -234,23 +235,37 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                                 has_namespace: false,
                                 is_custom: false,
                                 order,
-                                plugin: CustomPlugin::Parsed(plugin.clone()),
+                                plugin: CustomPlugin::Dynamic(plugin.clone()),
                             },
                         );
                     }
                 }
             }
-            ParsedPluginKind::Spacing { namespace, .. }
-            | ParsedPluginKind::Color { namespace, .. }
-            | ParsedPluginKind::Number { namespace, .. }
-            | ParsedPluginKind::Arbitrary { namespace, .. } => {
+            PluginKind::Spacing { namespace, .. }
+            | PluginKind::Color { namespace, .. }
+            | PluginKind::Number { namespace, .. }
+            | PluginKind::Arbitrary { namespace, .. } => {
                 trie.insert(
                     namespace,
                     TrieData {
                         has_namespace: true,
                         is_custom: false,
                         order,
-                        plugin: CustomPlugin::Parsed(plugin.clone()),
+                        plugin: CustomPlugin::Dynamic(plugin.clone()),
+                    },
+                );
+            }
+            PluginKind::Functional {
+                namespace,
+                ..
+            } => {
+                trie.insert(
+                    namespace,
+                    TrieData {
+                        has_namespace: true,
+                        is_custom: false,
+                        order,
+                        plugin: CustomPlugin::Dynamic(plugin.clone()),
                     },
                 );
             }

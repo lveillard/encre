@@ -1,8 +1,8 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "effect")]
-use crate::{plugins::PluginArbitraryMatcher::*, prelude::build_plugin::*};
+use crate::{plugins:: PluginArbitraryMatcher::*, prelude::build_plugin::*};
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("text-shadow"),
     values: phf_map! {
         "text-shadow-2xs" => "0px 1px 0px var(--en-text-shadow-color, rgb(0 0 0 / 0.15))",
@@ -14,7 +14,7 @@ pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     },
 });
 
-pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "text-shadow",
     prop: SingleProp("text-shadow"),
 })

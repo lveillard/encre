@@ -3,12 +3,12 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Color {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Color {
     namespace: "text",
     prop: SingleProp("color"),
 });
 
-pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "text",
     prop: SingleProp("color"),
 })

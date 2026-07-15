@@ -5,8 +5,9 @@ use crate::{
     error::{ParseError, ParseErrorKind},
     generator::ContextCanHandle,
     plugins::{
-        CustomPlugin, Plugin, PluginArbitraryMatcher, PluginArbitraryMatcherModifier, PluginKind,
-        parsed::{ParsedPlugin, ParsedPluginArbitraryMatcher, ParsedPluginKind},
+        CustomPlugin, DynamicPlugin, DynamicPluginArbitraryMatcher, DynamicPluginKind, Plugin,
+        PluginArbitraryMatcher, PluginArbitraryMatcherModifier, PluginKind,
+        StaticPluginArbitraryMatcher,
     },
     selector::{
         Modifier, Selector, Variant,
@@ -17,7 +18,10 @@ use crate::{
 };
 
 fn is_arbitrary_matching(
-    (matchers, modifier): &(&[PluginArbitraryMatcher], PluginArbitraryMatcherModifier),
+    (matchers, modifier): &(
+        &[StaticPluginArbitraryMatcher],
+        PluginArbitraryMatcherModifier,
+    ),
     value: &str,
 ) -> bool {
     let values: Vec<&str> = match modifier {
@@ -60,7 +64,7 @@ fn is_arbitrary_matching(
 
 fn is_parsed_arbitrary_matching(
     (matchers, modifier): &(
-        Vec<ParsedPluginArbitraryMatcher>,
+        Vec<DynamicPluginArbitraryMatcher>,
         PluginArbitraryMatcherModifier,
     ),
     value: &str,
@@ -77,23 +81,25 @@ fn is_parsed_arbitrary_matching(
     values.iter().all(|value| {
         matchers.iter().any(|matcher| {
             (match matcher {
-                ParsedPluginArbitraryMatcher::Shadow => is_matching_shadow(value),
-                ParsedPluginArbitraryMatcher::AbsoluteSize => is_matching_absolute_size(value),
-                ParsedPluginArbitraryMatcher::RelativeSize => is_matching_relative_size(value),
-                ParsedPluginArbitraryMatcher::LineWidth => is_matching_line_width(value),
-                ParsedPluginArbitraryMatcher::LineStyle => is_matching_line_style(value),
-                ParsedPluginArbitraryMatcher::Color => is_matching_color(value),
-                ParsedPluginArbitraryMatcher::Length => is_matching_length(value),
-                ParsedPluginArbitraryMatcher::Number => is_matching_number(value),
-                ParsedPluginArbitraryMatcher::Percentage => is_matching_percentage(value),
-                ParsedPluginArbitraryMatcher::Time => is_matching_time(value),
-                ParsedPluginArbitraryMatcher::Gradient => is_matching_gradient(value),
-                ParsedPluginArbitraryMatcher::Position => is_matching_position(value),
-                ParsedPluginArbitraryMatcher::Angle => is_matching_angle(value),
-                ParsedPluginArbitraryMatcher::Image => is_matching_image(value),
-                ParsedPluginArbitraryMatcher::FontFamilyName => is_matching_font_family_name(value),
-                ParsedPluginArbitraryMatcher::Custom(v) => value == v,
-                ParsedPluginArbitraryMatcher::CustomMultiple(values) => {
+                DynamicPluginArbitraryMatcher::Shadow => is_matching_shadow(value),
+                DynamicPluginArbitraryMatcher::AbsoluteSize => is_matching_absolute_size(value),
+                DynamicPluginArbitraryMatcher::RelativeSize => is_matching_relative_size(value),
+                DynamicPluginArbitraryMatcher::LineWidth => is_matching_line_width(value),
+                DynamicPluginArbitraryMatcher::LineStyle => is_matching_line_style(value),
+                DynamicPluginArbitraryMatcher::Color => is_matching_color(value),
+                DynamicPluginArbitraryMatcher::Length => is_matching_length(value),
+                DynamicPluginArbitraryMatcher::Number => is_matching_number(value),
+                DynamicPluginArbitraryMatcher::Percentage => is_matching_percentage(value),
+                DynamicPluginArbitraryMatcher::Time => is_matching_time(value),
+                DynamicPluginArbitraryMatcher::Gradient => is_matching_gradient(value),
+                DynamicPluginArbitraryMatcher::Position => is_matching_position(value),
+                DynamicPluginArbitraryMatcher::Angle => is_matching_angle(value),
+                DynamicPluginArbitraryMatcher::Image => is_matching_image(value),
+                DynamicPluginArbitraryMatcher::FontFamilyName => {
+                    is_matching_font_family_name(value)
+                }
+                DynamicPluginArbitraryMatcher::Custom(v) => value == v,
+                DynamicPluginArbitraryMatcher::CustomMultiple(values) => {
                     values.iter().any(|v| v == value)
                 }
             }) || is_matching_var(value)
@@ -156,8 +162,8 @@ pub(super) fn find_plugin_to_handle_class<'a>(
                     kind: PluginKind::Arbitrary { .. },
                     ..
                 })
-                | CustomPlugin::Parsed(ParsedPlugin {
-                    kind: ParsedPluginKind::Arbitrary { .. },
+                | CustomPlugin::Dynamic(DynamicPlugin {
+                    kind: DynamicPluginKind::Arbitrary { .. },
                     ..
                 }) = plugin
                 {
@@ -223,8 +229,8 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
             Modifier::Builtin { value, .. },
         ) => cases.contains_key(value),
         (
-            CustomPlugin::Parsed(ParsedPlugin {
-                kind: ParsedPluginKind::ListCases { cases },
+            CustomPlugin::Dynamic(DynamicPlugin {
+                kind: DynamicPluginKind::ListCases { cases },
                 ..
             }),
             Modifier::Builtin { value, .. },
@@ -253,8 +259,8 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
         }
 
         (
-            CustomPlugin::Parsed(ParsedPlugin {
-                kind: ParsedPluginKind::ListValues { values, .. },
+            CustomPlugin::Dynamic(DynamicPlugin {
+                kind: DynamicPluginKind::ListValues { values, .. },
                 extra_slash,
                 ..
             }),
@@ -281,8 +287,8 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
                 has_full,
                 ..
             })
-            | CustomPlugin::Parsed(ParsedPlugin {
-                kind: ParsedPluginKind::Spacing { .. },
+            | CustomPlugin::Dynamic(DynamicPlugin {
+                kind: DynamicPluginKind::Spacing { .. },
                 has_auto,
                 has_full,
                 ..
@@ -299,8 +305,8 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
                 kind: PluginKind::Color { .. },
                 ..
             })
-            | CustomPlugin::Parsed(ParsedPlugin {
-                kind: ParsedPluginKind::Color { .. },
+            | CustomPlugin::Dynamic(DynamicPlugin {
+                kind: DynamicPluginKind::Color { .. },
                 ..
             }),
             Modifier::Builtin { value, .. },
@@ -335,8 +341,8 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
                     || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative)))
         }
         (
-            CustomPlugin::Parsed(ParsedPlugin {
-                kind: ParsedPluginKind::Number { .. },
+            CustomPlugin::Dynamic(DynamicPlugin {
+                kind: DynamicPluginKind::Number { .. },
                 has_auto,
                 has_empty,
                 has_negative,
@@ -378,8 +384,8 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
                         .is_none_or(|matchers| is_arbitrary_matching(&matchers, value)))
         }
         (
-            CustomPlugin::Parsed(ParsedPlugin {
-                kind: ParsedPluginKind::Arbitrary { .. },
+            CustomPlugin::Dynamic(DynamicPlugin {
+                kind: DynamicPluginKind::Arbitrary { .. },
                 arbitrary_hints,
                 arbitrary_matchers,
                 ..

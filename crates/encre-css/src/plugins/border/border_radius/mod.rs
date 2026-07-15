@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
+const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlugin, StaticPlugin) {
     (
         Plugin::new(PluginKind::ListValues {
             prop,
@@ -26,44 +26,44 @@ const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin)
     )
 }
 
-pub(crate) const PLUGIN: (Plugin, Plugin) = plugin("rounded", SingleProp("border-radius"));
-pub(crate) const PLUGIN_START: (Plugin, Plugin) = plugin(
+pub(crate) const PLUGIN: (StaticPlugin, StaticPlugin) = plugin("rounded", SingleProp("border-radius"));
+pub(crate) const PLUGIN_START: (StaticPlugin, StaticPlugin) = plugin(
     "rounded-s",
     MultipleProps(&["border-start-start-radius", "border-end-start-radius"]),
 );
-pub(crate) const PLUGIN_END: (Plugin, Plugin) = plugin(
+pub(crate) const PLUGIN_END: (StaticPlugin, StaticPlugin) = plugin(
     "rounded-e",
     MultipleProps(&["border-start-end-radius", "border-end-end-radius"]),
 );
-pub(crate) const PLUGIN_START_START: (Plugin, Plugin) =
+pub(crate) const PLUGIN_START_START: (StaticPlugin, StaticPlugin) =
     plugin("rounded-ss", SingleProp("border-start-start-radius"));
-pub(crate) const PLUGIN_START_END: (Plugin, Plugin) =
+pub(crate) const PLUGIN_START_END: (StaticPlugin, StaticPlugin) =
     plugin("rounded-se", SingleProp("border-start-end-radius"));
-pub(crate) const PLUGIN_END_END: (Plugin, Plugin) =
+pub(crate) const PLUGIN_END_END: (StaticPlugin, StaticPlugin) =
     plugin("rounded-ee", SingleProp("border-end-end-radius"));
-pub(crate) const PLUGIN_END_START: (Plugin, Plugin) =
+pub(crate) const PLUGIN_END_START: (StaticPlugin, StaticPlugin) =
     plugin("rounded-es", SingleProp("border-end-start-radius"));
-pub(crate) const PLUGIN_TOP_RIGHT: (Plugin, Plugin) =
+pub(crate) const PLUGIN_TOP_RIGHT: (StaticPlugin, StaticPlugin) =
     plugin("rounded-tr", SingleProp("border-top-right-radius"));
-pub(crate) const PLUGIN_TOP_LEFT: (Plugin, Plugin) =
+pub(crate) const PLUGIN_TOP_LEFT: (StaticPlugin, StaticPlugin) =
     plugin("rounded-tl", SingleProp("border-top-left-radius"));
-pub(crate) const PLUGIN_BOTTOM_RIGHT: (Plugin, Plugin) =
+pub(crate) const PLUGIN_BOTTOM_RIGHT: (StaticPlugin, StaticPlugin) =
     plugin("rounded-br", SingleProp("border-bottom-right-radius"));
-pub(crate) const PLUGIN_BOTTOM_LEFT: (Plugin, Plugin) =
+pub(crate) const PLUGIN_BOTTOM_LEFT: (StaticPlugin, StaticPlugin) =
     plugin("rounded-bl", SingleProp("border-bottom-left-radius"));
-pub(crate) const PLUGIN_TOP: (Plugin, Plugin) = plugin(
+pub(crate) const PLUGIN_TOP: (StaticPlugin, StaticPlugin) = plugin(
     "rounded-t",
     MultipleProps(&["border-top-left-radius", "border-top-right-radius"]),
 );
-pub(crate) const PLUGIN_BOTTOM: (Plugin, Plugin) = plugin(
+pub(crate) const PLUGIN_BOTTOM: (StaticPlugin, StaticPlugin) = plugin(
     "rounded-b",
     MultipleProps(&["border-bottom-left-radius", "border-bottom-right-radius"]),
 );
-pub(crate) const PLUGIN_LEFT: (Plugin, Plugin) = plugin(
+pub(crate) const PLUGIN_LEFT: (StaticPlugin, StaticPlugin) = plugin(
     "rounded-l",
     MultipleProps(&["border-top-left-radius", "border-bottom-left-radius"]),
 );
-pub(crate) const PLUGIN_RIGHT: (Plugin, Plugin) = plugin(
+pub(crate) const PLUGIN_RIGHT: (StaticPlugin, StaticPlugin) = plugin(
     "rounded-r",
     MultipleProps(&["border-top-right-radius", "border-bottom-right-radius"]),
 );

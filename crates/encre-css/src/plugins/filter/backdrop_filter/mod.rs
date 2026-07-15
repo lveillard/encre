@@ -3,7 +3,7 @@
 use super::CSS_BACKDROP_FILTER;
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
         "backdrop-filter" => &CSS_BACKDROP_FILTER,
         "backdrop-filter-none" => &[

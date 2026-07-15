@@ -3,7 +3,7 @@
 use super::CSS_BACKDROP_FILTER;
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "backdrop-contrast",
     prop: SingleProp("--en-backdrop-contrast"),
     divide_by: 100.0,

@@ -545,7 +545,7 @@ fn fetch_or_cache_collection(config: &Config, collection: &'static str) {
     MEM_CACHE.lock().unwrap().insert(collection, json);
 }
 
-const PLUGIN: Plugin = Plugin::new(PluginKind::Functional {
+const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Functional {
     namespace: "",
     can_handle: |context| {
         let Modifier::Builtin { value, .. } = context.modifier else {

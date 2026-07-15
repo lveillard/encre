@@ -2,19 +2,19 @@
 #![doc(alias("spacing", "space"))]
 use crate::prelude::build_plugin::*;
 
-const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
+const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlugin, StaticPlugin) {
     (
         Plugin::new(PluginKind::Spacing { namespace, prop }).has_auto(),
         Plugin::new(PluginKind::Arbitrary { namespace, prop }),
     )
 }
 
-pub(crate) const PLUGIN: (Plugin, Plugin) = plugin("m", SingleProp("margin"));
-pub(crate) const PLUGIN_X: (Plugin, Plugin) = plugin("mx", SingleProp("margin-inline"));
-pub(crate) const PLUGIN_Y: (Plugin, Plugin) = plugin("my", SingleProp("margin-block"));
-pub(crate) const PLUGIN_START: (Plugin, Plugin) = plugin("ms", SingleProp("margin-inline-start"));
-pub(crate) const PLUGIN_END: (Plugin, Plugin) = plugin("me", SingleProp("margin-inline-end"));
-pub(crate) const PLUGIN_TOP: (Plugin, Plugin) = plugin("mt", SingleProp("margin-top"));
-pub(crate) const PLUGIN_BOTTOM: (Plugin, Plugin) = plugin("mb", SingleProp("margin-bottom"));
-pub(crate) const PLUGIN_LEFT: (Plugin, Plugin) = plugin("ml", SingleProp("margin-left"));
-pub(crate) const PLUGIN_RIGHT: (Plugin, Plugin) = plugin("mr", SingleProp("margin-right"));
+pub(crate) const PLUGIN: (StaticPlugin, StaticPlugin) = plugin("m", SingleProp("margin"));
+pub(crate) const PLUGIN_X: (StaticPlugin, StaticPlugin) = plugin("mx", SingleProp("margin-inline"));
+pub(crate) const PLUGIN_Y: (StaticPlugin, StaticPlugin) = plugin("my", SingleProp("margin-block"));
+pub(crate) const PLUGIN_START: (StaticPlugin, StaticPlugin) = plugin("ms", SingleProp("margin-inline-start"));
+pub(crate) const PLUGIN_END: (StaticPlugin, StaticPlugin) = plugin("me", SingleProp("margin-inline-end"));
+pub(crate) const PLUGIN_TOP: (StaticPlugin, StaticPlugin) = plugin("mt", SingleProp("margin-top"));
+pub(crate) const PLUGIN_BOTTOM: (StaticPlugin, StaticPlugin) = plugin("mb", SingleProp("margin-bottom"));
+pub(crate) const PLUGIN_LEFT: (StaticPlugin, StaticPlugin) = plugin("ml", SingleProp("margin-left"));
+pub(crate) const PLUGIN_RIGHT: (StaticPlugin, StaticPlugin) = plugin("mr", SingleProp("margin-right"));

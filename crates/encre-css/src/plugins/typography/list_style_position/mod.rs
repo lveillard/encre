@@ -2,7 +2,7 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("list-style-position"),
     values: phf_map! {
         "list-inside" => "inside",

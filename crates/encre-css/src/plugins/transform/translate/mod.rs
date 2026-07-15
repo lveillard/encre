@@ -2,7 +2,7 @@
 #![doc(alias = "transform")]
 use crate::{plugins::transform::CSS_TRANSFORM, prelude::build_plugin::*};
 
-const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
+const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlugin, StaticPlugin) {
     (
         Plugin::new(PluginKind::Spacing { namespace, prop })
             .has_auto()
@@ -12,6 +12,6 @@ const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin)
     )
 }
 
-pub(crate) const PLUGIN_X: (Plugin, Plugin) = plugin("translate-x", SingleProp("--en-translate-x"));
-pub(crate) const PLUGIN_Y: (Plugin, Plugin) = plugin("translate-y", SingleProp("--en-translate-y"));
-pub(crate) const PLUGIN_Z: (Plugin, Plugin) = plugin("translate-z", SingleProp("--en-translate-z"));
+pub(crate) const PLUGIN_X: (StaticPlugin, StaticPlugin) = plugin("translate-x", SingleProp("--en-translate-x"));
+pub(crate) const PLUGIN_Y: (StaticPlugin, StaticPlugin) = plugin("translate-y", SingleProp("--en-translate-y"));
+pub(crate) const PLUGIN_Z: (StaticPlugin, StaticPlugin) = plugin("translate-z", SingleProp("--en-translate-z"));

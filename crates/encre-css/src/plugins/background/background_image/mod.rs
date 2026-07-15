@@ -14,7 +14,7 @@ const INTERPOLATION_MODES_MAP: phf::Map<&'static str, &'static str> = phf_map! {
     "oklch" => "oklch",
 };
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-image"),
     values: phf_map! {
         "bg-none" => "none",
@@ -29,14 +29,14 @@ pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     },
 });
 
-pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "bg",
     prop: SingleProp("background-image"),
 })
 .hints(&[ArbitraryHint::Url, ArbitraryHint::Image])
 .matchers(&[Image], PluginArbitraryMatcherModifier::None);
 
-pub(crate) const PLUGIN_LINEAR_1: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN_LINEAR_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-image"),
     values: phf_map! {
         "bg-linear-none" => "none",
@@ -52,7 +52,7 @@ pub(crate) const PLUGIN_LINEAR_1: Plugin = Plugin::new(PluginKind::ListValues {
 })
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
-pub(crate) const PLUGIN_LINEAR_2: Plugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN_LINEAR_2: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "bg-linear",
     prop: SingleProp("background-image"),
     divide_by: 1.0,
@@ -61,13 +61,13 @@ pub(crate) const PLUGIN_LINEAR_2: Plugin = Plugin::new(PluginKind::Number {
 .template("linear-gradient({}deg in {/}, var(--en-gradient-stops))")
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
-pub(crate) const PLUGIN_LINEAR_3: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_LINEAR_3: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "bg-linear",
     prop: SingleProp("background-image"),
 })
 .template("linear-gradient({})");
 
-pub(crate) const PLUGIN_RADIAL_1: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN_RADIAL_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-image"),
     values: phf_map! {
         "bg-radial" => "radial-gradient(in {/}, var(--en-gradient-stops))",
@@ -75,13 +75,13 @@ pub(crate) const PLUGIN_RADIAL_1: Plugin = Plugin::new(PluginKind::ListValues {
 })
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
-pub(crate) const PLUGIN_RADIAL_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_RADIAL_2: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "bg-radial",
     prop: SingleProp("background-image"),
 })
 .template("radial-gradient({})");
 
-pub(crate) const PLUGIN_CONIC_1: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN_CONIC_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-image"),
     values: phf_map! {
         "bg-conic" => "conic-gradient(in {/}, var(--en-gradient-stops))",
@@ -89,7 +89,7 @@ pub(crate) const PLUGIN_CONIC_1: Plugin = Plugin::new(PluginKind::ListValues {
 })
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
-pub(crate) const PLUGIN_CONIC_2: Plugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN_CONIC_2: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "bg-conic",
     prop: SingleProp("background-image"),
     divide_by: 1.0,
@@ -98,7 +98,7 @@ pub(crate) const PLUGIN_CONIC_2: Plugin = Plugin::new(PluginKind::Number {
 .template("conic-gradient(from {}deg in {/}, var(--en-gradient-stops))")
 .extra_slash(INTERPOLATION_MODES_MAP, "oklab");
 
-pub(crate) const PLUGIN_CONIC_3: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_CONIC_3: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "bg-conic",
     prop: SingleProp("background-image"),
 })

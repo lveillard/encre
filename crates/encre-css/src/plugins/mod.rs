@@ -33,6 +33,8 @@
 //!
 //! [`Config`]: crate::Config
 
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -59,14 +61,45 @@ pub mod transform;
 pub mod transition;
 pub mod typography;
 
-pub(crate) mod parsed;
+pub type StaticPlugin = Plugin<
+    &'static str,
+    &'static [&'static str],
+    phf::Map<&'static str, &'static str>,
+    phf::Map<&'static str, &'static [&'static str]>,
+    &'static [ArbitraryHint],
+    &'static [PluginArbitraryMatcher<&'static str, &'static [&'static str]>],
+>;
+pub type DynamicPlugin = Plugin<
+    String,
+    Vec<String>,
+    HashMap<String, String>,
+    HashMap<String, Vec<String>>,
+    Vec<ArbitraryHint>,
+    Vec<PluginArbitraryMatcher<String, Vec<String>>>,
+>;
+
+pub type StaticPropertyName = PropertyName<&'static str, &'static [&'static str]>;
+pub type DynamicPropertyName = PropertyName<String, Vec<String>>;
+
+pub type StaticPluginKind = PluginKind<
+    &'static str,
+    &'static [&'static str],
+    phf::Map<&'static str, &'static str>,
+    phf::Map<&'static str, &'static [&'static str]>,
+>;
+pub type DynamicPluginKind =
+    PluginKind<String, Vec<String>, HashMap<String, String>, HashMap<String, Vec<String>>>;
+
+pub type StaticPluginArbitraryMatcher =
+    PluginArbitraryMatcher<&'static str, &'static [&'static str]>;
+pub type DynamicPluginArbitraryMatcher = PluginArbitraryMatcher<String, Vec<String>>;
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub(crate) enum CustomPlugin {
     #[serde(skip)]
-    Static(&'static Plugin),
-    Parsed(parsed::ParsedPlugin),
+    Static(&'static StaticPlugin),
+    Dynamic(DynamicPlugin),
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Serialize, Deserialize)]
@@ -77,10 +110,9 @@ pub enum PluginArbitraryMatcherModifier {
     Both,
 }
 
-
 /// Accepted inferred CSS arbitrary value types for a specific plugin.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
-pub enum PluginArbitraryMatcher {
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Serialize, Deserialize)]
+pub enum PluginArbitraryMatcher<Str, ArrayStr> {
     /// Match a [`shadow`](crate::utils::value_matchers::is_matching_shadow) CSS property value.
     Shadow,
 
@@ -127,47 +159,47 @@ pub enum PluginArbitraryMatcher {
     FontFamilyName,
 
     /// Match a single custom value.
-    Custom(&'static str),
+    Custom(Str),
 
     /// Match at least one value among a list of custom values.
-    CustomMultiple(&'static [&'static str]),
+    CustomMultiple(ArrayStr),
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub enum PropertyName {
-    SingleProp(&'static str),
-    MultipleProps(&'static [&'static str]),
+#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
+pub enum PropertyName<Str, ArrayStr> {
+    SingleProp(Str),
+    MultipleProps(ArrayStr),
 }
 
-#[derive(Debug, PartialEq)]
-pub enum PluginKind {
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
     ListCases {
-        cases: phf::Map<&'static str, &'static [&'static str]>,
+        cases: MapArrayStr,
     },
     ListValues {
-        prop: PropertyName,
-        values: phf::Map<&'static str, &'static str>,
+        prop: PropertyName<Str, ArrayStr>,
+        values: MapStr,
     },
 
     Spacing {
-        namespace: &'static str,
-        prop: PropertyName,
+        namespace: Str,
+        prop: PropertyName<Str, ArrayStr>,
     },
     Color {
-        namespace: &'static str,
-        prop: PropertyName,
+        namespace: Str,
+        prop: PropertyName<Str, ArrayStr>,
     },
     Number {
-        namespace: &'static str,
-        prop: PropertyName,
+        namespace: Str,
+        prop: PropertyName<Str, ArrayStr>,
         divide_by: f32,
     },
 
     // TODO(doc): by default every arbitrary value is accepted, used to disambiguate when multiple plugins of
     // the same namespace have arbitrary values
     Arbitrary {
-        namespace: &'static str,
-        prop: PropertyName,
+        namespace: Str,
+        prop: PropertyName<Str, ArrayStr>,
     },
 
     /// A powerful kind allowing the use a Rust function to handle all selectors within a single
@@ -198,7 +230,7 @@ pub enum PluginKind {
     ///         .and_then(|r| r.as_str())
     /// }
     ///
-    /// const PLUGIN: Plugin = Plugin::new(PluginKind::Functional {
+    /// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Functional {
     ///     namespace: "emoji",
     ///     can_handle: |context| matches!(context.modifier, Modifier::Builtin {
     ///         value,
@@ -248,8 +280,9 @@ pub enum PluginKind {
     /// [`generate_at_rules`]: crate::generator::generate_at_rules
     /// [`generate_class`]: crate::generator::generate_class
     /// [`generate_wrapper`]: crate::generator::generate_wrapper
+    #[serde(skip)]
     Functional {
-        namespace: &'static str,
+        namespace: Str,
         can_handle: fn(&ContextCanHandle) -> bool,
         handle: fn(&mut ContextHandle),
     },
@@ -274,7 +307,7 @@ pub enum PluginKind {
 /// ```
 /// use encre_css::prelude::build_plugin::*;
 ///
-/// const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
+/// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
 ///     prop: SingleProp("font-family"),
 ///     values: phf_map! {
 ///         "font-sans" => r#"ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont"#,
@@ -290,14 +323,14 @@ pub enum PluginKind {
 /// use encre_css::prelude::build_plugin::*;
 /// use PluginArbitraryMatcher::*;
 ///
-/// const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
+/// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
 ///     namespace: "stroke",
 ///     prop: SingleProp("stroke-width"),
 ///     divide_by: 1.0,
 /// })
 /// .template("{}px");
 ///
-/// const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
+/// const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
 ///     namespace: "stroke",
 ///     prop: SingleProp("stroke-width"),
 /// })
@@ -344,7 +377,7 @@ pub enum PluginKind {
 ///         .and_then(|r| r.as_str())
 /// }
 ///
-/// const PLUGIN: Plugin = Plugin::new(PluginKind::Functional {
+/// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Functional {
 ///     namespace: "emoji",
 ///     can_handle: |context| matches!(context.modifier, Modifier::Builtin {
 ///         value,
@@ -374,32 +407,49 @@ pub enum PluginKind {
 ///
 /// [`Config::register_plugin`]: crate::Config::register_plugin
 /// [`Config`]: crate::Config
-/// [`Functional`]: crate::plugins::PluginKind::Functional
+/// [`Functional`]: crate::plugins:: PluginKind::Functional
 /// [`generator::generate_at_rules`]: crate::generator::generate_at_rules
 /// [`generator::generate_class`]: crate::generator::generate_class
-#[derive(Debug, PartialEq)]
-pub struct Plugin {
-    pub(crate) kind: PluginKind,
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct Plugin<Str, ArrayStr, MapStr, MapArrayStr, ArrayHints, ArrayMatchers> {
+    pub(crate) kind: PluginKind<Str, ArrayStr, MapStr, MapArrayStr>,
+
+    #[serde(default)]
     pub(crate) has_auto: bool,
+
+    #[serde(default)]
     pub(crate) has_empty: bool,
+
+    #[serde(default)]
     pub(crate) has_full: bool,
+
+    #[serde(default)]
     pub(crate) has_negative: bool,
-    pub(crate) extra_lines: Option<&'static [&'static str]>,
-    pub(crate) extra_css: Option<phf::Map<&'static str, &'static str>>,
-    pub(crate) extra_class: Option<&'static str>,
-    pub(crate) template: Option<&'static str>,
-    pub(crate) template_multiple: Option<&'static [&'static str]>,
-    pub(crate) extra_slash: Option<(phf::Map<&'static str, &'static str>, &'static str)>,
-    pub(crate) arbitrary_hints: Option<&'static [ArbitraryHint]>,
-    pub(crate) arbitrary_matchers: Option<(&'static [PluginArbitraryMatcher], PluginArbitraryMatcherModifier)>,
-    pub(crate) arbitrary_shadow_color_replacement: Option<&'static str>,
-    pub(crate) list_namespace: Option<&'static str>,
+
+    pub(crate) extra_lines: Option<ArrayStr>,
+    pub(crate) extra_css: Option<MapStr>,
+    pub(crate) extra_class: Option<Str>,
+    pub(crate) template: Option<Str>,
+    pub(crate) template_multiple: Option<ArrayStr>,
+    pub(crate) extra_slash: Option<(MapStr, Str)>,
+    pub(crate) arbitrary_hints: Option<ArrayHints>,
+    pub(crate) arbitrary_matchers: Option<(ArrayMatchers, PluginArbitraryMatcherModifier)>,
+    pub(crate) arbitrary_shadow_color_replacement: Option<Str>,
+    pub(crate) list_namespace: Option<Str>,
 }
 
-impl Plugin {
+impl StaticPlugin {
     /// Make a new [`Plugin`] from a [`PluginKind`] filled with the required values.
+    ///
+    /// It should be used from a const context, e.g
+    ///
+    /// ```ignore
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::new(...);
+    /// ```
     #[must_use]
-    pub const fn new(kind: PluginKind) -> Self {
+    pub const fn new(kind: StaticPluginKind) -> Self {
         Self {
             kind,
             has_auto: false,
@@ -625,7 +675,11 @@ impl Plugin {
     }
 
     #[must_use]
-    pub const fn matchers(mut self, matchers: &'static [PluginArbitraryMatcher], modifier: PluginArbitraryMatcherModifier) -> Self {
+    pub const fn matchers(
+        mut self,
+        matchers: &'static [PluginArbitraryMatcher<&'static str, &'static [&'static str]>],
+        modifier: PluginArbitraryMatcherModifier,
+    ) -> Self {
         assert!(
             matches!(self.kind, PluginKind::Arbitrary { .. }),
             "Plugin::matchers can only be used with PluginKind::Arbitrary"
@@ -658,5 +712,38 @@ impl Plugin {
 
         self.list_namespace = Some(list_namespace);
         self
+    }
+}
+
+impl DynamicPlugin {
+    /// Make a new [`Plugin`] from a [`PluginKind`] filled with the required values.
+    ///
+    /// It should be used from a non-const context, e.g
+    ///
+    /// ```ignore
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// fn main() {
+    ///   let plugin: DynamicPlugin = Plugin::new_dynamic(...);
+    /// }
+    /// ```
+    pub fn new_dynamic(kind: DynamicPluginKind) -> Self {
+        Self {
+            kind,
+            has_auto: false,
+            has_empty: false,
+            has_full: false,
+            has_negative: false,
+            extra_lines: None,
+            extra_css: None,
+            extra_class: None,
+            extra_slash: None,
+            template: None,
+            template_multiple: None,
+            arbitrary_hints: None,
+            arbitrary_matchers: None,
+            arbitrary_shadow_color_replacement: None,
+            list_namespace: None,
+        }
     }
 }

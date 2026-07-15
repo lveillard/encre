@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
         "text-xs" => &["font-size: 0.75rem;", "line-height: 1rem;"],
         "text-sm" => &["font-size: 0.875rem;", "line-height: 1.25rem;"],
@@ -21,7 +21,7 @@ pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
     },
 });
 
-pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "text",
     prop: SingleProp("font-size"),
 })

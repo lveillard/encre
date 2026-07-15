@@ -1063,7 +1063,7 @@ const PROSE_INVERT_CSS: &str = "--en-prose-body: var(--en-prose-invert-body);
 --en-prose-kbd-text: var(--en-prose-invert-kbd-text);
 --en-prose-kbd-bg: var(--en-prose-invert-kbd-bg);";
 
-const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
+const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
         "prose" => &[],
         "prose-invert" => &[],
@@ -1079,7 +1079,7 @@ const PLUGIN: Plugin = Plugin::new(PluginKind::ListCases {
     "prose-invert" => PROSE_INVERT_CSS,
 });
 
-const PLUGIN_CUSTOMIZATION: Plugin = Plugin::new(PluginKind::Functional {
+const PLUGIN_CUSTOMIZATION: StaticPlugin = Plugin::new(PluginKind::Functional {
     namespace: "prose",
     can_handle: |context| {
         matches!(context.modifier, Modifier::Builtin { value, .. } if [

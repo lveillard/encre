@@ -3,13 +3,13 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Color {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Color {
     namespace: "divide",
     prop: SingleProp("border-color"),
 })
 .extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "divide",
     prop: SingleProp("border-color"),
 })

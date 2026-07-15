@@ -3,24 +3,24 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Color {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Color {
     namespace: "ring",
     prop: SingleProp("--en-ring-color"),
 });
 
-pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "ring",
     prop: SingleProp("--en-ring-color"),
 })
 .hints(&[ArbitraryHint::Color])
 .matchers(&[Color], PluginArbitraryMatcherModifier::None);
 
-pub(crate) const PLUGIN_INSET_1: Plugin = Plugin::new(PluginKind::Color {
+pub(crate) const PLUGIN_INSET_1: StaticPlugin = Plugin::new(PluginKind::Color {
     namespace: "inset-ring",
     prop: SingleProp("--en-inset-ring-color"),
 });
 
-pub(crate) const PLUGIN_INSET_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_INSET_2: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "inset-ring",
     prop: SingleProp("--en-inset-ring-color"),
 })

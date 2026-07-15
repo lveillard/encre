@@ -3,7 +3,7 @@
 use super::CSS_FILTER;
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "hue-rotate",
     prop: SingleProp("--en-hue-rotate"),
     divide_by: 1.0,
@@ -12,7 +12,7 @@ pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
 .extra_lines(&[CSS_FILTER])
 .template("hue-rotate({}deg)");
 
-pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "hue-rotate",
     prop: SingleProp("--en-hue-rotate"),
 })

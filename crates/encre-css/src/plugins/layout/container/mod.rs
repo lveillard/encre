@@ -4,7 +4,7 @@ use crate::{config::BUILTIN_SCREENS, prelude::build_plugin::*};
 
 use std::{borrow::Cow, cmp::Ordering};
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Functional {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Functional {
     namespace: "container",
     can_handle: |context| matches!(context.modifier, Modifier::Builtin { value: "", .. }),
     handle: |context| {

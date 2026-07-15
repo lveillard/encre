@@ -3,9 +3,9 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-type P = (Plugin, Plugin);
+type P = (StaticPlugin, StaticPlugin);
 
-const fn plugin(namespace: &'static str, prop: PropertyName) -> P {
+const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> P {
     (
         Plugin::new(PluginKind::Color { namespace, prop }),
         Plugin::new(PluginKind::Arbitrary { namespace, prop })

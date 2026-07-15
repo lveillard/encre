@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "outline",
     prop: SingleProp("outline-width"),
     divide_by: 1.0,
@@ -11,7 +11,7 @@ pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
 .has_empty()
 .template("{}px");
 
-pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "outline",
     prop: SingleProp("outline-width"),
 })

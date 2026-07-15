@@ -2,7 +2,7 @@
 #![doc(alias = "effect")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("mix-blend-mode"),
     values: phf_map! {
         "mix-blend-normal" => "normal",

@@ -2,7 +2,7 @@
 #![doc(alias("grid", "flexbox"))]
 use crate::prelude::build_plugin::*;
 
-const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin) {
+const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlugin, StaticPlugin) {
     (
         Plugin::new(PluginKind::Spacing {
             namespace,
@@ -12,6 +12,6 @@ const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin)
     )
 }
 
-pub(crate) const PLUGIN: (Plugin, Plugin) = plugin("gap", SingleProp("gap"));
-pub(crate) const PLUGIN_X: (Plugin, Plugin) = plugin("gap-x", SingleProp("column-gap"));
-pub(crate) const PLUGIN_Y: (Plugin, Plugin) = plugin("gap-y", SingleProp("row-gap"));
+pub(crate) const PLUGIN: (StaticPlugin, StaticPlugin) = plugin("gap", SingleProp("gap"));
+pub(crate) const PLUGIN_X: (StaticPlugin, StaticPlugin) = plugin("gap-x", SingleProp("column-gap"));
+pub(crate) const PLUGIN_Y: (StaticPlugin, StaticPlugin) = plugin("gap-y", SingleProp("row-gap"));

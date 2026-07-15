@@ -2,9 +2,9 @@
 #![doc(alias = "transform")]
 use crate::{plugins::transform::CSS_TRANSFORM, prelude::build_plugin::*};
 
-type P = (Plugin, Plugin);
+type P = (StaticPlugin, StaticPlugin);
 
-const fn plugin(namespace: &'static str, prop: PropertyName) -> P {
+const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> P {
     (
         Plugin::new(PluginKind::Number {
             namespace,

@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "ring-offset",
     prop: SingleProp("--en-ring-offset-width"),
     divide_by: 1.0,
@@ -11,7 +11,7 @@ pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::Number {
 .extra_lines(&["--en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);"])
 .template("{}px");
 
-pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "ring-offset",
     prop: SingleProp("--en-ring-offset-width"),
 })

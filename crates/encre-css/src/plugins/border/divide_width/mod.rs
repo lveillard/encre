@@ -3,14 +3,14 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_X_1: Plugin = Plugin::new(PluginKind::ListCases {
+pub(crate) const PLUGIN_X_1: StaticPlugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
         "divide-x-reverse" => &["--en-divide-x-reverse: 1;"],
     },
 })
 .extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-pub(crate) const PLUGIN_X_2: Plugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN_X_2: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "divide-x",
     prop: MultipleProps(&["border-inline-start-width", "border-inline-end-width"]),
     divide_by: 1.0,
@@ -23,7 +23,7 @@ pub(crate) const PLUGIN_X_2: Plugin = Plugin::new(PluginKind::Number {
 .extra_lines(&["--en-divide-x-reverse: 0;"])
 .extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-pub(crate) const PLUGIN_X_3: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_X_3: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "divide-x",
     prop: MultipleProps(&["border-inline-start-width", "border-inline-end-width"]),
 })
@@ -36,14 +36,14 @@ pub(crate) const PLUGIN_X_3: Plugin = Plugin::new(PluginKind::Arbitrary {
 .extra_lines(&["--en-divide-x-reverse: 0;"])
 .extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-pub(crate) const PLUGIN_Y_1: Plugin = Plugin::new(PluginKind::ListCases {
+pub(crate) const PLUGIN_Y_1: StaticPlugin = Plugin::new(PluginKind::ListCases {
     cases: phf_map! {
         "divide-y-reverse" => &["--en-divide-y-reverse: 1;"],
     },
 })
 .extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-pub(crate) const PLUGIN_Y_2: Plugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN_Y_2: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "divide-y",
     prop: MultipleProps(&["border-block-start-width", "border-block-end-width"]),
     divide_by: 1.0,
@@ -56,7 +56,7 @@ pub(crate) const PLUGIN_Y_2: Plugin = Plugin::new(PluginKind::Number {
 .extra_lines(&["--en-divide-y-reverse: 0;"])
 .extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-pub(crate) const PLUGIN_Y_3: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_Y_3: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "divide-y",
     prop: MultipleProps(&["border-block-start-width", "border-block-end-width"]),
 })

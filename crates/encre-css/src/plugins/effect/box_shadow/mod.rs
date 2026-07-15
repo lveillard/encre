@@ -1,8 +1,8 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "effect")]
-use crate::{plugins::PluginArbitraryMatcher::*, prelude::build_plugin::*};
+use crate::{plugins:: PluginArbitraryMatcher::*, prelude::build_plugin::*};
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("--en-shadow"),
     values: phf_map! {
         "shadow-2xs" => "0 1px var(--en-shadow-color, rgb(0 0 0 / 0.05))",
@@ -16,7 +16,7 @@ pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
     },
 }).extra_lines(&["box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow);"]);
 
-pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "shadow",
     prop: SingleProp("--en-shadow"),
 })
@@ -24,7 +24,7 @@ pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
 .matchers(&[Shadow], PluginArbitraryMatcherModifier::None)
 .shadow_color_replacement("var(--en-shadow-color, {})");
 
-pub(crate) const PLUGIN_INSET_1: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN_INSET_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("--en-inset-shadow"),
     values: phf_map! {
         "inset-shadow-2xs" => "inset 0 1px var(--en-inset-shadow-color, rgb(0 0 0 / 0.05))",
@@ -34,7 +34,7 @@ pub(crate) const PLUGIN_INSET_1: Plugin = Plugin::new(PluginKind::ListValues {
     },
 }).extra_lines(&["box-shadow: var(--en-inset-shadow), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow, 0 0 #0000);"]);
 
-pub(crate) const PLUGIN_INSET_2: Plugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_INSET_2: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "inset-shadow",
     prop: SingleProp("--en-inset-shadow"),
 })

@@ -1,16 +1,11 @@
 //! Define the main [`generate`] function used to scan content and to generate CSS styles.
 use crate::{
-    config::{Config, MaxShortcutDepth},
-    plugins::{
-        CustomPlugin, Plugin, PluginKind, PropertyName,
-        parsed::{ParsedPlugin, ParsedPluginKind, ParsedPropertyName},
-    },
-    preflight::Preflight,
-    selector::{
+    config::{Config, MaxShortcutDepth}, plugins::{
+        CustomPlugin, DynamicPlugin, DynamicPluginKind, DynamicPropertyName, Plugin, PluginKind, PropertyName, StaticPlugin, StaticPropertyName,
+    }, preflight::Preflight, selector::{
         Modifier, Selector, Variant, parse,
         trie::{Trie, build_trie},
-    },
-    utils::{buffer::Buffer, color, shadow, spacing},
+    }, utils::{buffer::Buffer, color, shadow, spacing},
 };
 
 use std::{borrow::Cow, collections::BTreeSet};
@@ -45,7 +40,8 @@ pub struct ContextHandle<'a, 'b, 'c, 'd, 'e> {
     selector: &'e Selector<'e>,
 }
 
-fn push_css_lines(prop: &PropertyName, value: &str, context: &mut ContextHandle) {
+// TODO: merge these cases together using traits
+fn push_css_lines(prop: &StaticPropertyName, value: &str, context: &mut ContextHandle) {
     match prop {
         PropertyName::SingleProp(prop) => {
             context.buffer.line(format_args!("{prop}: {value};"));
@@ -58,12 +54,12 @@ fn push_css_lines(prop: &PropertyName, value: &str, context: &mut ContextHandle)
     }
 }
 
-fn parsed_push_css_lines(prop: &ParsedPropertyName, value: &str, context: &mut ContextHandle) {
+fn parsed_push_css_lines(prop: &DynamicPropertyName, value: &str, context: &mut ContextHandle) {
     match prop {
-        ParsedPropertyName::SingleProp(prop) => {
+        DynamicPropertyName::SingleProp(prop) => {
             context.buffer.line(format_args!("{prop}: {value};"));
         }
-        ParsedPropertyName::MultipleProps(props) => {
+        DynamicPropertyName::MultipleProps(props) => {
             for prop in props {
                 context.buffer.line(format_args!("{prop}: {value};"));
             }
@@ -72,8 +68,8 @@ fn parsed_push_css_lines(prop: &ParsedPropertyName, value: &str, context: &mut C
 }
 
 fn push_css_lines_with_templating(
-    prop: &PropertyName,
-    plugin: &Plugin,
+    prop: &StaticPropertyName,
+    plugin: &StaticPlugin,
     value: &str,
     slash_value: Option<&str>,
     context: &mut ContextHandle,
@@ -120,8 +116,8 @@ fn push_css_lines_with_templating(
 }
 
 fn parsed_push_css_lines_with_templating(
-    prop: &ParsedPropertyName,
-    plugin: &ParsedPlugin,
+    prop: &DynamicPropertyName,
+    plugin: &DynamicPlugin,
     value: &str,
     slash_value: Option<&str>,
     context: &mut ContextHandle,
@@ -135,7 +131,7 @@ fn parsed_push_css_lines_with_templating(
     };
 
     match prop {
-        ParsedPropertyName::SingleProp(prop) => {
+        DynamicPropertyName::SingleProp(prop) => {
             let value = if let Some(template) = &plugin.template {
                 Cow::Owned(transform_template(template))
             } else {
@@ -144,7 +140,7 @@ fn parsed_push_css_lines_with_templating(
 
             context.buffer.line(format_args!("{prop}: {value};"));
         }
-        ParsedPropertyName::MultipleProps(props) => {
+        DynamicPropertyName::MultipleProps(props) => {
             if let Some(templates) = &plugin.template_multiple {
                 for (i, prop) in props.iter().enumerate() {
                     // The length of plugin.template_multiple is asserted to be the
@@ -181,7 +177,7 @@ fn add_extra_css(plugin: &CustomPlugin, context: &mut ContextHandle, value: &str
                 context.buffer.raw(css);
             }
         }
-        CustomPlugin::Parsed(ParsedPlugin {
+        CustomPlugin::Dynamic(DynamicPlugin {
             extra_css: Some(extra_css),
             ..
         }) => {
@@ -231,8 +227,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
             }
         }
         (
-            CustomPlugin::Parsed(ParsedPlugin {
-                kind: ParsedPluginKind::ListCases { cases },
+            CustomPlugin::Dynamic(DynamicPlugin {
+                kind: DynamicPluginKind::ListCases { cases },
                 extra_lines,
                 extra_class,
                 ..
@@ -314,8 +310,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
             });
         }
         (
-            CustomPlugin::Parsed(ParsedPlugin {
-                kind: ParsedPluginKind::ListValues { prop, values },
+            CustomPlugin::Dynamic(DynamicPlugin {
+                kind: DynamicPluginKind::ListValues { prop, values },
                 extra_slash,
                 extra_lines,
                 extra_class,
@@ -422,9 +418,9 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
             });
         }
         (
-            CustomPlugin::Parsed(
-                inner_plugin @ ParsedPlugin {
-                    kind: ParsedPluginKind::Spacing { prop, .. },
+            CustomPlugin::Dynamic(
+                inner_plugin @ DynamicPlugin {
+                    kind: DynamicPluginKind::Spacing { prop, .. },
                     extra_slash,
                     extra_lines,
                     extra_class,
@@ -505,9 +501,9 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
             });
         }
         (
-            CustomPlugin::Parsed(
-                inner_plugin @ ParsedPlugin {
-                    kind: ParsedPluginKind::Color { prop, .. },
+            CustomPlugin::Dynamic(
+                inner_plugin @ DynamicPlugin {
+                    kind: DynamicPluginKind::Color { prop, .. },
                     extra_class,
                     extra_lines,
                     ..
@@ -593,10 +589,10 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
             });
         }
         (
-            CustomPlugin::Parsed(
-                inner_plugin @ ParsedPlugin {
+            CustomPlugin::Dynamic(
+                inner_plugin @ DynamicPlugin {
                     kind:
-                        ParsedPluginKind::Number {
+                        DynamicPluginKind::Number {
                             prop, divide_by, ..
                         },
                     extra_slash,
@@ -686,9 +682,9 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
             });
         }
         (
-            CustomPlugin::Parsed(
-                inner_plugin @ ParsedPlugin {
-                    kind: ParsedPluginKind::Arbitrary { prop, .. },
+            CustomPlugin::Dynamic(
+                inner_plugin @ DynamicPlugin {
+                    kind: DynamicPluginKind::Arbitrary { prop, .. },
                     extra_lines,
                     extra_class,
                     arbitrary_shadow_color_replacement,

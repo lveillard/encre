@@ -247,8 +247,9 @@ pub mod prelude {
         pub use crate::{
             generator::{generate_at_rules, generate_class, generate_wrapper, ContextCanHandle, ContextHandle},
             plugins::{
-                Plugin, PluginArbitraryMatcher, PluginArbitraryMatcherModifier,
-                PluginKind, PropertyName, PropertyName::*,
+                Plugin, StaticPlugin, DynamicPlugin, PluginArbitraryMatcher, PluginArbitraryMatcherModifier,
+                PluginKind, PropertyName, PropertyName::*, StaticPropertyName, DynamicPropertyName,
+                StaticPluginKind, DynamicPluginKind,
             },
             selector::{Modifier, ArbitraryHint},
             utils::{buffer::Buffer, color, shadow, spacing, value_matchers::*},

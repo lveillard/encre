@@ -821,7 +821,7 @@ pub const BUILTIN_VARIANTS: phf::OrderedMap<&'static str, Variant> = {
 /// The list of all default plugins.
 ///
 /// Sorted following [Tailwind's order](https://github.com/tailwindlabs/tailwindcss/blob/master/src/corePlugins.js).
-pub const BUILTIN_PLUGINS: &[&Plugin] = &[
+pub const BUILTIN_PLUGINS: &[&StaticPlugin] = &[
     &layout::container::PLUGIN,
     &accessibility::screen_reader::PLUGIN,
     &interactivity::pointer_events::PLUGIN,
@@ -1920,8 +1920,6 @@ pub struct Config {
     pub extra: Extra,
 
     /// A list of custom plugins.
-    ///
-    /// This field is skipped when deserializing from a [TOML](https://toml.io) file.
     #[serde(default)]
     pub(crate) custom_plugins: Vec<CustomPlugin>,
 
@@ -2119,7 +2117,7 @@ impl Config {
     /// ```
     /// use encre_css::{Config, prelude::build_plugin::*};
     ///
-    /// const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
+    /// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     ///     prop: SingleProp("color"),
     ///     values: phf_map! {
     ///         "prose" => "#333",
@@ -2143,8 +2141,12 @@ impl Config {
     ///   color: #eee;
     /// }"));
     /// ```
-    pub fn register_plugin(&mut self, plugin: &'static Plugin) {
+    pub fn register_plugin(&mut self, plugin: &'static StaticPlugin) {
         self.custom_plugins.push(CustomPlugin::Static(plugin));
+    }
+
+    pub fn register_dynamic_plugin(&mut self, plugin: DynamicPlugin) {
+        self.custom_plugins.push(CustomPlugin::Dynamic(plugin));
     }
 
     /// Register a custom variant which will be used during CSS generation.
@@ -2276,6 +2278,8 @@ impl fmt::Debug for Config {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use super::*;
     use crate::{generate, utils::testing::base_config};
 
@@ -2428,7 +2432,7 @@ mod tests {
     fn gen_css_with_custom_plugin() {
         use crate::prelude::build_plugin::*;
 
-        const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
+        const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
             prop: SingleProp("content"),
             values: phf_map! {
                 "emoji-tada" => "\"\u{1f389}\"",
@@ -2452,12 +2456,40 @@ mod tests {
     }
 
     #[test]
+    fn gen_css_with_dynamic_plugin() {
+        use crate::prelude::build_plugin::*;
+
+        let mut config = Config::default();
+        config.preflight = Preflight::None;
+        config.register_dynamic_plugin(Plugin::new_dynamic(PluginKind::ListValues {
+            prop: DynamicPropertyName::SingleProp(String::from("content")),
+            values: HashMap::from([
+                (String::from("emoji-tada"), String::from("\"\u{1f389}\"")),
+                (String::from("emoji-rocket"), String::from("\"\u{1f680}\"")),
+            ]),
+        }));
+
+        let generated = generate(["emoji-tada"], &config);
+
+        assert_eq!(
+            generated,
+            String::from(
+                ".emoji-tada {
+  content: \"\u{1f389}\";
+}"
+            )
+        );
+    }
+
+    #[test]
     fn gen_css_with_custom_parsed_plugin() {
+        use crate::prelude::build_plugin::*;
+
         let config = match Config::from_file("tests/fixtures/custom-plugin-config.toml") {
             Ok(c) => c,
             Err(e) => panic!("{e}"),
         };
-        dbg!(&config);
+
         let generated = generate(["emoji-tada"], &config);
 
         assert_eq!(

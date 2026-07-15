@@ -2,9 +2,9 @@
 #![doc(alias = "interactivity")]
 use crate::prelude::build_plugin::*;
 
-type P = (Plugin, Plugin);
+type P = (StaticPlugin, StaticPlugin);
 
-const fn plugin(namespace: &'static str, prop: PropertyName) -> P {
+const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> P {
     (
         Plugin::new(PluginKind::Spacing {
             namespace,

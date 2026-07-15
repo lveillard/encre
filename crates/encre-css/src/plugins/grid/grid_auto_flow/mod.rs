@@ -2,7 +2,7 @@
 #![doc(alias = "grid")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: Plugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("grid-auto-flow"),
     values: phf_map! {
         "grid-flow-row" => "row",
