@@ -23,4 +23,4 @@ pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("background-position"),
 })
 .hints(&[ArbitraryHint::Position])
-.matcher(CommaSeparated(&SpaceSeparated(&Position)));
+.matchers(&[Position], PluginArbitraryMatcherModifier::Both);

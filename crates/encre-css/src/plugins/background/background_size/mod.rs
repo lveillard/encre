@@ -17,8 +17,13 @@ pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("background-size"),
 })
 .hints(&[ArbitraryHint::Length, ArbitraryHint::Percentage])
-.matcher(CommaSeparated(&OrMultiple(&[
-    &SpaceSeparated(&OrMultiple(&[&Length, &Percentage, &Custom("auto")])),
-    &Custom("cover"),
-    &Custom("contain"),
-])));
+.matchers(
+    &[
+        Length,
+        Percentage,
+        Custom("auto"),
+        Custom("cover"),
+        Custom("contain"),
+    ],
+    PluginArbitraryMatcherModifier::Both,
+);

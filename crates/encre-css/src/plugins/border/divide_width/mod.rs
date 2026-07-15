@@ -28,7 +28,7 @@ pub(crate) const PLUGIN_X_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: MultipleProps(&["border-inline-start-width", "border-inline-end-width"]),
 })
 .hints(&[ArbitraryHint::Length])
-.matcher(SpaceSeparated(&Or(&Length, &LineWidth)))
+.matchers(&[Length, LineWidth], PluginArbitraryMatcherModifier::SpaceSeparated)
 .template_multiple(&[
     "calc({} * var(--en-divide-x-reverse))",
     "calc({} * calc(1 - var(--en-divide-x-reverse)))",
@@ -61,7 +61,7 @@ pub(crate) const PLUGIN_Y_3: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: MultipleProps(&["border-block-start-width", "border-block-end-width"]),
 })
 .hints(&[ArbitraryHint::Length])
-.matcher(SpaceSeparated(&Or(&Length, &LineWidth)))
+.matchers(&[Length, LineWidth], PluginArbitraryMatcherModifier::SpaceSeparated)
 .template_multiple(&[
     "calc({} * var(--en-divide-y-reverse))",
     "calc({} * calc(1 - var(--en-divide-y-reverse)))",

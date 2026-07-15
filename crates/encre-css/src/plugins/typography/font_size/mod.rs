@@ -31,9 +31,9 @@ pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     ArbitraryHint::AbsoluteSize,
     ArbitraryHint::RelativeSize,
 ])
-.matcher(OrMultiple(&[
-    &Length,
-    &Percentage,
-    &AbsoluteSize,
-    &RelativeSize,
-]));
+.matchers(&[
+    Length,
+    Percentage,
+    AbsoluteSize,
+    RelativeSize,
+], PluginArbitraryMatcherModifier::None);

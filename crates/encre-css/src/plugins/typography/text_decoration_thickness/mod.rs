@@ -23,8 +23,8 @@ pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("text-decoration-thickness"),
 })
 .hints(&[ArbitraryHint::Length, ArbitraryHint::Percentage])
-.matcher(OrMultiple(&[
-    &Length,
-    &Percentage,
-    &CustomMultiple(&["auto", "from-font"]),
-]));
+.matchers(&[
+    Length,
+    Percentage,
+    CustomMultiple(&["auto", "from-font"]),
+], PluginArbitraryMatcherModifier::None);

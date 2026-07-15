@@ -22,7 +22,7 @@ const fn plugin(namespace: &'static str, prop: PropertyName) -> (Plugin, Plugin)
         .list_namespace(namespace),
         Plugin::new(PluginKind::Arbitrary { namespace, prop })
             .hints(&[])
-            .matcher(SpaceSeparated(&Or(&Length, &Percentage))),
+            .matchers(&[Length, Percentage], PluginArbitraryMatcherModifier::SpaceSeparated),
     )
 }
 

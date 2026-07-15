@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::selector::ArbitraryHint;
+use crate::{plugins::PluginArbitraryMatcherModifier, selector::ArbitraryHint};
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, Serialize, Deserialize)]
 pub(crate) enum ParsedPluginArbitraryMatcher {
@@ -23,14 +23,6 @@ pub(crate) enum ParsedPluginArbitraryMatcher {
     FontFamilyName,
     Custom(String),
     CustomMultiple(Vec<String>),
-
-    Or(
-        Box<ParsedPluginArbitraryMatcher>,
-        Box<ParsedPluginArbitraryMatcher>,
-    ),
-    OrMultiple(Vec<ParsedPluginArbitraryMatcher>),
-    CommaSeparated(Box<ParsedPluginArbitraryMatcher>),
-    SpaceSeparated(Box<ParsedPluginArbitraryMatcher>),
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -115,7 +107,7 @@ pub(crate) struct ParsedPlugin {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
-    pub(crate) arbitrary_matcher: Option<ParsedPluginArbitraryMatcher>,
+    pub(crate) arbitrary_matchers: Option<(Vec<ParsedPluginArbitraryMatcher>, PluginArbitraryMatcherModifier)>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]

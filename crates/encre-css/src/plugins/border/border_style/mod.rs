@@ -24,4 +24,4 @@ pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("border-style"),
 })
 .hints(&[])
-.matcher(SpaceSeparated(&LineStyle));
+.matchers(&[LineStyle], PluginArbitraryMatcherModifier::SpaceSeparated);

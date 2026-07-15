@@ -16,4 +16,4 @@ pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("outline-width"),
 })
 .hints(&[ArbitraryHint::Length])
-.matcher(Or(&Length, &LineWidth));
+.matchers(&[Length, LineWidth], PluginArbitraryMatcherModifier::None);

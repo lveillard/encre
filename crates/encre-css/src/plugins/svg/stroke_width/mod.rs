@@ -15,9 +15,9 @@ pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("stroke-width"),
 })
 .hints(&[ArbitraryHint::Length, ArbitraryHint::Percentage])
-.matcher(CommaSeparated(&OrMultiple(&[
-    &Length,
-    &Percentage,
-    &LineWidth,
-    &Number,
-])));
+.matchers(&[
+    Length,
+    Percentage,
+    LineWidth,
+    Number,
+], PluginArbitraryMatcherModifier::CommaSeparated);

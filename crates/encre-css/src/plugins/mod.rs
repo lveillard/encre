@@ -69,6 +69,15 @@ pub(crate) enum CustomPlugin {
     Parsed(parsed::ParsedPlugin),
 }
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Serialize, Deserialize)]
+pub enum PluginArbitraryMatcherModifier {
+    None,
+    CommaSeparated,
+    SpaceSeparated,
+    Both,
+}
+
+
 /// Accepted inferred CSS arbitrary value types for a specific plugin.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum PluginArbitraryMatcher {
@@ -122,21 +131,6 @@ pub enum PluginArbitraryMatcher {
 
     /// Match at least one value among a list of custom values.
     CustomMultiple(&'static [&'static str]),
-
-    /// Match a [`PluginArbitraryMatcher`] or another [`PluginArbitraryMatcher`].
-    Or(
-        &'static PluginArbitraryMatcher,
-        &'static PluginArbitraryMatcher,
-    ),
-
-    /// Match at least one [`PluginArbitraryMatcher`] among a list of [`PluginArbitraryMatcher`].
-    OrMultiple(&'static [&'static PluginArbitraryMatcher]),
-
-    /// Match a list of comma-separated values (e.g `CommaSeparated(&Position)` matches `left, 100px, center`).
-    CommaSeparated(&'static PluginArbitraryMatcher),
-
-    /// Match a list of space-separated values (e.g `SpaceSeparated(&LineStyle)` matches `solid none dashed solid`).
-    SpaceSeparated(&'static PluginArbitraryMatcher),
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -308,12 +302,12 @@ pub enum PluginKind {
 ///     prop: SingleProp("stroke-width"),
 /// })
 /// .hints(&[ArbitraryHint::Length, ArbitraryHint::Percentage])
-/// .matcher(CommaSeparated(&OrMultiple(&[
-///     &Length,
-///     &Percentage,
-///     &LineWidth,
-///     &Number,
-/// ])));
+/// .matchers(&[
+///     Length,
+///     Percentage,
+///     LineWidth,
+///     Number,
+/// ], PluginArbitraryMatcherModifier::CommaSeparated);
 /// ```
 ///
 /// # Release a plugin as a crate
@@ -397,7 +391,7 @@ pub struct Plugin {
     pub(crate) template_multiple: Option<&'static [&'static str]>,
     pub(crate) extra_slash: Option<(phf::Map<&'static str, &'static str>, &'static str)>,
     pub(crate) arbitrary_hints: Option<&'static [ArbitraryHint]>,
-    pub(crate) arbitrary_matcher: Option<PluginArbitraryMatcher>,
+    pub(crate) arbitrary_matchers: Option<(&'static [PluginArbitraryMatcher], PluginArbitraryMatcherModifier)>,
     pub(crate) arbitrary_shadow_color_replacement: Option<&'static str>,
     pub(crate) list_namespace: Option<&'static str>,
 }
@@ -419,7 +413,7 @@ impl Plugin {
             template: None,
             template_multiple: None,
             arbitrary_hints: None,
-            arbitrary_matcher: None,
+            arbitrary_matchers: None,
             arbitrary_shadow_color_replacement: None,
             list_namespace: None,
         }
@@ -631,13 +625,13 @@ impl Plugin {
     }
 
     #[must_use]
-    pub const fn matcher(mut self, matcher: PluginArbitraryMatcher) -> Self {
+    pub const fn matchers(mut self, matchers: &'static [PluginArbitraryMatcher], modifier: PluginArbitraryMatcherModifier) -> Self {
         assert!(
             matches!(self.kind, PluginKind::Arbitrary { .. }),
-            "Plugin::matches can only be used with PluginKind::Arbitrary"
+            "Plugin::matchers can only be used with PluginKind::Arbitrary"
         );
 
-        self.arbitrary_matcher = Some(matcher);
+        self.arbitrary_matchers = Some((matchers, modifier));
         self
     }
 

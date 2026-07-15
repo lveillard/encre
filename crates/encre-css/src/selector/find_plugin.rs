@@ -5,7 +5,7 @@ use crate::{
     error::{ParseError, ParseErrorKind},
     generator::ContextCanHandle,
     plugins::{
-        CustomPlugin, Plugin, PluginArbitraryMatcher, PluginKind,
+        CustomPlugin, Plugin, PluginArbitraryMatcher, PluginArbitraryMatcherModifier, PluginKind,
         parsed::{ParsedPlugin, ParsedPluginArbitraryMatcher, ParsedPluginKind},
     },
     selector::{
@@ -16,90 +16,89 @@ use crate::{
     utils::{color, spacing, value_matchers::*},
 };
 
-const MAX_DEPTH: u8 = 10;
-
-fn is_arbitrary_matching(matcher: &PluginArbitraryMatcher, value: &str, max_depth: u8) -> bool {
-    if max_depth >= MAX_DEPTH {
-        // No matcher should have more depth than MAX_DEPTH
-        return false;
-    }
-
-    (match matcher {
-        PluginArbitraryMatcher::Shadow => is_matching_shadow(value),
-        PluginArbitraryMatcher::AbsoluteSize => is_matching_absolute_size(value),
-        PluginArbitraryMatcher::RelativeSize => is_matching_relative_size(value),
-        PluginArbitraryMatcher::LineWidth => is_matching_line_width(value),
-        PluginArbitraryMatcher::LineStyle => is_matching_line_style(value),
-        PluginArbitraryMatcher::Color => is_matching_color(value),
-        PluginArbitraryMatcher::Length => is_matching_length(value),
-        PluginArbitraryMatcher::Number => is_matching_number(value),
-        PluginArbitraryMatcher::Percentage => is_matching_percentage(value),
-        PluginArbitraryMatcher::Time => is_matching_time(value),
-        PluginArbitraryMatcher::Gradient => is_matching_gradient(value),
-        PluginArbitraryMatcher::Position => is_matching_position(value),
-        PluginArbitraryMatcher::Angle => is_matching_angle(value),
-        PluginArbitraryMatcher::Image => is_matching_image(value),
-        PluginArbitraryMatcher::FontFamilyName => is_matching_font_family_name(value),
-        PluginArbitraryMatcher::Custom(v) => value == *v,
-        PluginArbitraryMatcher::CustomMultiple(values) => values.contains(&value),
-        PluginArbitraryMatcher::Or(matcher1, matcher2) => {
-            is_arbitrary_matching(matcher1, value, max_depth + 1)
-                || is_arbitrary_matching(matcher2, value, max_depth + 1)
+fn is_arbitrary_matching(
+    (matchers, modifier): &(&[PluginArbitraryMatcher], PluginArbitraryMatcherModifier),
+    value: &str,
+) -> bool {
+    let values: Vec<&str> = match modifier {
+        PluginArbitraryMatcherModifier::None => std::iter::once(value).collect(),
+        PluginArbitraryMatcherModifier::CommaSeparated => value.split(',').collect(),
+        PluginArbitraryMatcherModifier::SpaceSeparated => value.split(' ').collect(),
+        PluginArbitraryMatcherModifier::Both => {
+            value.split(',').flat_map(|s| s.split(' ')).collect()
         }
-        PluginArbitraryMatcher::OrMultiple(matchers) => matchers
-            .iter()
-            .any(|m| is_arbitrary_matching(m, value, max_depth + 1)),
-        PluginArbitraryMatcher::CommaSeparated(matcher1) => value
-            .split(',')
-            .all(|v| is_arbitrary_matching(matcher1, v.trim(), max_depth + 1)),
-        PluginArbitraryMatcher::SpaceSeparated(matcher1) => value
-            .split(' ')
-            .all(|v| is_arbitrary_matching(matcher1, v.trim(), max_depth + 1)),
-    }) || is_matching_var(value)
+    };
+
+    values.iter().all(|value| {
+        matchers.iter().any(|matcher| {
+            let value = value.trim();
+            if value.is_empty() {
+                return false;
+            }
+            (match matcher {
+                PluginArbitraryMatcher::Shadow => is_matching_shadow(value),
+                PluginArbitraryMatcher::AbsoluteSize => is_matching_absolute_size(value),
+                PluginArbitraryMatcher::RelativeSize => is_matching_relative_size(value),
+                PluginArbitraryMatcher::LineWidth => is_matching_line_width(value),
+                PluginArbitraryMatcher::LineStyle => is_matching_line_style(value),
+                PluginArbitraryMatcher::Color => is_matching_color(value),
+                PluginArbitraryMatcher::Length => is_matching_length(value),
+                PluginArbitraryMatcher::Number => is_matching_number(value),
+                PluginArbitraryMatcher::Percentage => is_matching_percentage(value),
+                PluginArbitraryMatcher::Time => is_matching_time(value),
+                PluginArbitraryMatcher::Gradient => is_matching_gradient(value),
+                PluginArbitraryMatcher::Position => is_matching_position(value),
+                PluginArbitraryMatcher::Angle => is_matching_angle(value),
+                PluginArbitraryMatcher::Image => is_matching_image(value),
+                PluginArbitraryMatcher::FontFamilyName => is_matching_font_family_name(value),
+                PluginArbitraryMatcher::Custom(v) => value == *v,
+                PluginArbitraryMatcher::CustomMultiple(values) => values.contains(&value),
+            }) || is_matching_var(value)
+        })
+    })
 }
 
 fn is_parsed_arbitrary_matching(
-    matcher: &ParsedPluginArbitraryMatcher,
+    (matchers, modifier): &(
+        Vec<ParsedPluginArbitraryMatcher>,
+        PluginArbitraryMatcherModifier,
+    ),
     value: &str,
-    max_depth: u8,
 ) -> bool {
-    if max_depth >= MAX_DEPTH {
-        // No matcher should have more depth than MAX_DEPTH
-        return false;
-    }
-
-    match matcher {
-        ParsedPluginArbitraryMatcher::Shadow => is_matching_shadow(value),
-        ParsedPluginArbitraryMatcher::AbsoluteSize => is_matching_absolute_size(value),
-        ParsedPluginArbitraryMatcher::RelativeSize => is_matching_relative_size(value),
-        ParsedPluginArbitraryMatcher::LineWidth => is_matching_line_width(value),
-        ParsedPluginArbitraryMatcher::LineStyle => is_matching_line_style(value),
-        ParsedPluginArbitraryMatcher::Color => is_matching_color(value),
-        ParsedPluginArbitraryMatcher::Length => is_matching_length(value),
-        ParsedPluginArbitraryMatcher::Number => is_matching_number(value),
-        ParsedPluginArbitraryMatcher::Percentage => is_matching_percentage(value),
-        ParsedPluginArbitraryMatcher::Time => is_matching_time(value),
-        ParsedPluginArbitraryMatcher::Gradient => is_matching_gradient(value),
-        ParsedPluginArbitraryMatcher::Position => is_matching_position(value),
-        ParsedPluginArbitraryMatcher::Angle => is_matching_angle(value),
-        ParsedPluginArbitraryMatcher::Image => is_matching_image(value),
-        ParsedPluginArbitraryMatcher::FontFamilyName => is_matching_font_family_name(value),
-        ParsedPluginArbitraryMatcher::Custom(v) => value == *v,
-        ParsedPluginArbitraryMatcher::CustomMultiple(values) => values.iter().any(|v| v == value),
-        ParsedPluginArbitraryMatcher::Or(matcher1, matcher2) => {
-            is_parsed_arbitrary_matching(matcher1, value, max_depth + 1)
-                || is_parsed_arbitrary_matching(matcher2, value, max_depth + 1)
+    let values: Vec<&str> = match modifier {
+        PluginArbitraryMatcherModifier::None => std::iter::once(value).collect(),
+        PluginArbitraryMatcherModifier::CommaSeparated => value.split(',').collect(),
+        PluginArbitraryMatcherModifier::SpaceSeparated => value.split(' ').collect(),
+        PluginArbitraryMatcherModifier::Both => {
+            value.split(',').flat_map(|s| s.split(' ')).collect()
         }
-        ParsedPluginArbitraryMatcher::OrMultiple(matchers) => matchers
-            .iter()
-            .any(|m| is_parsed_arbitrary_matching(m, value, max_depth + 1)),
-        ParsedPluginArbitraryMatcher::CommaSeparated(matcher1) => value
-            .split(',')
-            .all(|v| is_parsed_arbitrary_matching(matcher1, v.trim(), max_depth + 1)),
-        ParsedPluginArbitraryMatcher::SpaceSeparated(matcher1) => value
-            .split(' ')
-            .all(|v| is_parsed_arbitrary_matching(matcher1, v.trim(), max_depth + 1)),
-    }
+    };
+
+    values.iter().all(|value| {
+        matchers.iter().any(|matcher| {
+            (match matcher {
+                ParsedPluginArbitraryMatcher::Shadow => is_matching_shadow(value),
+                ParsedPluginArbitraryMatcher::AbsoluteSize => is_matching_absolute_size(value),
+                ParsedPluginArbitraryMatcher::RelativeSize => is_matching_relative_size(value),
+                ParsedPluginArbitraryMatcher::LineWidth => is_matching_line_width(value),
+                ParsedPluginArbitraryMatcher::LineStyle => is_matching_line_style(value),
+                ParsedPluginArbitraryMatcher::Color => is_matching_color(value),
+                ParsedPluginArbitraryMatcher::Length => is_matching_length(value),
+                ParsedPluginArbitraryMatcher::Number => is_matching_number(value),
+                ParsedPluginArbitraryMatcher::Percentage => is_matching_percentage(value),
+                ParsedPluginArbitraryMatcher::Time => is_matching_time(value),
+                ParsedPluginArbitraryMatcher::Gradient => is_matching_gradient(value),
+                ParsedPluginArbitraryMatcher::Position => is_matching_position(value),
+                ParsedPluginArbitraryMatcher::Angle => is_matching_angle(value),
+                ParsedPluginArbitraryMatcher::Image => is_matching_image(value),
+                ParsedPluginArbitraryMatcher::FontFamilyName => is_matching_font_family_name(value),
+                ParsedPluginArbitraryMatcher::Custom(v) => value == v,
+                ParsedPluginArbitraryMatcher::CustomMultiple(values) => {
+                    values.iter().any(|v| v == value)
+                }
+            }) || is_matching_var(value)
+        })
+    })
 }
 
 pub(super) fn find_plugin_to_handle_class<'a>(
@@ -368,21 +367,21 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
             CustomPlugin::Static(Plugin {
                 kind: PluginKind::Arbitrary { .. },
                 arbitrary_hints,
-                arbitrary_matcher,
+                arbitrary_matchers,
                 ..
             }),
             Modifier::Arbitrary { hint, value },
         ) => {
             hint.is_some_and(|h| arbitrary_hints.is_some_and(|hints| hints.contains(&h)))
                 || (hint.is_none()
-                    && arbitrary_matcher
-                        .is_none_or(|matcher| is_arbitrary_matching(&matcher, value, 0)))
+                    && arbitrary_matchers
+                        .is_none_or(|matchers| is_arbitrary_matching(&matchers, value)))
         }
         (
             CustomPlugin::Parsed(ParsedPlugin {
                 kind: ParsedPluginKind::Arbitrary { .. },
                 arbitrary_hints,
-                arbitrary_matcher,
+                arbitrary_matchers,
                 ..
             }),
             Modifier::Arbitrary { hint, value },
@@ -392,9 +391,9 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
                     .as_ref()
                     .is_some_and(|hints| hints.contains(&h))
             }) || (hint.is_none()
-                && arbitrary_matcher
+                && arbitrary_matchers
                     .as_ref()
-                    .is_none_or(|matcher| is_parsed_arbitrary_matching(&matcher, value, 0)))
+                    .is_none_or(|matchers| is_parsed_arbitrary_matching(&matchers, value)))
         }
 
         (

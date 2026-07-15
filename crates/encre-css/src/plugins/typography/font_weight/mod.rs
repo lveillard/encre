@@ -23,7 +23,7 @@ pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("font-weight"),
 })
 .hints(&[ArbitraryHint::Number])
-.matcher(OrMultiple(&[
-    &CustomMultiple(&["normal", "bold", "lighter", "bolder"]),
-    &Number,
-]));
+.matchers(&[
+    CustomMultiple(&["normal", "bold", "lighter", "bolder"]),
+    Number,
+], PluginArbitraryMatcherModifier::None);

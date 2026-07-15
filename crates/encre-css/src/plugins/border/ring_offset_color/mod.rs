@@ -14,5 +14,5 @@ pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("--en-ring-offset-color"),
 })
 .hints(&[ArbitraryHint::Color])
-.matcher(Color)
+.matchers(&[Color], PluginArbitraryMatcherModifier::None)
 .extra_lines(&["--en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);"]);

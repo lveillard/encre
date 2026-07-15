@@ -15,4 +15,4 @@ pub(crate) const PLUGIN_ARBITRARY: Plugin = Plugin::new(PluginKind::Arbitrary {
     prop: SingleProp("outline-offset"),
 })
 .hints(&[ArbitraryHint::Length])
-.matcher(Length);
+.matchers(&[Length], PluginArbitraryMatcherModifier::None);

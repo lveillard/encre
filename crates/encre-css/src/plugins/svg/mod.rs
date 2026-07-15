@@ -73,5 +73,11 @@ mod tests {
   stroke-width: 5%;
 }"
         );
+        assert_eq!(
+            generate(["stroke-[5%,20px]"], &base_config()),
+            r".stroke-\[5\%\,20px\] {
+  stroke-width: 5%,20px;
+}"
+        );
     }
 }
