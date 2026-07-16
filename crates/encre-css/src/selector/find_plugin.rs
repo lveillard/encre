@@ -223,18 +223,18 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
     match (&plugin, modifier) {
         (
             CustomPlugin::Static(Plugin {
-                kind: PluginKind::ListCases { cases },
+                kind: PluginKind::ListProperties { props },
                 ..
             }),
             Modifier::Builtin { value, .. },
-        ) => cases.contains_key(value),
+        ) => props.contains_key(value),
         (
             CustomPlugin::Dynamic(DynamicPlugin {
-                kind: DynamicPluginKind::ListCases { cases },
+                kind: DynamicPluginKind::ListProperties { props },
                 ..
             }),
             Modifier::Builtin { value, .. },
-        ) => cases.contains_key(*value),
+        ) => props.contains_key(*value),
 
         (
             CustomPlugin::Static(Plugin {

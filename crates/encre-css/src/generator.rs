@@ -40,7 +40,6 @@ pub struct ContextHandle<'a, 'b, 'c, 'd, 'e> {
     selector: &'e Selector<'e>,
 }
 
-// TODO: merge these cases together using traits
 fn push_css_lines(prop: &StaticPropertyName, value: &str, context: &mut ContextHandle) {
     match prop {
         PropertyName::SingleProp(prop) => {
@@ -197,7 +196,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
     match (&plugin, context.modifier) {
         (
             CustomPlugin::Static(Plugin {
-                kind: PluginKind::ListCases { cases },
+                kind: PluginKind::ListProperties { props },
                 extra_lines,
                 extra_class,
                 ..
@@ -206,7 +205,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
         ) => {
             add_extra_css(plugin, context, value);
 
-            let lines = *cases
+            let lines = *props
                 .get(value)
                 .expect("key existence was checked in can_handle");
 
@@ -228,7 +227,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
         }
         (
             CustomPlugin::Dynamic(DynamicPlugin {
-                kind: DynamicPluginKind::ListCases { cases },
+                kind: DynamicPluginKind::ListProperties { props },
                 extra_lines,
                 extra_class,
                 ..
@@ -237,7 +236,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
         ) => {
             add_extra_css(plugin, context, value);
 
-            let lines = cases
+            let lines = props
                 .get(*value)
                 .expect("key existence was checked in can_handle");
 

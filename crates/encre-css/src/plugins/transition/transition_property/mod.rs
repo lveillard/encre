@@ -2,8 +2,8 @@
 #![doc(alias = "transition")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListCases {
-    cases: phf_map! {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
+    props: phf_map! {
         "transition" => &[
             "transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;",
             "transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);",

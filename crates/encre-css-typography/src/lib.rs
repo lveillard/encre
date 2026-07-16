@@ -1063,8 +1063,8 @@ const PROSE_INVERT_CSS: &str = "--en-prose-body: var(--en-prose-invert-body);
 --en-prose-kbd-text: var(--en-prose-invert-kbd-text);
 --en-prose-kbd-bg: var(--en-prose-invert-kbd-bg);";
 
-const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListCases {
-    cases: phf_map! {
+const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
+    props: phf_map! {
         "prose" => &[],
         "prose-invert" => &[],
         "prose-gray" => PROSE_GRAY_CSS,

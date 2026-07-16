@@ -109,8 +109,8 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
         )
     {
         match &plugin.kind {
-            PluginKind::ListCases { cases } => {
-                if let Some(namespace) = plugin.list_namespace {
+            PluginKind::ListProperties { props } => {
+                if let Some(namespace) = plugin.namespace {
                     trie.insert(
                         namespace,
                         TrieData {
@@ -121,7 +121,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                         },
                     );
                 } else {
-                    for class in cases.keys() {
+                    for class in props.keys() {
                         trie.insert(
                             class,
                             TrieData {
@@ -135,7 +135,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                 }
             }
             PluginKind::ListValues { values, .. } => {
-                if let Some(namespace) = plugin.list_namespace {
+                if let Some(namespace) = plugin.namespace {
                     trie.insert(
                         namespace,
                         TrieData {
@@ -177,7 +177,6 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
         }
     }
 
-    // TODO: merge these cases together
     for (order, plugin) in config
         .custom_plugins
         .iter()
@@ -191,8 +190,8 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
         })
     {
         match &plugin.kind {
-            PluginKind::ListCases { cases } => {
-                if let Some(namespace) = &plugin.list_namespace {
+            PluginKind::ListProperties { props } => {
+                if let Some(namespace) = &plugin.namespace {
                     trie.insert(
                         namespace,
                         TrieData {
@@ -203,7 +202,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                         },
                     );
                 } else {
-                    for class in cases.keys() {
+                    for class in props.keys() {
                         trie.insert(
                             class,
                             TrieData {
@@ -217,7 +216,7 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                 }
             }
             PluginKind::ListValues { values, .. } => {
-                if let Some(namespace) = &plugin.list_namespace {
+                if let Some(namespace) = &plugin.namespace {
                     trie.insert(
                         namespace,
                         TrieData {

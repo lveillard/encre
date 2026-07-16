@@ -173,8 +173,8 @@ pub enum PropertyName<Str, ArrayStr> {
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
-    ListCases {
-        cases: MapArrayStr,
+    ListProperties {
+        props: MapArrayStr,
     },
     ListValues {
         prop: PropertyName<Str, ArrayStr>,
@@ -195,7 +195,7 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
         divide_by: f32,
     },
 
-    // TODO(doc): by default every arbitrary value is accepted, used to disambiguate when multiple plugins of
+    // TODO(doc): by default every arbitrary value is accepted, hints/matchers used to disambiguate when multiple plugins of
     // the same namespace have arbitrary values
     Arbitrary {
         namespace: Str,
@@ -435,7 +435,7 @@ pub struct Plugin<Str, ArrayStr, MapStr, MapArrayStr, ArrayHints, ArrayMatchers>
     pub(crate) arbitrary_hints: Option<ArrayHints>,
     pub(crate) arbitrary_matchers: Option<(ArrayMatchers, PluginArbitraryMatcherModifier)>,
     pub(crate) arbitrary_shadow_color_replacement: Option<Str>,
-    pub(crate) list_namespace: Option<Str>,
+    pub(crate) namespace: Option<Str>,
 }
 
 impl StaticPlugin {
@@ -465,7 +465,7 @@ impl StaticPlugin {
             arbitrary_hints: None,
             arbitrary_matchers: None,
             arbitrary_shadow_color_replacement: None,
-            list_namespace: None,
+            namespace: None,
         }
     }
 
@@ -701,16 +701,16 @@ impl StaticPlugin {
     }
 
     #[must_use]
-    pub const fn list_namespace(mut self, list_namespace: &'static str) -> Self {
+    pub const fn namespace(mut self, namespace: &'static str) -> Self {
         assert!(
             matches!(
                 self.kind,
-                PluginKind::ListValues { .. } | PluginKind::ListCases { .. }
+                PluginKind::ListValues { .. } | PluginKind::ListProperties { .. }
             ),
-            "Plugin::list_namespace can only be used with PluginKind::ListValues or PluginKind::ListCases. For other kinds, use the built-in `namespace` field"
+            "Plugin::namespace can only be used with PluginKind::ListValues or PluginKind::ListProperties. For other kinds, use the built-in `namespace` field"
         );
 
-        self.list_namespace = Some(list_namespace);
+        self.namespace = Some(namespace);
         self
     }
 }
@@ -743,7 +743,7 @@ impl DynamicPlugin {
             arbitrary_hints: None,
             arbitrary_matchers: None,
             arbitrary_shadow_color_replacement: None,
-            list_namespace: None,
+            namespace: None,
         }
     }
 }

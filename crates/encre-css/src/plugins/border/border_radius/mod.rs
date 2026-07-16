@@ -19,7 +19,7 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlu
                 "full" => "9999px",
             },
         })
-        .list_namespace(namespace),
+        .namespace(namespace),
         Plugin::new(PluginKind::Arbitrary { namespace, prop })
             .hints(&[])
             .matchers(&[Length, Percentage], PluginArbitraryMatcherModifier::SpaceSeparated),

@@ -11,8 +11,8 @@ pub(crate) const PLUGIN_LIST_1: StaticPlugin = Plugin::new(PluginKind::ListValue
     },
 });
 
-pub(crate) const PLUGIN_LIST_2: StaticPlugin = Plugin::new(PluginKind::ListCases {
-    cases: phf_map! {
+pub(crate) const PLUGIN_LIST_2: StaticPlugin = Plugin::new(PluginKind::ListProperties {
+    props: phf_map! {
         "outline-hidden" => &[
             "outline: 2px solid transparent;",
             "outline-offset: 2px;"

@@ -10,7 +10,7 @@ pub(crate) const PLUGIN_SPACING: StaticPlugin = Plugin::new(PluginKind::Spacing 
 pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("min-width"),
     values: CSS_SIZE_VALUES_HORIZONTAL,
-}).list_namespace("min-w");
+}).namespace("min-w");
 
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "min-w",

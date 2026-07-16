@@ -2,8 +2,8 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::new(PluginKind::ListCases {
-    cases: phf_map! {
+pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::new(PluginKind::ListProperties {
+    props: phf_map! {
         "line-clamp-none" => &[
             "-webkit-line-clamp: unset;"
         ]

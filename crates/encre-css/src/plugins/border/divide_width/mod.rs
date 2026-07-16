@@ -3,8 +3,8 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN_X_1: StaticPlugin = Plugin::new(PluginKind::ListCases {
-    cases: phf_map! {
+pub(crate) const PLUGIN_X_1: StaticPlugin = Plugin::new(PluginKind::ListProperties {
+    props: phf_map! {
         "divide-x-reverse" => &["--en-divide-x-reverse: 1;"],
     },
 })
@@ -36,8 +36,8 @@ pub(crate) const PLUGIN_X_3: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
 .extra_lines(&["--en-divide-x-reverse: 0;"])
 .extra_class(" > :not([hidden]) ~ :not([hidden])");
 
-pub(crate) const PLUGIN_Y_1: StaticPlugin = Plugin::new(PluginKind::ListCases {
-    cases: phf_map! {
+pub(crate) const PLUGIN_Y_1: StaticPlugin = Plugin::new(PluginKind::ListProperties {
+    props: phf_map! {
         "divide-y-reverse" => &["--en-divide-y-reverse: 1;"],
     },
 })

@@ -39,7 +39,7 @@ pub(crate) const PLUGIN_LIST_1: StaticPlugin = Plugin::new(PluginKind::ListValue
 pub(crate) const PLUGIN_LIST_2: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("max-width"),
     values: CSS_SIZE_VALUES_HORIZONTAL,
-}).list_namespace("max-w");
+}).namespace("max-w");
 
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "max-w",

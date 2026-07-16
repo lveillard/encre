@@ -10,7 +10,7 @@ pub(crate) const PLUGIN_SPACING: StaticPlugin = Plugin::new(PluginKind::Spacing 
 pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("max-height"),
     values: CSS_SIZE_VALUES_VERTICAL,
-}).list_namespace("max-h");
+}).namespace("max-h");
 
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
     namespace: "max-h",

@@ -2,8 +2,8 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListCases {
-    cases: phf_map! {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
+    props: phf_map! {
         "overscroll-auto" => &["overscroll-behavior: auto;"],
         "overscroll-x-auto" => &["overscroll-behavior-x: auto;"],
         "overscroll-y-auto" => &["overscroll-behavior-y: auto;"],
