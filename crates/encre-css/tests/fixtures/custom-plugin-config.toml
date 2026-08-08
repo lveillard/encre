@@ -3,5 +3,5 @@ preflight = "none"
 [[custom_plugins]]
 
 [custom_plugins.kind.ListValues]
-prop = { SingleProp = "content" }
+prop = { single_prop = "content" }
 values = { emoji-rocket = '"🚀"', emoji-tada = '"🎉"' }
