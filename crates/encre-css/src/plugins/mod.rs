@@ -242,14 +242,8 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
     ///         // `emoji` extra field of the configuration
     ///         if let Modifier::Builtin { value, .. } = context.modifier
     ///         && let Some(value) = extract_emoji_value(&context.config, value) {
-    ///             generate_at_rules(context, |context| {
-    ///                 generate_class(
-    ///                     context,
-    ///                     |context| {
-    ///                         context.buffer.line(format_args!("content: \"{value}\";"));
-    ///                     },
-    ///                     "",
-    ///                 );
+    ///             generate_wrapper(context, |context| {
+    ///                 context.buffer.line(format_args!("content: \"{value}\";"));
     ///             });
     ///         }
     ///     },
@@ -283,8 +277,24 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
     /// [`generate_wrapper`]: crate::generator::generate_wrapper
     #[serde(skip)]
     Functional {
+        /// The namespace (i.e common prefix) that all classes need to start with in order to be
+        /// matched by this plugin.
         namespace: Str,
+
+        /// A function returning whether a specific class (passed inside the context) is matched by
+        /// this plugin.
         can_handle: fn(&ContextCanHandle) -> bool,
+
+        /// A function called to generate the CSS of a matched class.
+        ///
+        /// It can use [`generate_wrapper`] (and the more powerful [`generate_at_rules`] and [`generate_class`])
+        /// to generate the CSS rule wrapping.
+        ///
+        /// Various notes:
+        ///
+        /// - The CSS written should end with a newline
+        /// - Arbitrary values are already normalized (e.g. underscores are replaced by spaces)
+        /// - This function is guaranteed to be called only once per selector
         handle: fn(&mut ContextHandle),
     },
 }
