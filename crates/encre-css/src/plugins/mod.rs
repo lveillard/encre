@@ -185,36 +185,112 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
         props: MapArrayStr,
     },
     ListValues {
+        /// The CSS property name of the generated CSS rule.
+        ///
+        /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
+        /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
+        /// properties.
         prop: PropertyName<Str, ArrayStr>,
         values: MapStr,
     },
 
     Spacing {
+        /// The namespace (i.e common prefix) that all classes need to start with in order to be
+        /// matched by this plugin.
         namespace: Str,
+
+        /// The CSS property name of the generated CSS rule.
+        ///
+        /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
+        /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
+        /// properties.
         prop: PropertyName<Str, ArrayStr>,
     },
     Color {
+        /// The namespace (i.e common prefix) that all classes need to start with in order to be
+        /// matched by this plugin.
         namespace: Str,
+
+        /// The CSS property name of the generated CSS rule.
+        ///
+        /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
+        /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
+        /// properties.
         prop: PropertyName<Str, ArrayStr>,
     },
     Number {
+        /// The namespace (i.e common prefix) that all classes need to start with in order to be
+        /// matched by this plugin.
         namespace: Str,
+
+        /// The CSS property name of the generated CSS rule.
+        ///
+        /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
+        /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
+        /// properties.
         prop: PropertyName<Str, ArrayStr>,
     },
 
-    // TODO(doc): by default every arbitrary value is accepted, hints/matchers used to disambiguate when multiple plugins of
-    // the same namespace have arbitrary values
+    /// Define a plugin supporting [`arbitrary values`], i.e all selectors in the form
+    /// `<namespace>-[...]`
+    ///
+    /// It directly copies the contents given inside brackets as the value of the `<prop>` CSS
+    /// propertie(s).
+    ///
+    /// By default, all values are allowed by the plugin and it's up to the final user to only use
+    /// valid CSS values for the property. However, if several [`PluginKind::Arbitrary`] plugins
+    /// share the same namespace, it's *required* to disambiguate which plugins should handle the
+    /// selector. In this case, [`Plugin::matchers`] and [`Plugin::hints`] should be used to
+    /// only handle the selector if the arbitrary CSS value has a specific CSS type.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::{Config, generate};
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+    ///     namespace: "mask",
+    ///     prop: SingleProp("mask-position"),
+    /// });
+    ///
+    /// let mut config = Config::default();
+    /// config.register_plugin(&PLUGIN);
+    ///
+    /// let generated = generate(["mask-[25%]", "mask-[left_center]"], &config);
+    ///
+    /// assert!(generated.ends_with(r".mask-\[25\%\] {
+    ///   mask-position: 25%;
+    /// }
+    ///
+    /// .mask-\[left_center\] {
+    ///   mask-position: left center;
+    /// }"));
+    /// ```
+    ///
+    /// [`arbitrary values`]: crate::selector
     Arbitrary {
+        /// The namespace (i.e common prefix) that all classes need to start with in order to be
+        /// matched by this plugin.
         namespace: Str,
+
+        /// The CSS property name of the generated CSS rule.
+        ///
+        /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
+        /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
+        /// properties.
         prop: PropertyName<Str, ArrayStr>,
     },
 
-    /// A powerful kind allowing the use a Rust function to handle all selectors within a single
-    /// namespace.
+    /// A powerful kind allowing the use a Rust function to handle all selectors in the form
+    /// `<namespace>-...`.
     ///
     /// This plugin kind is (of course) not serializable.
     ///
-    /// The [`handle`] field takes a [`Context`] structure containing the modifier, the current
+    /// The [`can_handle`] field function takes a [`ContextCanHandle`] structure and returns whether
+    /// the plugin is capable of handling the utility class given in the context.
+    ///
+    /// The [`handle`] field function takes a [`ContextHandle`] structure containing the modifier, the current
     /// configuration and a buffer containing the whole CSS currently generated. You can use the
     /// [`Buffer`] structure (especially the [`Buffer::line`] and [`Buffer::lines`] functions) to
     /// push CSS declarations to it, they will be automatically indented.
@@ -263,7 +339,6 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
     /// config.register_plugin(&PLUGIN);
     ///
     /// let generated = generate(["emoji-tada", "emoji-rocket"], &config);
-    /// dbg!(&generated);
     ///
     /// assert!(generated.ends_with(".emoji-rocket {
     ///   content: \"\u{1f680}\";
@@ -277,6 +352,7 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
     /// [`Buffer`]: crate::utils::buffer::Buffer
     /// [`Buffer::line`]: crate::utils::buffer::Buffer::line
     /// [`Buffer::lines`]: crate::utils::buffer::Buffer::lines
+    /// [`can_handle`]: PluginKind::Functional::can_handle
     /// [`handle`]: PluginKind::Functional::handle
     /// [`generate_at_rules`]: crate::generator::generate_at_rules
     /// [`generate_class`]: crate::generator::generate_class
@@ -692,6 +768,7 @@ impl StaticPlugin {
         self
     }
 
+    // TODO(doc): complete example with several Arbitrary plugins sharing the same namespace
     #[must_use]
     pub const fn matchers(
         mut self,

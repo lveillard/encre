@@ -116,6 +116,23 @@ use serde::{Deserialize, Serialize};
 /// Each hint is suffixed by `:` and followed by the value, e.g `bg-[color:var(--primary)]` will
 /// generate a `background-color: var(--primary);` CSS property because the hint will force the use
 /// of the `background-color` plugin even though the CSS value type cannot be inferred.
+///
+/// List of all type hints:
+///
+/// - `color`
+/// - `length`
+/// - `line-width`
+/// - `line-style`
+/// - `image`
+/// - `url`
+/// - `position`
+/// - `percentage`
+/// - `number`
+/// - `generic-name`
+/// - `family-name`
+/// - `absolute-size`
+/// - `relative-size`
+/// - `shadow`
 #[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum ArbitraryHint {
     /// A shadow CSS property value
@@ -213,20 +230,7 @@ pub enum Modifier<'a> {
     /// `bg-[length:var(--foo)]` will generate `background-size: var(--foo);` (using the
     /// [`background size`](crate::plugins::background::background_size) utility).
     ///
-    /// List of all type hints:
-    /// - `color`
-    /// - `length`
-    /// - `line-width`
-    /// - `image`
-    /// - `url`
-    /// - `position`
-    /// - `percentage`
-    /// - `number`
-    /// - `generic-name`
-    /// - `family-name`
-    /// - `absolute-size`
-    /// - `relative-size`
-    /// - `shadow`
+    /// See [`ArbitraryHint`] for a list of type hints.
     Arbitrary {
         /// The type hint needed for ambiguous values.
         hint: Option<ArbitraryHint>,
