@@ -39,7 +39,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     generator::{ContextCanHandle, ContextHandle},
-    plugins::PropertyName::MultipleProps,
     selector::ArbitraryHint,
 };
 
@@ -94,12 +93,20 @@ pub type StaticPluginArbitraryMatcher =
     PluginArbitraryMatcher<&'static str, &'static [&'static str]>;
 pub type DynamicPluginArbitraryMatcher = PluginArbitraryMatcher<String, Vec<String>>;
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
+#[derive(Debug, PartialEq, Clone, Serialize)]
 pub(crate) enum CustomPlugin {
-    #[serde(skip)]
+    #[serde(skip_serializing)]
     Static(&'static StaticPlugin),
     Dynamic(DynamicPlugin),
+}
+
+impl<'de> Deserialize<'de> for CustomPlugin {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        Ok(Self::Dynamic(DynamicPlugin::deserialize(deserializer)?))
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Serialize, Deserialize)]
@@ -634,16 +641,16 @@ impl StaticPlugin {
             matches!(
                 self.kind,
                 PluginKind::Arbitrary {
-                    prop: MultipleProps(..),
+                    prop: PropertyName::MultipleProps(..),
                     ..
                 } | PluginKind::Number {
-                    prop: MultipleProps(..),
+                    prop: PropertyName::MultipleProps(..),
                     ..
                 } | PluginKind::Spacing {
-                    prop: MultipleProps(..),
+                    prop: PropertyName::MultipleProps(..),
                     ..
                 } | PluginKind::Color {
-                    prop: MultipleProps(..),
+                    prop: PropertyName::MultipleProps(..),
                     ..
                 }
             ),
@@ -654,16 +661,16 @@ impl StaticPlugin {
             matches!(
                 self.kind,
                 PluginKind::Arbitrary {
-                    prop: MultipleProps(p),
+                    prop: PropertyName::MultipleProps(p),
                     ..
                 } | PluginKind::Number {
-                    prop: MultipleProps(p),
+                    prop: PropertyName::MultipleProps(p),
                     ..
                 } | PluginKind::Spacing {
-                    prop: MultipleProps(p),
+                    prop: PropertyName::MultipleProps(p),
                     ..
                 } | PluginKind::Color {
-                    prop: MultipleProps(p),
+                    prop: PropertyName::MultipleProps(p),
                     ..
                 } if p.len() == templates.len()
             ),
