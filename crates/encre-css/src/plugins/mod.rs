@@ -200,7 +200,6 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
     Number {
         namespace: Str,
         prop: PropertyName<Str, ArrayStr>,
-        divide_by: f32,
     },
 
     // TODO(doc): by default every arbitrary value is accepted, hints/matchers used to disambiguate when multiple plugins of
@@ -344,7 +343,6 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 /// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
 ///     namespace: "stroke",
 ///     prop: SingleProp("stroke-width"),
-///     divide_by: 1.0,
 /// })
 /// .template("{}px");
 ///
@@ -454,6 +452,7 @@ pub struct Plugin<Str, ArrayStr, MapStr, MapArrayStr, ArrayHints, ArrayMatchers>
     pub(crate) arbitrary_matchers: Option<(ArrayMatchers, PluginArbitraryMatcherModifier)>,
     pub(crate) arbitrary_shadow_color_replacement: Option<Str>,
     pub(crate) namespace: Option<Str>,
+    pub(crate) divide_by: Option<f32>,
 }
 
 impl StaticPlugin {
@@ -484,6 +483,7 @@ impl StaticPlugin {
             arbitrary_matchers: None,
             arbitrary_shadow_color_replacement: None,
             namespace: None,
+            divide_by: None,
         }
     }
 
@@ -731,6 +731,20 @@ impl StaticPlugin {
         self.namespace = Some(namespace);
         self
     }
+
+    #[must_use]
+    pub const fn divide_by(mut self, factor: f32) -> Self {
+        assert!(
+            matches!(
+                self.kind,
+                PluginKind::Number { .. }
+            ),
+            "Plugin::divide_by can only be used with PluginKind::Number."
+        );
+
+        self.divide_by = Some(factor);
+        self
+    }
 }
 
 impl DynamicPlugin {
@@ -762,6 +776,7 @@ impl DynamicPlugin {
             arbitrary_matchers: None,
             arbitrary_shadow_color_replacement: None,
             namespace: None,
+            divide_by: None,
         }
     }
 }

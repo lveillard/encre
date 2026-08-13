@@ -9,8 +9,8 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> P {
         Plugin::new(PluginKind::Number {
             namespace,
             prop,
-            divide_by: 100.0,
         })
+        .divide_by(100.0)
         .has_negative()
         .extra_lines(&[CSS_TRANSFORM]),
         Plugin::new(PluginKind::Arbitrary { namespace, prop }).extra_lines(&[CSS_TRANSFORM]),

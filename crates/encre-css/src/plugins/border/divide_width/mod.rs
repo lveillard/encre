@@ -13,7 +13,6 @@ pub(crate) const PLUGIN_X_1: StaticPlugin = Plugin::new(PluginKind::ListProperti
 pub(crate) const PLUGIN_X_2: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "divide-x",
     prop: MultipleProps(&["border-inline-start-width", "border-inline-end-width"]),
-    divide_by: 1.0,
 })
 .has_empty()
 .template_multiple(&[
@@ -46,7 +45,6 @@ pub(crate) const PLUGIN_Y_1: StaticPlugin = Plugin::new(PluginKind::ListProperti
 pub(crate) const PLUGIN_Y_2: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "divide-y",
     prop: MultipleProps(&["border-block-start-width", "border-block-end-width"]),
-    divide_by: 1.0,
 })
 .has_empty()
 .template_multiple(&[

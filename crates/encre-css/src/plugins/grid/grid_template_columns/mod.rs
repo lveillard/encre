@@ -5,7 +5,6 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN_NUMBER: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "grid-cols",
     prop: SingleProp("grid-template-columns"),
-    divide_by: 1.0,
 })
 .template("repeat({}, minmax(0, 1fr))");
 

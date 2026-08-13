@@ -6,7 +6,6 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "backdrop-hue-rotate",
     prop: SingleProp("--en-backdrop-hue-rotate"),
-    divide_by: 1.0,
 })
 .has_negative()
 .extra_lines(&CSS_BACKDROP_FILTER)

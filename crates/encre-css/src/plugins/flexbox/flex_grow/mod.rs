@@ -5,5 +5,4 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "grow",
     prop: SingleProp("flex-grow"),
-    divide_by: 1.0,
 }).has_empty();

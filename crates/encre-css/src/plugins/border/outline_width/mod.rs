@@ -6,7 +6,6 @@ use PluginArbitraryMatcher::*;
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "outline",
     prop: SingleProp("outline-width"),
-    divide_by: 1.0,
 })
 .has_empty()
 .template("{}px");

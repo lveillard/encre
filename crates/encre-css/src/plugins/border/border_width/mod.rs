@@ -10,7 +10,6 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> P {
         Plugin::new(PluginKind::Number {
             namespace,
             prop,
-            divide_by: 1.0,
         })
         .has_empty()
         .template("{}px"),

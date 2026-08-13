@@ -55,7 +55,6 @@ pub(crate) const PLUGIN_LINEAR_1: StaticPlugin = Plugin::new(PluginKind::ListVal
 pub(crate) const PLUGIN_LINEAR_2: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "bg-linear",
     prop: SingleProp("background-image"),
-    divide_by: 1.0,
 })
 .has_negative()
 .template("linear-gradient({}deg in {/}, var(--en-gradient-stops))")
@@ -92,7 +91,6 @@ pub(crate) const PLUGIN_CONIC_1: StaticPlugin = Plugin::new(PluginKind::ListValu
 pub(crate) const PLUGIN_CONIC_2: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "bg-conic",
     prop: SingleProp("background-image"),
-    divide_by: 1.0,
 })
 .has_negative()
 .template("conic-gradient(from {}deg in {/}, var(--en-gradient-stops))")

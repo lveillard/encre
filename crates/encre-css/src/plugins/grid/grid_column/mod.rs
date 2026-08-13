@@ -6,7 +6,6 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName, template: &'s
     Plugin::new(PluginKind::Number {
         namespace,
         prop,
-        divide_by: 1.0,
     })
     .template(template)
 }

@@ -12,7 +12,6 @@ pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::new(PluginKind::ListValues 
 pub(crate) const PLUGIN_NUMBER: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "underline-offset",
     prop: SingleProp("text-underline-offset"),
-    divide_by: 1.0,
 })
 .template("{}px");
 

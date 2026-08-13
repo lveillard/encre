@@ -535,10 +535,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
         (
             CustomPlugin::Static(
                 inner_plugin @ Plugin {
-                    kind:
-                        PluginKind::Number {
-                            prop, divide_by, ..
-                        },
+                    kind: PluginKind::Number { prop, .. },
+                    divide_by,
                     extra_slash,
                     extra_lines,
                     extra_class,
@@ -568,7 +566,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         } else if value == "auto" {
                             String::from("auto")
                         } else {
-                            (value.parse::<usize>().unwrap() as f32 / divide_by * coeff).to_string()
+                            (value.parse::<usize>().unwrap() as f32 / divide_by.unwrap_or(1.0) * coeff).to_string()
                         };
 
                         push_css_lines_with_templating(
@@ -590,10 +588,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
         (
             CustomPlugin::Dynamic(
                 inner_plugin @ DynamicPlugin {
-                    kind:
-                        DynamicPluginKind::Number {
-                            prop, divide_by, ..
-                        },
+                    kind: DynamicPluginKind::Number { prop, .. },
+                    divide_by,
                     extra_slash,
                     extra_lines,
                     extra_class,
@@ -623,7 +619,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         } else if value == "auto" {
                             String::from("auto")
                         } else {
-                            (value.parse::<usize>().unwrap() as f32 / divide_by * coeff).to_string()
+                            (value.parse::<usize>().unwrap() as f32 / divide_by.unwrap_or(1.0) * coeff).to_string()
                         };
 
                         parsed_push_css_lines_with_templating(

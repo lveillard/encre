@@ -6,8 +6,8 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "sepia",
     prop: SingleProp("--en-sepia"),
-    divide_by: 100.0,
 })
+.divide_by(100.0)
 .has_empty()
 .extra_lines(&[CSS_FILTER])
 .template("sepia({})");

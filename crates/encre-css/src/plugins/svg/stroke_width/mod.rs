@@ -6,7 +6,6 @@ use PluginArbitraryMatcher::*;
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "stroke",
     prop: SingleProp("stroke-width"),
-    divide_by: 1.0,
 })
 .template("{}px");
 

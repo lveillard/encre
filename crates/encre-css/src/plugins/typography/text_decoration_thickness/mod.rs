@@ -6,7 +6,6 @@ use PluginArbitraryMatcher::*;
 pub(crate) const PLUGIN_NUMBER: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "decoration",
     prop: SingleProp("text-decoration-thickness"),
-    divide_by: 1.0,
 })
 .template("{}px");
 

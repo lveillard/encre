@@ -13,7 +13,6 @@ pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::new(PluginKind::ListPropert
 pub(crate) const PLUGIN_NUMBER: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "line-clamp",
     prop: SingleProp("-webkit-line-clamp"),
-    divide_by: 1.0,
 })
 .extra_lines(&[
     "overflow: hidden;",

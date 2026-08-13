@@ -2,8 +2,8 @@ preflight = "none"
 
 [[custom_plugins]]
 template = "{}px"
+divide_by = 1
 
 [custom_plugins.kind.Number]
 namespace = "shape-roof"
 prop = ["border-inline", "border-top"]
-divide_by = 1

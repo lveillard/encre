@@ -14,5 +14,4 @@ pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::new(PluginKind::ListValues 
 pub(crate) const PLUGIN_NUM: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "order",
     prop: SingleProp("order"),
-    divide_by: 1.0,
 }).has_negative();

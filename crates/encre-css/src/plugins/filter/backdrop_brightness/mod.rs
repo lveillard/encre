@@ -6,7 +6,7 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
     namespace: "backdrop-brightness",
     prop: SingleProp("--en-backdrop-brightness"),
-    divide_by: 100.0,
 })
+.divide_by(100.0)
 .extra_lines(&CSS_BACKDROP_FILTER)
 .template("brightness({})");
