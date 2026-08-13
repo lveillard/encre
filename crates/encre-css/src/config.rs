@@ -2483,8 +2483,6 @@ mod tests {
 
     #[test]
     fn gen_css_with_custom_parsed_plugin() {
-        use crate::prelude::build_plugin::*;
-
         let config = match Config::from_file("tests/fixtures/custom-plugin-config.toml") {
             Ok(c) => c,
             Err(e) => panic!("{e}"),
@@ -2497,6 +2495,26 @@ mod tests {
             String::from(
                 ".emoji-tada {
   content: \"\u{1f389}\";
+}"
+            )
+        );
+    }
+
+    #[test]
+    fn gen_css_with_custom_parsed_plugin_and_multiple_props() {
+        let config = match Config::from_file("tests/fixtures/custom-plugin-config-multiple.toml") {
+            Ok(c) => c,
+            Err(e) => panic!("{e}"),
+        };
+
+        let generated = generate(["shape-roof-1"], &config);
+
+        assert_eq!(
+            generated,
+            String::from(
+                ".shape-roof-1 {
+  border-inline: 1px;
+  border-top: 1px;
 }"
             )
         );

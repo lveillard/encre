@@ -166,7 +166,7 @@ pub enum PluginArbitraryMatcher<Str, ArrayStr> {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(untagged)]
 pub enum PropertyName<Str, ArrayStr> {
     SingleProp(Str),
     MultipleProps(ArrayStr),
