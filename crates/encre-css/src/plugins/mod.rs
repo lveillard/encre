@@ -733,12 +733,92 @@ impl StaticPlugin {
         self
     }
 
+    /// Add one or several extra CSS line(s) **inside** the CSS rule generated for the utility class.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::{Config, generate};
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Spacing {
+    ///     namespace: "custom-translate-x",
+    ///     prop: SingleProp("--translate-x"),
+    /// }).extra_lines(&["transform: translate(var(--translate-x), 12px);"]);
+    ///
+    /// let mut config = Config::default();
+    /// config.register_plugin(&PLUGIN);
+    ///
+    /// let generated = generate(["custom-translate-x-8"], &config);
+    ///
+    /// assert!(generated.ends_with(r".custom-translate-x-8 {
+    ///   --translate-x: 2rem;
+    ///   transform: translate(var(--translate-x), 12px);
+    /// }"));
+    /// ```
     #[must_use]
     pub const fn extra_lines(mut self, extra_lines: &'static [&'static str]) -> Self {
         self.extra_lines = Some(extra_lines);
         self
     }
 
+    /// Add one or several extra CSS line(s) **outside** the CSS rule generated for the utility class.
+    ///
+    /// The argument is a map which allows choosing the added CSS based on the modifier value.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::{Config, generate};
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// const SPIN_ANIMATION: &str = "@keyframes anim-spin {
+    ///   from {
+    ///     transform: rotate(0deg);
+    ///   }
+    ///   to {
+    ///     transform: rotate(360deg);
+    ///   }
+    /// }\n\n";
+    ///
+    /// const FADE_IN_ANIMATION: &str = "@keyframes anim-fade-in {
+    ///   from {
+    ///     opacity: 0;
+    ///   }
+    ///   to {
+    ///     opacity: 1;
+    ///   }
+    /// }\n\n";
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+    ///     prop: SingleProp("animation"),
+    ///     values: phf_map! {
+    ///         "custom-animate-spin" => "anim-spin",
+    ///         "custom-animate-fade-in" => "anim-fade-in",
+    ///     },
+    /// }).extra_css(phf_map! {
+    ///     "custom-animate-spin" => SPIN_ANIMATION,
+    ///     "custom-animate-fade-in" => FADE_IN_ANIMATION,
+    /// });
+    ///
+    /// let mut config = Config::default();
+    /// config.register_plugin(&PLUGIN);
+    ///
+    /// let generated = generate(["custom-animate-spin"], &config);
+    ///
+    /// assert!(generated.ends_with(r"@keyframes anim-spin {
+    ///   from {
+    ///     transform: rotate(0deg);
+    ///   }
+    ///   to {
+    ///     transform: rotate(360deg);
+    ///   }
+    /// }
+    ///
+    /// .custom-animate-spin {
+    ///   animation: anim-spin;
+    /// }"));
+    /// ```
     #[must_use]
     pub const fn extra_css(mut self, extra_css: phf::Map<&'static str, &'static str>) -> Self {
         self.extra_css = Some(extra_css);
