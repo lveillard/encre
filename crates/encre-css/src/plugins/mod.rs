@@ -529,6 +529,25 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 /// Have a look at <https://gitlab.com/encre-org/encre-css/tree/main/crates/encre-css/src/plugins>
 /// for more examples.
 ///
+/// # Define a plugin in TOML
+///
+/// All plugin kinds except [`PluginKind::Functional`] are serializable, thus can be defined in
+/// `encre-css`'s TOML configuration (or every other language that uses a `serde` deserializer).
+///
+/// To do that, you need to add a new entry in the [`Config::custom_plugins`] list. You can use
+/// every [`Plugin`] configuration option, just use the method name as a key.
+///
+/// ### Example
+///
+/// ```toml
+/// [[custom_plugins]]
+/// template = "{}px"
+///
+/// [custom_plugins.kind.Number]
+/// namespace = "stroke"
+/// prop = "stroke-width"
+/// ```
+///
 /// [`Config::register_plugin`]: crate::Config::register_plugin
 /// [`Config`]: crate::Config
 /// [`Functional`]: PluginKind::Functional
