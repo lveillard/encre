@@ -576,6 +576,18 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 /// prop = "stroke-width"
 /// ```
 ///
+/// # Quirks
+///
+/// - Only some [`Plugin`] methods are useful to use with a specific [`PluginKind`],
+/// e.g [`Plugin::has_full`] has no sense with a [`PluginKind::ListValues`]. When defining plugins in a
+/// Rust const environment, every methods of [`Plugin`] contains a compile-time check that the
+/// method has a sense with the chosen [`PluginKind`], however, **this check does not happen when
+/// declaring plugins in TOML and these options will silently be ignored**
+/// - `encre-css` builds a [trie structure](https://en.wikipedia.org/wiki/Trie) based on the
+/// namespace of the plugins to optimize matching a utility class to a specific plugin, so it's
+/// **highly discouraged to leave the namespace of a plugin empty**, otherwise the performances will
+/// decrease heavily.
+///
 /// [`Config::register_plugin`]: crate::Config::register_plugin
 /// [`Config`]: crate::Config
 /// [`Functional`]: PluginKind::Functional
