@@ -60,6 +60,10 @@ pub mod transform;
 pub mod transition;
 pub mod typography;
 
+/// An alias to a [`Plugin`] which can easily be defined in Rust, e.g in const environments.
+///
+/// It requires using `&'static str` for all configuration. If you need to use `String`s for some
+/// dynamic configuration, use [`DynamicPlugin`] instead.
 pub type StaticPlugin = Plugin<
     &'static str,
     &'static [&'static str],
@@ -68,6 +72,12 @@ pub type StaticPlugin = Plugin<
     &'static [ArbitraryHint],
     &'static [PluginArbitraryMatcher<&'static str, &'static [&'static str]>],
 >;
+
+/// An alias to a [`Plugin`] which contain configuration defined using `String`s instead of static
+/// string references, likely deserialized from a configuration file.
+///
+/// If you need to define a plugin using Rust without needing any heap-allocated `String`s, use
+/// [`StaticPlugin`] instead.
 pub type DynamicPlugin = Plugin<
     String,
     Vec<String>,
@@ -77,20 +87,35 @@ pub type DynamicPlugin = Plugin<
     Vec<PluginArbitraryMatcher<String, Vec<String>>>,
 >;
 
+/// An alias to a [`PropertyName`] which is defined using `&'static str`, adapted for use in const
+/// environments.
 pub type StaticPropertyName = PropertyName<&'static str, &'static [&'static str]>;
+
+/// An alias to a [`PropertyName`] which is defined using `String`, adapted for use when a name
+/// needs to be dynamic or deserialized.
 pub type DynamicPropertyName = PropertyName<String, Vec<String>>;
 
+/// An alias to a [`PluginKind`] which is defined using `&'static str`, adapted for use in const
+/// environments.
 pub type StaticPluginKind = PluginKind<
     &'static str,
     &'static [&'static str],
     phf::Map<&'static str, &'static str>,
     phf::Map<&'static str, &'static [&'static str]>,
 >;
+
+/// An alias to a [`PluginKind`] which is defined using `String`, adapted for use when a kind
+/// configuration needs to be dynamic or deserialized.
 pub type DynamicPluginKind =
     PluginKind<String, Vec<String>, HashMap<String, String>, HashMap<String, Vec<String>>>;
 
+/// An alias to a [`PluginArbitraryMatcher`] which is defined using `&'static str`, adapted for use in const
+/// environments.
 pub type StaticPluginArbitraryMatcher =
     PluginArbitraryMatcher<&'static str, &'static [&'static str]>;
+
+/// An alias to a [`PluginArbitraryMatcher`] which is defined using `String`, adapted for use when a matcher
+/// configuration needs to be dynamic or deserialized.
 pub type DynamicPluginArbitraryMatcher = PluginArbitraryMatcher<String, Vec<String>>;
 
 #[derive(Debug, PartialEq, Clone, Serialize)]
@@ -154,13 +179,13 @@ pub enum PluginArbitraryMatcher<Str, ArrayStr> {
     /// Match an [`absolute size`](crate::utils::value_matchers::is_matching_absolute_size) CSS property value.
     AbsoluteSize,
 
-    /// Match an [`relative size`](crate::utils::value_matchers::is_matching_relative_size) CSS property value.
+    /// Match a [`relative size`](crate::utils::value_matchers::is_matching_relative_size) CSS property value.
     RelativeSize,
 
-    /// Match an [`line width`](crate::utils::value_matchers::is_matching_line_width`) CSS property value.
+    /// Match a [`line width`](crate::utils::value_matchers::is_matching_line_width`) CSS property value.
     LineWidth,
 
-    /// Match an [`line style`](crate::utils::value_matchers::is_matching_line_style`) CSS property value.
+    /// Match a [`line style`](crate::utils::value_matchers::is_matching_line_style`) CSS property value.
     LineStyle,
 
     /// Match a [`<color>`](crate::utils::value_matchers::is_matching_color`) CSS property value.
@@ -184,10 +209,10 @@ pub enum PluginArbitraryMatcher<Str, ArrayStr> {
     /// Match a [`<position>`](crate::utils::value_matchers::is_matching_position`) CSS property value.
     Position,
 
-    /// Match a [`<angle>`](crate::utils::value_matchers::is_matching_angle`) CSS property value.
+    /// Match an [`<angle>`](crate::utils::value_matchers::is_matching_angle`) CSS property value.
     Angle,
 
-    /// Match a [`<image>`](crate::utils::value_matchers::is_matching_image`) CSS property value.
+    /// Match an [`<image>`](crate::utils::value_matchers::is_matching_image`) CSS property value.
     Image,
 
     /// Match a [`font family name`](crate::utils::value_matchers::is_matching_font_family_name`) CSS property value.
@@ -426,6 +451,9 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 ///
 /// It's common to define several plugins to handle a single utility class, and to define static
 /// plugins as constants ([`Plugin::new`] as well as every [`Plugin`] methods are `const fn`s).
+///
+/// After you have defined a plugin, you need to register it in the [`Config`] structure by calling
+/// [`Config::register_plugin`].
 ///
 /// # Simple example (defines the static values of the `font-family` plugin)
 ///
