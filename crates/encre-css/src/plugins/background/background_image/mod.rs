@@ -34,7 +34,7 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
     prop: SingleProp("background-image"),
 })
 .hints(&[ArbitraryHint::Url, ArbitraryHint::Image])
-.matchers(&[Image], PluginArbitraryMatcherModifier::None);
+.matchers(&[Image], PluginArbitraryMatcherSeparation::None);
 
 pub(crate) const PLUGIN_LINEAR_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-image"),

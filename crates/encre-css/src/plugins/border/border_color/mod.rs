@@ -10,7 +10,7 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> P {
         Plugin::new(PluginKind::Color { namespace, prop }),
         Plugin::new(PluginKind::Arbitrary { namespace, prop })
             .hints(&[ArbitraryHint::Color])
-            .matchers(&[Color], PluginArbitraryMatcherModifier::None),
+            .matchers(&[Color], PluginArbitraryMatcherSeparation::None),
     )
 }
 

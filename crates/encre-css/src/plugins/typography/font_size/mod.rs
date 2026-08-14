@@ -36,4 +36,4 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
     Percentage,
     AbsoluteSize,
     RelativeSize,
-], PluginArbitraryMatcherModifier::None);
+], PluginArbitraryMatcherSeparation::None);

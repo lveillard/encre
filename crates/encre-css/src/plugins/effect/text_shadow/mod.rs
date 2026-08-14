@@ -19,5 +19,5 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
     prop: SingleProp("text-shadow"),
 })
 .hints(&[ArbitraryHint::Shadow])
-.matchers(&[Shadow], PluginArbitraryMatcherModifier::None)
+.matchers(&[Shadow], PluginArbitraryMatcherSeparation::None)
 .shadow_color_replacement("var(--en-text-shadow-color, {})");

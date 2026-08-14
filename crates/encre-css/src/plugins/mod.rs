@@ -109,11 +109,39 @@ impl<'de> Deserialize<'de> for CustomPlugin {
     }
 }
 
+/// When defining a [`PluginArbitraryMatcher`] for a [`PluginKind::Arbitrary`], defines how values
+/// are separated.
+///
+/// A lot of CSS properties allow specifying several values of a single type separated by a
+/// character, e.g `margin` allows [`<length>`](crate::utils::value_matchers::is_matching_length`)
+/// or [`<percentage>`](crate::utils::value_matchers::is_matching_percentage`)
+/// values separated by spaces, to define a specific margin for each side of the CSS layout box.
+///
+/// This enumeration helps matching these values when using a [`PluginArbitraryMatcher`], e.g for
+/// the `margin` example, you would use
+///
+/// ```ignore
+/// Plugin::new(...)
+///     .matchers(&[Length, Percentage], PluginArbitraryMatcherSeparation::Space)
+/// ```
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Serialize, Deserialize)]
-pub enum PluginArbitraryMatcherModifier {
+pub enum PluginArbitraryMatcherSeparation {
+    /// No separation, a single value is matched.
     None,
-    CommaSeparated,
-    SpaceSeparated,
+
+    /// Separated by commas (`,`).
+    ///
+    /// Example: `33px, 42%, 6em`.
+    Comma,
+
+    /// Separated by spaces (` `).
+    ///
+    /// Example: `left top`.
+    Space,
+
+    /// Separated by commas (`,`) then spaces (` `).
+    ///
+    /// Example: `left, 12% 33px, right center`.
     Both,
 }
 
@@ -527,7 +555,7 @@ pub struct Plugin<Str, ArrayStr, MapStr, MapArrayStr, ArrayHints, ArrayMatchers>
     pub(crate) template_multiple: Option<ArrayStr>,
     pub(crate) extra_slash: Option<(MapStr, Str)>,
     pub(crate) arbitrary_hints: Option<ArrayHints>,
-    pub(crate) arbitrary_matchers: Option<(ArrayMatchers, PluginArbitraryMatcherModifier)>,
+    pub(crate) arbitrary_matchers: Option<(ArrayMatchers, PluginArbitraryMatcherSeparation)>,
     pub(crate) arbitrary_shadow_color_replacement: Option<Str>,
     pub(crate) namespace: Option<Str>,
     pub(crate) divide_by: Option<f32>,
@@ -775,7 +803,7 @@ impl StaticPlugin {
     pub const fn matchers(
         mut self,
         matchers: &'static [PluginArbitraryMatcher<&'static str, &'static [&'static str]>],
-        modifier: PluginArbitraryMatcherModifier,
+        modifier: PluginArbitraryMatcherSeparation,
     ) -> Self {
         assert!(
             matches!(self.kind, PluginKind::Arbitrary { .. }),

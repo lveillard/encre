@@ -6,7 +6,7 @@ use crate::{
     generator::ContextCanHandle,
     plugins::{
         CustomPlugin, DynamicPlugin, DynamicPluginArbitraryMatcher, DynamicPluginKind, Plugin,
-        PluginArbitraryMatcher, PluginArbitraryMatcherModifier, PluginKind,
+        PluginArbitraryMatcher, PluginArbitraryMatcherSeparation, PluginKind,
         StaticPluginArbitraryMatcher,
     },
     selector::{
@@ -20,15 +20,15 @@ use crate::{
 fn is_arbitrary_matching(
     (matchers, modifier): &(
         &[StaticPluginArbitraryMatcher],
-        PluginArbitraryMatcherModifier,
+        PluginArbitraryMatcherSeparation,
     ),
     value: &str,
 ) -> bool {
     let values: Vec<&str> = match modifier {
-        PluginArbitraryMatcherModifier::None => std::iter::once(value).collect(),
-        PluginArbitraryMatcherModifier::CommaSeparated => value.split(',').collect(),
-        PluginArbitraryMatcherModifier::SpaceSeparated => value.split(' ').collect(),
-        PluginArbitraryMatcherModifier::Both => {
+        PluginArbitraryMatcherSeparation::None => std::iter::once(value).collect(),
+        PluginArbitraryMatcherSeparation::Comma => value.split(',').collect(),
+        PluginArbitraryMatcherSeparation::Space => value.split(' ').collect(),
+        PluginArbitraryMatcherSeparation::Both => {
             value.split(',').flat_map(|s| s.split(' ')).collect()
         }
     };
@@ -65,15 +65,15 @@ fn is_arbitrary_matching(
 fn is_parsed_arbitrary_matching(
     (matchers, modifier): &(
         Vec<DynamicPluginArbitraryMatcher>,
-        PluginArbitraryMatcherModifier,
+        PluginArbitraryMatcherSeparation,
     ),
     value: &str,
 ) -> bool {
     let values: Vec<&str> = match modifier {
-        PluginArbitraryMatcherModifier::None => std::iter::once(value).collect(),
-        PluginArbitraryMatcherModifier::CommaSeparated => value.split(',').collect(),
-        PluginArbitraryMatcherModifier::SpaceSeparated => value.split(' ').collect(),
-        PluginArbitraryMatcherModifier::Both => {
+        PluginArbitraryMatcherSeparation::None => std::iter::once(value).collect(),
+        PluginArbitraryMatcherSeparation::Comma => value.split(',').collect(),
+        PluginArbitraryMatcherSeparation::Space => value.split(' ').collect(),
+        PluginArbitraryMatcherSeparation::Both => {
             value.split(',').flat_map(|s| s.split(' ')).collect()
         }
     };

@@ -15,7 +15,7 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> P {
         .template("{}px"),
         Plugin::new(PluginKind::Arbitrary { namespace, prop })
             .hints(&[ArbitraryHint::Length, ArbitraryHint::LineWidth])
-            .matchers(&[Length, LineWidth], PluginArbitraryMatcherModifier::SpaceSeparated),
+            .matchers(&[Length, LineWidth], PluginArbitraryMatcherSeparation::Space),
     )
 }
 

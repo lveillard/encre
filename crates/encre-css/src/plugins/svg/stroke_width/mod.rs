@@ -19,4 +19,4 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
     Percentage,
     LineWidth,
     Number,
-], PluginArbitraryMatcherModifier::CommaSeparated);
+], PluginArbitraryMatcherSeparation::Comma);

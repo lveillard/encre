@@ -15,4 +15,4 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
     prop: SingleProp("outline-width"),
 })
 .hints(&[ArbitraryHint::Length])
-.matchers(&[Length, LineWidth], PluginArbitraryMatcherModifier::None);
+.matchers(&[Length, LineWidth], PluginArbitraryMatcherSeparation::None);

@@ -26,4 +26,4 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
 .matchers(&[
     CustomMultiple(&["normal", "bold", "lighter", "bolder"]),
     Number,
-], PluginArbitraryMatcherModifier::None);
+], PluginArbitraryMatcherSeparation::None);

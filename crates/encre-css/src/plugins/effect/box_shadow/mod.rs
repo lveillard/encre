@@ -21,7 +21,7 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
     prop: SingleProp("--en-shadow"),
 })
 .extra_lines(&["box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow);"])
-.matchers(&[Shadow], PluginArbitraryMatcherModifier::None)
+.matchers(&[Shadow], PluginArbitraryMatcherSeparation::None)
 .shadow_color_replacement("var(--en-shadow-color, {})");
 
 pub(crate) const PLUGIN_INSET_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
@@ -40,5 +40,5 @@ pub(crate) const PLUGIN_INSET_2: StaticPlugin = Plugin::new(PluginKind::Arbitrar
 })
 .extra_lines(&["box-shadow: var(--en-inset-shadow), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow, 0 0 #0000);"])
 .hints(&[ArbitraryHint::Shadow])
-.matchers(&[Shadow], PluginArbitraryMatcherModifier::None)
+.matchers(&[Shadow], PluginArbitraryMatcherSeparation::None)
 .shadow_color_replacement("var(--en-inset-shadow-color, {})");

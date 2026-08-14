@@ -15,5 +15,5 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
     prop: SingleProp("--en-ring-offset-width"),
 })
 .hints(&[ArbitraryHint::Length])
-.matchers(&[Length], PluginArbitraryMatcherModifier::None)
+.matchers(&[Length], PluginArbitraryMatcherSeparation::None)
 .extra_lines(&["--en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);"]);

@@ -25,5 +25,5 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
         Custom("cover"),
         Custom("contain"),
     ],
-    PluginArbitraryMatcherModifier::Both,
+    PluginArbitraryMatcherSeparation::Both,
 );

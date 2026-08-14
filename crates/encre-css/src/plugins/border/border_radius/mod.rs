@@ -22,7 +22,7 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlu
         .namespace(namespace),
         Plugin::new(PluginKind::Arbitrary { namespace, prop })
             .hints(&[])
-            .matchers(&[Length, Percentage], PluginArbitraryMatcherModifier::SpaceSeparated),
+            .matchers(&[Length, Percentage], PluginArbitraryMatcherSeparation::Space),
     )
 }
 

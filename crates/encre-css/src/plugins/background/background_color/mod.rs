@@ -13,4 +13,4 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
     prop: SingleProp("background-color"),
 })
 .hints(&[ArbitraryHint::Color])
-.matchers(&[Color], PluginArbitraryMatcherModifier::None);
+.matchers(&[Color], PluginArbitraryMatcherSeparation::None);

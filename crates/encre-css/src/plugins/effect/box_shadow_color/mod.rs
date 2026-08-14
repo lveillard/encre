@@ -13,7 +13,7 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
     prop: SingleProp("--en-shadow-color"),
 })
 .hints(&[ArbitraryHint::Color])
-.matchers(&[Color], PluginArbitraryMatcherModifier::None);
+.matchers(&[Color], PluginArbitraryMatcherSeparation::None);
 
 pub(crate) const PLUGIN_INSET_1: StaticPlugin = Plugin::new(PluginKind::Color {
     namespace: "inset-shadow",
@@ -25,4 +25,4 @@ pub(crate) const PLUGIN_INSET_2: StaticPlugin = Plugin::new(PluginKind::Arbitrar
     prop: SingleProp("--en-inset-shadow-color"),
 })
 .hints(&[ArbitraryHint::Color])
-.matchers(&[Color], PluginArbitraryMatcherModifier::None);
+.matchers(&[Color], PluginArbitraryMatcherSeparation::None);

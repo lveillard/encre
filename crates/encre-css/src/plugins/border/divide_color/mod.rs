@@ -15,4 +15,4 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
 })
 .extra_class(" > :not([hidden]) ~ :not([hidden])")
 .hints(&[ArbitraryHint::Color])
-.matchers(&[Color], PluginArbitraryMatcherModifier::None);
+.matchers(&[Color], PluginArbitraryMatcherSeparation::None);

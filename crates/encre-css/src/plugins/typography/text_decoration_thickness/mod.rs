@@ -26,4 +26,4 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
     Length,
     Percentage,
     CustomMultiple(&["auto", "from-font"]),
-], PluginArbitraryMatcherModifier::None);
+], PluginArbitraryMatcherSeparation::None);

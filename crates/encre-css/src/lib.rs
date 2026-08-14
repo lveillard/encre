@@ -247,7 +247,7 @@ pub mod prelude {
         pub use crate::{
             generator::{generate_at_rules, generate_class, generate_wrapper, ContextCanHandle, ContextHandle},
             plugins::{
-                Plugin, StaticPlugin, DynamicPlugin, PluginArbitraryMatcher, PluginArbitraryMatcherModifier,
+                Plugin, StaticPlugin, DynamicPlugin, PluginArbitraryMatcher, PluginArbitraryMatcherSeparation,
                 PluginKind, PropertyName, PropertyName::*, StaticPropertyName, DynamicPropertyName,
                 StaticPluginKind, DynamicPluginKind,
             },

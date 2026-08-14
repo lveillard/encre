@@ -17,4 +17,4 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
     prop: SingleProp("font-family"),
 })
 .hints(&[ArbitraryHint::GenericName, ArbitraryHint::FamilyName])
-.matchers(&[FontFamilyName], PluginArbitraryMatcherModifier::CommaSeparated);
+.matchers(&[FontFamilyName], PluginArbitraryMatcherSeparation::Comma);
