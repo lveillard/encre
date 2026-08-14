@@ -645,7 +645,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                     kind: PluginKind::Arbitrary { prop, .. },
                     extra_lines,
                     extra_class,
-                    arbitrary_shadow_color_replacement,
+                    shadow_color_replacement,
                     ..
                 },
             ),
@@ -657,7 +657,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                     |context| {
                         // If the shadow is malformed, just output it without modification
                         let value = if let Some(color_replacement) =
-                            arbitrary_shadow_color_replacement
+                            shadow_color_replacement
                             && let Some(mut shadow) = shadow::ShadowList::parse(value)
                         {
                             shadow.replace_all_colors(color_replacement);
@@ -682,7 +682,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                     kind: DynamicPluginKind::Arbitrary { prop, .. },
                     extra_lines,
                     extra_class,
-                    arbitrary_shadow_color_replacement,
+                    shadow_color_replacement,
                     ..
                 },
             ),
@@ -694,7 +694,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                     |context| {
                         // If the shadow is malformed, just output it without modification
                         let value = if let Some(color_replacement) =
-                            arbitrary_shadow_color_replacement
+                            shadow_color_replacement
                             && let Some(mut shadow) = shadow::ShadowList::parse(value)
                         {
                             shadow.replace_all_colors(color_replacement);

@@ -492,7 +492,7 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 ///     Percentage,
 ///     LineWidth,
 ///     Number,
-/// ], PluginArbitraryMatcherModifier::CommaSeparated);
+/// ], PluginArbitraryMatcherSeparation::Comma);
 /// ```
 ///
 /// # Release a plugin as a crate
@@ -562,8 +562,8 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 /// All plugin kinds except [`PluginKind::Functional`] are serializable, thus can be defined in
 /// `encre-css`'s TOML configuration (or every other language that uses a `serde` deserializer).
 ///
-/// To do that, you need to add a new entry in the [`Config::custom_plugins`] list. You can use
-/// every [`Plugin`] configuration option, just use the method name as a key.
+/// To do that, you need to add a new entry in the `custom_plugins` list of the configuration.
+/// You can then use every [`Plugin`] configuration option, just use the method name as a key.
 ///
 /// ### Example
 ///
@@ -610,12 +610,12 @@ pub struct Plugin<Str, ArrayStr, MapStr, MapArrayStr, ArrayHints, ArrayMatchers>
     pub(crate) extra_lines: Option<ArrayStr>,
     pub(crate) extra_css: Option<MapStr>,
     pub(crate) extra_class: Option<Str>,
+    pub(crate) extra_slash: Option<(MapStr, Str)>,
     pub(crate) template: Option<Str>,
     pub(crate) template_multiple: Option<ArrayStr>,
-    pub(crate) extra_slash: Option<(MapStr, Str)>,
-    pub(crate) arbitrary_hints: Option<ArrayHints>,
-    pub(crate) arbitrary_matchers: Option<(ArrayMatchers, PluginArbitraryMatcherSeparation)>,
-    pub(crate) arbitrary_shadow_color_replacement: Option<Str>,
+    pub(crate) hints: Option<ArrayHints>,
+    pub(crate) matchers: Option<(ArrayMatchers, PluginArbitraryMatcherSeparation)>,
+    pub(crate) shadow_color_replacement: Option<Str>,
     pub(crate) namespace: Option<Str>,
     pub(crate) divide_by: Option<f32>,
 }
@@ -644,9 +644,9 @@ impl StaticPlugin {
             extra_slash: None,
             template: None,
             template_multiple: None,
-            arbitrary_hints: None,
-            arbitrary_matchers: None,
-            arbitrary_shadow_color_replacement: None,
+            hints: None,
+            matchers: None,
+            shadow_color_replacement: None,
             namespace: None,
             divide_by: None,
         }
@@ -853,7 +853,7 @@ impl StaticPlugin {
             "Plugin::hints can only be used with PluginKind::Arbitrary"
         );
 
-        self.arbitrary_hints = Some(hints);
+        self.hints = Some(hints);
         self
     }
 
@@ -869,7 +869,7 @@ impl StaticPlugin {
             "Plugin::matchers can only be used with PluginKind::Arbitrary"
         );
 
-        self.arbitrary_matchers = Some((matchers, modifier));
+        self.matchers = Some((matchers, modifier));
         self
     }
 
@@ -880,7 +880,7 @@ impl StaticPlugin {
             "Plugin::shadow_color_replacement can only be used with PluginKind::Arbitrary"
         );
 
-        self.arbitrary_shadow_color_replacement = Some(replacement);
+        self.shadow_color_replacement = Some(replacement);
         self
     }
 
@@ -938,9 +938,9 @@ impl DynamicPlugin {
             extra_slash: None,
             template: None,
             template_multiple: None,
-            arbitrary_hints: None,
-            arbitrary_matchers: None,
-            arbitrary_shadow_color_replacement: None,
+            hints: None,
+            matchers: None,
+            shadow_color_replacement: None,
             namespace: None,
             divide_by: None,
         }

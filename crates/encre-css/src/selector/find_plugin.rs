@@ -372,32 +372,32 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
         (
             CustomPlugin::Static(Plugin {
                 kind: PluginKind::Arbitrary { .. },
-                arbitrary_hints,
-                arbitrary_matchers,
+                hints,
+                matchers,
                 ..
             }),
             Modifier::Arbitrary { hint, value },
         ) => {
-            hint.is_some_and(|h| arbitrary_hints.is_some_and(|hints| hints.contains(&h)))
+            hint.is_some_and(|h| hints.is_some_and(|hints| hints.contains(&h)))
                 || (hint.is_none()
-                    && arbitrary_matchers
+                    && matchers
                         .is_none_or(|matchers| is_arbitrary_matching(&matchers, value)))
         }
         (
             CustomPlugin::Dynamic(DynamicPlugin {
                 kind: DynamicPluginKind::Arbitrary { .. },
-                arbitrary_hints,
-                arbitrary_matchers,
+                hints,
+                matchers,
                 ..
             }),
             Modifier::Arbitrary { hint, value },
         ) => {
             hint.is_some_and(|h| {
-                arbitrary_hints
+                hints
                     .as_ref()
                     .is_some_and(|hints| hints.contains(&h))
             }) || (hint.is_none()
-                && arbitrary_matchers
+                && matchers
                     .as_ref()
                     .is_none_or(|matchers| is_parsed_arbitrary_matching(&matchers, value)))
         }
