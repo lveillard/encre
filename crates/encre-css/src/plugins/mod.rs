@@ -377,6 +377,10 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
         /// - The CSS written should end with a newline
         /// - Arbitrary values are already normalized (e.g. underscores are replaced by spaces)
         /// - This function is guaranteed to be called only once per selector
+        ///
+        /// [`generate_wrapper`]: crate::generator::generate_wrapper
+        /// [`generate_at_rules`]: crate::generator::generate_at_rules
+        /// [`generate_class`]: crate::generator::generate_class
         handle: fn(&mut ContextHandle),
     },
 }
@@ -499,9 +503,7 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 ///
 /// [`Config::register_plugin`]: crate::Config::register_plugin
 /// [`Config`]: crate::Config
-/// [`Functional`]: crate::plugins:: PluginKind::Functional
-/// [`generator::generate_at_rules`]: crate::generator::generate_at_rules
-/// [`generator::generate_class`]: crate::generator::generate_class
+/// [`Functional`]: PluginKind::Functional
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Plugin<Str, ArrayStr, MapStr, MapArrayStr, ArrayHints, ArrayMatchers> {
     pub(crate) kind: PluginKind<Str, ArrayStr, MapStr, MapArrayStr>,
