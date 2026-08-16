@@ -2109,20 +2109,20 @@ impl Config {
     /// Note that if you are not the maintainer of a crate providing plugins, you can ignore this
     /// function, see [`crate::plugins`].
     ///
-    /// See [`crate::plugins::Plugin`] to learn how to write plugins and
-    /// [`crate::plugins::PluginKind`] for choosing the correct plugin kind for your use case.
+    /// See [`crate::plugins::Plugin`] to learn how to write plugins.
     ///
     /// # Example
     ///
     /// ```
     /// use encre_css::{Config, prelude::build_plugin::*};
     ///
-    /// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+    /// const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     ///     prop: SingleProp("color"),
     ///     values: map! {
     ///         "prose" => "#333",
     ///         "prose-invert" => "#eee",
     ///     },
+    ///     ..ListValues::default()
     /// });
     ///
     /// let mut config = Config::default();
@@ -2432,12 +2432,13 @@ mod tests {
     fn gen_css_with_custom_plugin() {
         use crate::prelude::build_plugin::*;
 
-        const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+        const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
             prop: SingleProp("content"),
             values: map! {
                 "emoji-tada" => "\"\u{1f389}\"",
                 "emoji-rocket" => "\"\u{1f680}\"",
             },
+            ..ListValues::default()
         });
 
         let mut config = base_config();
@@ -2461,12 +2462,13 @@ mod tests {
 
         let mut config = Config::default();
         config.preflight = Preflight::None;
-        config.register_dynamic_plugin(Plugin::new_dynamic(PluginKind::ListValues {
+        config.register_dynamic_plugin(Plugin::ListValues(ListValues {
             prop: DynamicPropertyName::SingleProp(String::from("content")),
             values: HashMap::from([
                 (String::from("emoji-tada"), String::from("\"\u{1f389}\"")),
                 (String::from("emoji-rocket"), String::from("\"\u{1f680}\"")),
             ]),
+            ..ListValues::dynamic_default()
         }));
 
         let generated = generate(["emoji-tada"], &config);

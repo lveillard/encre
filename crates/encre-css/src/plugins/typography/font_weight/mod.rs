@@ -1,9 +1,8 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("font-weight"),
     values: map! {
         "font-thin" => "100",
@@ -16,14 +15,19 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "font-extrabold" => "800",
         "font-black" => "900",
     },
+    ..ListValues::default()
 });
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "font",
     prop: SingleProp("font-weight"),
-})
-.hints(&[ArbitraryHint::Number])
-.matchers(&[
-    CustomMultiple(&["normal", "bold", "lighter", "bolder"]),
-    Number,
-], PluginArbitraryMatcherSeparation::None);
+    hints: Some(&[ArbitraryHint::Number]),
+    matchers: Some((
+        &[
+            PluginArbitraryMatcher::CustomMultiple(&["normal", "bold", "lighter", "bolder"]),
+            PluginArbitraryMatcher::Number,
+        ],
+        PluginArbitraryMatcherSeparation::None,
+    )),
+    ..Arbitrary::default()
+});

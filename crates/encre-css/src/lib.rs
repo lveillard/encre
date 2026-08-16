@@ -206,7 +206,12 @@
     clippy::unimplemented,
     clippy::todo
 )]
-#![allow(clippy::module_name_repetitions, clippy::must_use_candidate, clippy::enum_glob_use, clippy::wildcard_imports)]
+#![allow(
+    clippy::module_name_repetitions,
+    clippy::must_use_candidate,
+    clippy::enum_glob_use,
+    clippy::wildcard_imports
+)]
 
 pub mod config;
 pub mod error;
@@ -245,13 +250,16 @@ pub mod prelude {
     /// ```
     pub mod build_plugin {
         pub use crate::{
-            generator::{generate_at_rules, generate_class, generate_wrapper, ContextCanHandle, ContextHandle},
-            plugins::{
-                Plugin, StaticPlugin, DynamicPlugin, PluginArbitraryMatcher, PluginArbitraryMatcherSeparation,
-                PluginKind, PropertyName, PropertyName::*, StaticPropertyName, DynamicPropertyName,
-                StaticPluginKind, DynamicPluginKind,
+            generator::{
+                ContextCanHandle, ContextHandle, generate_at_rules, generate_class,
+                generate_wrapper,
             },
-            selector::{Modifier, ArbitraryHint},
+            plugins::{
+                DynamicPlugin, DynamicPropertyName, Plugin, PluginArbitraryMatcher,
+                PluginArbitraryMatcherSeparation, PropertyName, PropertyName::*, StaticPlugin,
+                StaticPropertyName, ListProperties, ListValues, Spacing, Color, Number, Arbitrary, Functional,
+            },
+            selector::{ArbitraryHint, Modifier},
             utils::{buffer::Buffer, color, shadow, spacing, value_matchers::*},
         };
         pub use phf::{self, phf_map as map};

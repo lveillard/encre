@@ -2,7 +2,7 @@
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("border-style"),
     values: map! {
         "divide-solid" => "solid",
@@ -11,4 +11,6 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "divide-double" => "double",
         "divide-none" => "none"
     },
-}).extra_class(" > :not([hidden]) ~ :not([hidden])");
+    extra_class: Some(" > :not([hidden]) ~ :not([hidden])"),
+    ..ListValues::default()
+});

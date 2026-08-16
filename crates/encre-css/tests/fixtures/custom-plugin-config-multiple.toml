@@ -1,8 +1,8 @@
 preflight = "none"
 
 [[custom_plugins]]
-template = "{}px"
 
-[custom_plugins.kind.Number]
+[custom_plugins.Number]
 namespace = "shape-roof"
 prop = ["border-inline", "border-top"]
+template = "{}px"

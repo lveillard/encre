@@ -1,9 +1,8 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("border-style"),
     values: map! {
         "border-solid" => "solid",
@@ -17,11 +16,16 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "border-hidden" => "hidden",
         "border-none" => "none",
     },
+    ..ListValues::default()
 });
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "border",
     prop: SingleProp("border-style"),
-})
-.hints(&[])
-.matchers(&[LineStyle], PluginArbitraryMatcherSeparation::Space);
+    hints: Some(&[]),
+    matchers: Some((
+        &[PluginArbitraryMatcher::LineStyle],
+        PluginArbitraryMatcherSeparation::Space,
+    )),
+    ..Arbitrary::default()
+});

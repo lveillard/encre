@@ -3,17 +3,19 @@
 use super::CSS_FILTER;
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "hue-rotate",
     prop: SingleProp("--en-hue-rotate"),
-})
-.has_negative()
-.extra_lines(&[CSS_FILTER])
-.template("hue-rotate({}deg)");
+    has_negative: Some(true),
+    extra_lines: Some(&[CSS_FILTER]),
+    template: Some("hue-rotate({}deg)"),
+    ..Number::default()
+});
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "hue-rotate",
     prop: SingleProp("--en-hue-rotate"),
-})
-.extra_lines(&[CSS_FILTER])
-.template("hue-rotate({})");
+    extra_lines: Some(&[CSS_FILTER]),
+    template: Some("hue-rotate({})"),
+    ..Arbitrary::default()
+});

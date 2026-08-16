@@ -2,7 +2,7 @@
 #![doc(alias = "transition")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("transition-timing-function"),
     values: map! {
         "ease-linear" => "linear",
@@ -10,9 +10,11 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "ease-out" => "cubic-bezier(0, 0, 0.2, 1)",
         "ease-in-out" => "cubic-bezier(0.4, 0, 0.2, 1)",
     },
+    ..ListValues::default()
 });
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "ease",
     prop: SingleProp("transition-timing-function"),
+    ..Arbitrary::default()
 });

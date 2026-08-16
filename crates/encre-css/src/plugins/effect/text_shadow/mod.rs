@@ -1,8 +1,8 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "effect")]
-use crate::{plugins:: PluginArbitraryMatcher::*, prelude::build_plugin::*};
+use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("text-shadow"),
     values: map! {
         "text-shadow-2xs" => "0px 1px 0px var(--en-text-shadow-color, rgb(0 0 0 / 0.15))",
@@ -12,12 +12,17 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "text-shadow-lg" => "0px 1px 2px var(--en-text-shadow-color, rgb(0 0 0 / 0.1)), 0px 3px 2px var(--en-text-shadow-color, rgb(0 0 0 / 0.1)), 0px 4px 8px var(--en-text-shadow-color, rgb(0 0 0 / 0.1))",
         "text-shadow-none" => "none",
     },
+    ..ListValues::default()
 });
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "text-shadow",
     prop: SingleProp("text-shadow"),
-})
-.hints(&[ArbitraryHint::Shadow])
-.matchers(&[Shadow], PluginArbitraryMatcherSeparation::None)
-.shadow_color_replacement("var(--en-text-shadow-color, {})");
+    hints: Some(&[ArbitraryHint::Shadow]),
+    matchers: Some((
+        &[PluginArbitraryMatcher::Shadow],
+        PluginArbitraryMatcherSeparation::None,
+    )),
+    shadow_color_replacement: Some("var(--en-text-shadow-color, {})"),
+    ..Arbitrary::default()
+});

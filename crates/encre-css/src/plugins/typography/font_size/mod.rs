@@ -1,9 +1,8 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListProperties(ListProperties {
     props: map! {
         "text-xs" => &["font-size: 0.75rem;", "line-height: 1rem;"],
         "text-sm" => &["font-size: 0.875rem;", "line-height: 1.25rem;"],
@@ -19,21 +18,26 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
         "text-8xl" => &["font-size: 6rem;", "line-height: 1;"],
         "text-9xl" => &["font-size: 8rem;", "line-height: 1;"],
     },
+    ..ListProperties::default()
 });
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "text",
     prop: SingleProp("font-size"),
-})
-.hints(&[
-    ArbitraryHint::Length,
-    ArbitraryHint::Percentage,
-    ArbitraryHint::AbsoluteSize,
-    ArbitraryHint::RelativeSize,
-])
-.matchers(&[
-    Length,
-    Percentage,
-    AbsoluteSize,
-    RelativeSize,
-], PluginArbitraryMatcherSeparation::None);
+    hints: Some(&[
+        ArbitraryHint::Length,
+        ArbitraryHint::Percentage,
+        ArbitraryHint::AbsoluteSize,
+        ArbitraryHint::RelativeSize,
+    ]),
+    matchers: Some((
+        &[
+            PluginArbitraryMatcher::Length,
+            PluginArbitraryMatcher::Percentage,
+            PluginArbitraryMatcher::AbsoluteSize,
+            PluginArbitraryMatcher::RelativeSize,
+        ],
+        PluginArbitraryMatcherSeparation::None,
+    )),
+    ..Arbitrary::default()
+});

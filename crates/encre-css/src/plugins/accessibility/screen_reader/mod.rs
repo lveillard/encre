@@ -2,7 +2,7 @@
 #![doc(alias = "accessibility")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListProperties(ListProperties {
     props: map! {
         "sr-only" =>
         &[
@@ -29,4 +29,5 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
             "white-space: normal;",
         ],
     },
+    ..ListProperties::default()
 });

@@ -2,7 +2,7 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("display"),
     values: map! {
         "hidden" => "none",
@@ -27,4 +27,5 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "grid" => "grid",
         "inline-grid" => "inline-grid",
     },
+    ..ListValues::default()
 });

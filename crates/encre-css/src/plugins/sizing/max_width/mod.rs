@@ -2,12 +2,13 @@
 #![doc(alias("sizing", "size"))]
 use crate::{plugins::sizing::CSS_SIZE_VALUES_HORIZONTAL, prelude::build_plugin::*};
 
-pub(crate) const PLUGIN_SPACING: StaticPlugin = Plugin::new(PluginKind::Spacing {
+pub(crate) const PLUGIN_SPACING: StaticPlugin = Plugin::Spacing(Spacing {
     namespace: "max-w",
     prop: SingleProp("max-width"),
+    ..Spacing::default()
 });
 
-pub(crate) const PLUGIN_LIST_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN_LIST_1: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("max-width"),
     values: map! {
         "max-w-none" => "none",
@@ -34,14 +35,18 @@ pub(crate) const PLUGIN_LIST_1: StaticPlugin = Plugin::new(PluginKind::ListValue
         "max-w-screen-xl" => "1280px",
         "max-w-screen-2xl" => "1536px",
     },
+    ..ListValues::default()
 });
 
-pub(crate) const PLUGIN_LIST_2: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN_LIST_2: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("max-width"),
     values: CSS_SIZE_VALUES_HORIZONTAL,
-}).namespace("max-w");
+    namespace: Some("max-w"),
+    ..ListValues::default()
+});
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "max-w",
     prop: SingleProp("max-width"),
+    ..Arbitrary::default()
 });

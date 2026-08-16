@@ -2,14 +2,23 @@
 #![doc(alias = "table")]
 use crate::prelude::build_plugin::*;
 
+const BORDER_SPACING_CSS: &str =
+    "border-spacing: var(--en-border-spacing-x) var(--en-border-spacing-y);";
+
 const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlugin, StaticPlugin) {
     (
-        Plugin::new(PluginKind::Spacing { namespace, prop }).extra_lines(&[
-            "border-spacing: var(--en-border-spacing-x) var(--en-border-spacing-y);",
-        ]),
-        Plugin::new(PluginKind::Arbitrary { namespace, prop }).extra_lines(&[
-            "border-spacing: var(--en-border-spacing-x) var(--en-border-spacing-y);",
-        ]),
+        Plugin::Spacing(Spacing {
+            namespace,
+            prop,
+            extra_lines: Some(&[BORDER_SPACING_CSS]),
+            ..Spacing::default()
+        }),
+        Plugin::Arbitrary(Arbitrary {
+            namespace,
+            prop,
+            extra_lines: Some(&[BORDER_SPACING_CSS]),
+            ..Arbitrary::default()
+        }),
     )
 }
 

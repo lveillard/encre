@@ -2,10 +2,11 @@
 #![doc(alias = "table")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("table-layout"),
     values: map! {
         "table-auto" => "auto",
         "table-fixed" => "fixed",
     },
+    ..ListValues::default()
 });

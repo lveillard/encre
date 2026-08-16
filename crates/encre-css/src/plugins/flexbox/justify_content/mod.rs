@@ -2,7 +2,7 @@
 #![doc(alias = "flexbox")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("justify-content"),
     values: map! {
         "justify-start" => "flex-start",
@@ -12,4 +12,5 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "justify-around" => "space-around",
         "justify-evenly" => "space-evenly",
     },
+    ..ListValues::default()
 });

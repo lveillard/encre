@@ -3,10 +3,11 @@
 use super::CSS_FILTER;
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "contrast",
     prop: SingleProp("--en-contrast"),
-})
-.divide_by(100.0)
-.extra_lines(&[CSS_FILTER])
-.template("contrast({})");
+    divide_by: Some(100.0),
+    extra_lines: Some(&[CSS_FILTER]),
+    template: Some("contrast({})"),
+    ..Number::default()
+});

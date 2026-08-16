@@ -2,7 +2,7 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("white-space"),
     values: map! {
         "whitespace-normal" => "normal",
@@ -12,4 +12,5 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "whitespace-pre-wrap" => "pre-wrap",
         "whitespace-break-spaces" => "break-spaces",
     },
+    ..ListValues::default()
 });

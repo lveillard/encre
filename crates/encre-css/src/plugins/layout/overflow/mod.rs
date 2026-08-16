@@ -2,7 +2,7 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListProperties(ListProperties {
     props: map! {
         "overflow-auto" => &["overflow: auto;"],
         "overflow-x-auto" => &["overflow-x: auto;"],
@@ -17,4 +17,5 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
         "overflow-x-scroll" => &["overflow-x: scroll;"],
         "overflow-y-scroll" => &["overflow-y: scroll;"],
     },
+    ..ListProperties::default()
 });

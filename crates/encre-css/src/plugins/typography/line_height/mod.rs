@@ -2,7 +2,7 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("line-height"),
     values: map! {
         "leading-none" => "1",
@@ -12,14 +12,17 @@ pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::new(PluginKind::ListValues 
         "leading-relaxed" => "1.625",
         "leading-loose" => "2",
     },
+    ..ListValues::default()
 });
 
-pub(crate) const PLUGIN_SPACING: StaticPlugin = Plugin::new(PluginKind::Spacing {
+pub(crate) const PLUGIN_SPACING: StaticPlugin = Plugin::Spacing(Spacing {
     namespace: "leading",
     prop: SingleProp("line-height"),
+    ..Spacing::default()
 });
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "leading",
     prop: SingleProp("line-height"),
+    ..Arbitrary::default()
 });

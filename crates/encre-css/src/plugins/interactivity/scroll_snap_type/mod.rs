@@ -2,7 +2,7 @@
 #![doc(alias = "interactivity")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListProperties(ListProperties {
     props: map! {
         "snap-none" => &["-ms-scroll-snap-type: none;", "scroll-snap-type: none;"],
         "snap-x" => &[
@@ -20,4 +20,5 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
         "snap-mandatory" => &["--en-scroll-snap-strictness: mandatory;"],
         "snap-proximity" => &["--en-scroll-snap-strictness: proximity;"],
     },
+    ..ListProperties::default()
 });

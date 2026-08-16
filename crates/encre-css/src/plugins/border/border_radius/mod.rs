@@ -1,11 +1,10 @@
 #![doc = include_str!("README.md")]
 #![doc(alias("border", "rounded"))]
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
 const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlugin, StaticPlugin) {
     (
-        Plugin::new(PluginKind::ListValues {
+        Plugin::ListValues(ListValues {
             prop,
             values: map! {
                 "none" => "0",
@@ -18,15 +17,27 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlu
                 "3xl" => "1.5rem",
                 "full" => "9999px",
             },
-        })
-        .namespace(namespace),
-        Plugin::new(PluginKind::Arbitrary { namespace, prop })
-            .hints(&[])
-            .matchers(&[Length, Percentage], PluginArbitraryMatcherSeparation::Space),
+            namespace: Some(namespace),
+            ..ListValues::default()
+        }),
+        Plugin::Arbitrary(Arbitrary {
+            namespace,
+            prop,
+            hints: Some(&[]),
+            matchers: Some((
+                &[
+                    PluginArbitraryMatcher::Length,
+                    PluginArbitraryMatcher::Percentage,
+                ],
+                PluginArbitraryMatcherSeparation::Space,
+            )),
+            ..Arbitrary::default()
+        }),
     )
 }
 
-pub(crate) const PLUGIN: (StaticPlugin, StaticPlugin) = plugin("rounded", SingleProp("border-radius"));
+pub(crate) const PLUGIN: (StaticPlugin, StaticPlugin) =
+    plugin("rounded", SingleProp("border-radius"));
 pub(crate) const PLUGIN_START: (StaticPlugin, StaticPlugin) = plugin(
     "rounded-s",
     MultipleProps(&["border-start-start-radius", "border-end-start-radius"]),

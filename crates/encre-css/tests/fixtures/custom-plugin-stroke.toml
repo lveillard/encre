@@ -1,16 +1,16 @@
 preflight = "none"
 
 [[custom_plugins]]
+
+[custom_plugins.Number]
+namespace = "custom-stroke"
+prop = "stroke-width"
 template = "{}px"
 
-[custom_plugins.kind.Number]
+[[custom_plugins]]
+
+[custom_plugins.Arbitrary]
 namespace = "custom-stroke"
 prop = "stroke-width"
-
-[[custom_plugins]]
 hints = ["Length", "Percentage"]
 matchers = [["Length", "Percentage", "LineWidth", "Number"], "Comma"]
-
-[custom_plugins.kind.Arbitrary]
-namespace = "custom-stroke"
-prop = "stroke-width"

@@ -2,20 +2,23 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("text-underline-offset"),
     values: map! {
         "underline-offset-auto" => "auto",
     },
+    ..ListValues::default()
 });
 
-pub(crate) const PLUGIN_NUMBER: StaticPlugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN_NUMBER: StaticPlugin = Plugin::Number(Number {
     namespace: "underline-offset",
     prop: SingleProp("text-underline-offset"),
-})
-.template("{}px");
+    template: Some("{}px"),
+    ..Number::default()
+});
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "underline-offset",
     prop: SingleProp("text-underline-offset"),
+    ..Arbitrary::default()
 });

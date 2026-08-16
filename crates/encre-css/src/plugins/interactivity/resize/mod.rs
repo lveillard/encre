@@ -2,7 +2,7 @@
 #![doc(alias = "interactivity")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("resize"),
     values: map! {
         "resize" => "both",
@@ -10,4 +10,5 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "resize-x" => "horizontal",
         "resize-y" => "vertical",
     },
+    ..ListValues::default()
 });

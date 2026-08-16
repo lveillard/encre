@@ -3,10 +3,11 @@
 use super::CSS_FILTER;
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "brightness",
     prop: SingleProp("--en-brightness"),
-})
-.divide_by(100.0)
-.extra_lines(&[CSS_FILTER])
-.template("brightness({})");
+    divide_by: Some(100.0),
+    extra_lines: Some(&[CSS_FILTER]),
+    template: Some("brightness({})"),
+    ..Number::default()
+});

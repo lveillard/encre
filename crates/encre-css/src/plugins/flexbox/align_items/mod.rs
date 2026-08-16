@@ -2,7 +2,7 @@
 #![doc(alias = "flexbox")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("align-items"),
     values: map! {
         "items-stretch" => "stretch",
@@ -11,4 +11,5 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "items-end" => "flex-end",
         "items-baseline" => "baseline",
     },
+    ..ListValues::default()
 });

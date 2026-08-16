@@ -2,7 +2,7 @@
 #![doc(alias = "grid")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("grid-auto-flow"),
     values: map! {
         "grid-flow-row" => "row",
@@ -11,4 +11,5 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "grid-flow-row-dense" => "row dense",
         "grid-flow-col-dense" => "column dense",
     },
+    ..ListValues::default()
 });

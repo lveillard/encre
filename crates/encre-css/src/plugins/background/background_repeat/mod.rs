@@ -2,7 +2,7 @@
 #![doc(alias("background", "bg"))]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("background-repeat"),
     values: map! {
         "bg-repeat" => "repeat",
@@ -12,4 +12,5 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "bg-repeat-round" => "round",
         "bg-repeat-space" => "space",
     },
+    ..ListValues::default()
 });

@@ -95,20 +95,6 @@ pub type StaticPropertyName = PropertyName<&'static str, &'static [&'static str]
 /// needs to be dynamic or deserialized.
 pub type DynamicPropertyName = PropertyName<String, Vec<String>>;
 
-/// An alias to a [`PluginKind`] which is defined using `&'static str`, adapted for use in const
-/// environments.
-pub type StaticPluginKind = PluginKind<
-    &'static str,
-    &'static [&'static str],
-    phf::Map<&'static str, &'static str>,
-    phf::Map<&'static str, &'static [&'static str]>,
->;
-
-/// An alias to a [`PluginKind`] which is defined using `String`, adapted for use when a kind
-/// configuration needs to be dynamic or deserialized.
-pub type DynamicPluginKind =
-    PluginKind<String, Vec<String>, HashMap<String, String>, HashMap<String, Vec<String>>>;
-
 /// An alias to a [`PluginArbitraryMatcher`] which is defined using `&'static str`, adapted for use in const
 /// environments.
 pub type StaticPluginArbitraryMatcher =
@@ -117,6 +103,9 @@ pub type StaticPluginArbitraryMatcher =
 /// An alias to a [`PluginArbitraryMatcher`] which is defined using `String`, adapted for use when a matcher
 /// configuration needs to be dynamic or deserialized.
 pub type DynamicPluginArbitraryMatcher = PluginArbitraryMatcher<String, Vec<String>>;
+
+fn can_handle_nop(_: &ContextCanHandle) -> bool { false }
+fn handle_nop(_: &mut ContextHandle) {}
 
 #[derive(Debug, PartialEq, Clone, Serialize)]
 pub(crate) enum CustomPlugin {
@@ -134,7 +123,7 @@ impl<'de> Deserialize<'de> for CustomPlugin {
     }
 }
 
-/// When defining a [`PluginArbitraryMatcher`] for a [`PluginKind::Arbitrary`], defines how values
+/// When defining a [`PluginArbitraryMatcher`] for an [`Arbitrary`] kind, defines how values
 /// are separated.
 ///
 /// A lot of CSS properties allow specifying several values of a single type separated by a
@@ -233,209 +222,511 @@ pub enum PropertyName<Str, ArrayStr> {
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
-    ListProperties {
-        props: MapArrayStr,
-    },
-    ListValues {
-        /// The CSS property name of the generated CSS rule.
-        ///
-        /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
-        /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
-        /// properties.
-        prop: PropertyName<Str, ArrayStr>,
-        values: MapStr,
-    },
+pub struct ListProperties<Str, ArrayStr, MapStr, MapArrayStr> {
+    pub props: MapArrayStr,
 
-    Spacing {
-        /// The namespace (i.e common prefix) that all classes need to start with in order to be
-        /// matched by this plugin.
-        namespace: Str,
+    pub namespace: Option<Str>,
 
-        /// The CSS property name of the generated CSS rule.
-        ///
-        /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
-        /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
-        /// properties.
-        prop: PropertyName<Str, ArrayStr>,
-    },
-    Color {
-        /// The namespace (i.e common prefix) that all classes need to start with in order to be
-        /// matched by this plugin.
-        namespace: Str,
+    #[doc = include_str!("./doc_extra_lines.md")]
+    pub extra_lines: Option<ArrayStr>, // TODO: use Str instead?
 
-        /// The CSS property name of the generated CSS rule.
-        ///
-        /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
-        /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
-        /// properties.
-        prop: PropertyName<Str, ArrayStr>,
-    },
-    Number {
-        /// The namespace (i.e common prefix) that all classes need to start with in order to be
-        /// matched by this plugin.
-        namespace: Str,
+    #[doc = include_str!("./doc_extra_css.md")]
+    pub extra_css: Option<MapStr>,
+    pub extra_class: Option<Str>,
+}
 
-        /// The CSS property name of the generated CSS rule.
-        ///
-        /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
-        /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
-        /// properties.
-        prop: PropertyName<Str, ArrayStr>,
-    },
+impl<Str, ArrayStr, MapStr> ListProperties<Str, ArrayStr, MapStr, phf::Map<&'static str, &'static [&'static str]>> {
+    pub const fn default() -> Self {
+        Self {
+            props: phf::Map::new(),
+            namespace: None,
+            extra_lines: None,
+            extra_css: None,
+            extra_class: None,
+        }
+    }
+}
 
-    /// Define a plugin supporting [`arbitrary values`], i.e all selectors in the form
-    /// `<namespace>-[...]`
-    ///
-    /// It directly copies the contents given inside brackets as the value of the `<prop>` CSS
-    /// propertie(s).
-    ///
-    /// By default, all values are allowed by the plugin and it's up to the final user to only use
-    /// valid CSS values for the property. However, if several [`PluginKind::Arbitrary`] plugins
-    /// share the same namespace, it's *required* to disambiguate which plugins should handle the
-    /// selector. In this case, [`Plugin::matchers`] and [`Plugin::hints`] should be used to
-    /// only handle the selector if the arbitrary CSS value has a specific CSS type.
-    ///
-    /// ### Example
-    ///
-    /// ```
-    /// use encre_css::{Config, generate};
-    /// use encre_css::prelude::build_plugin::*;
-    ///
-    /// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
-    ///     namespace: "mask",
-    ///     prop: SingleProp("mask-position"),
-    /// });
-    ///
-    /// let mut config = Config::default();
-    /// config.register_plugin(&PLUGIN);
-    ///
-    /// let generated = generate(["mask-[25%]", "mask-[left_center]"], &config);
-    ///
-    /// assert!(generated.ends_with(r".mask-\[25\%\] {
-    ///   mask-position: 25%;
-    /// }
-    ///
-    /// .mask-\[left_center\] {
-    ///   mask-position: left center;
-    /// }"));
-    /// ```
-    ///
-    /// [`arbitrary values`]: crate::selector
-    Arbitrary {
-        /// The namespace (i.e common prefix) that all classes need to start with in order to be
-        /// matched by this plugin.
-        namespace: Str,
+impl<Str, ArrayStr, MapStr> ListProperties<Str, ArrayStr, MapStr, HashMap<String, Vec<String>>> {
+    pub fn dynamic_default() -> Self {
+        Self {
+            props: HashMap::new(),
+            namespace: None,
+            extra_lines: None,
+            extra_css: None,
+            extra_class: None,
+        }
+    }
+}
 
-        /// The CSS property name of the generated CSS rule.
-        ///
-        /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
-        /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
-        /// properties.
-        prop: PropertyName<Str, ArrayStr>,
-    },
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct ListValues<Str, ArrayStr, MapStr> {
+    /// The CSS property name of the generated CSS rule.
+    ///
+    /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
+    /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
+    /// properties.
+    pub prop: PropertyName<Str, ArrayStr>,
+    pub values: MapStr,
 
-    /// A powerful kind allowing the use a Rust function to handle all selectors in the form
-    /// `<namespace>-...`.
+    pub namespace: Option<Str>,
+
+    #[doc = include_str!("./doc_extra_lines.md")]
+    pub extra_lines: Option<ArrayStr>,
+
+    #[doc = include_str!("./doc_extra_css.md")]
+    pub extra_css: Option<MapStr>,
+    pub extra_class: Option<Str>,
+    pub extra_slash: Option<(MapStr, Str)>,
+}
+
+impl<ArrayStr> ListValues<&'static str, ArrayStr, phf::Map<&'static str, &'static str>> {
+    pub const fn default() -> Self {
+        Self {
+            prop: PropertyName::SingleProp(""),
+            values: phf::Map::new(),
+            namespace: None,
+            extra_lines: None,
+            extra_css: None,
+            extra_class: None,
+            extra_slash: None,
+        }
+    }
+}
+
+impl<ArrayStr> ListValues<String, ArrayStr, HashMap<String, String>> {
+    pub fn dynamic_default() -> Self {
+        Self {
+            prop: PropertyName::SingleProp(String::new()),
+            values: HashMap::new(),
+            namespace: None,
+            extra_lines: None,
+            extra_css: None,
+            extra_class: None,
+            extra_slash: None,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct Spacing<Str, ArrayStr, MapStr> {
+    /// The namespace (i.e common prefix) that all classes need to start with in order to be
+    /// matched by this plugin.
+    pub namespace: Str,
+
+    /// The CSS property name of the generated CSS rule.
     ///
-    /// This plugin kind is (of course) not serializable.
+    /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
+    /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
+    /// properties.
+    pub prop: PropertyName<Str, ArrayStr>,
+
+    /// Automatically add support for the `auto` modifier.
     ///
-    /// The [`can_handle`] field function takes a [`ContextCanHandle`] structure and returns whether
-    /// the plugin is capable of handling the utility class given in the context.
+    /// If this method is called, an `auto` modifier will generate an `auto` CSS property value.
+    pub has_auto: Option<bool>,
+
+    /// Automatically add support for the `full` modifier.
     ///
-    /// The [`handle`] field function takes a [`ContextHandle`] structure containing the modifier, the current
-    /// configuration and a buffer containing the whole CSS currently generated. You can use the
-    /// [`Buffer`] structure (especially the [`Buffer::line`] and [`Buffer::lines`] functions) to
-    /// push CSS declarations to it, they will be automatically indented.
+    /// If this method is called, a `full` modifier will generate a `100%` CSS property value.
+    pub has_full: Option<bool>,
+    pub template: Option<Str>,
+    pub template_multiple: Option<ArrayStr>,
+
+    #[doc = include_str!("./doc_extra_lines.md")]
+    pub extra_lines: Option<ArrayStr>,
+
+    #[doc = include_str!("./doc_extra_css.md")]
+    pub extra_css: Option<MapStr>,
+    pub extra_class: Option<Str>,
+    pub extra_slash: Option<(MapStr, Str)>,
+}
+
+impl<ArrayStr, MapStr> Spacing<&'static str, ArrayStr, MapStr> {
+    pub const fn default() -> Self {
+        Self {
+            namespace: "",
+            prop: PropertyName::SingleProp(""),
+            has_auto: None,
+            has_full: None,
+            template: None,
+            template_multiple: None,
+            extra_lines: None,
+            extra_css: None,
+            extra_class: None,
+            extra_slash: None,
+        }
+    }
+}
+
+impl<ArrayStr, MapStr> Spacing<String, ArrayStr, MapStr> {
+    pub fn dynamic_default() -> Self {
+        Self {
+            namespace: String::new(),
+            prop: PropertyName::SingleProp(String::new()),
+            has_auto: None,
+            has_full: None,
+            template: None,
+            template_multiple: None,
+            extra_lines: None,
+            extra_css: None,
+            extra_class: None,
+            extra_slash: None,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct Color<Str, ArrayStr, MapStr> {
+    /// The namespace (i.e common prefix) that all classes need to start with in order to be
+    /// matched by this plugin.
+    pub namespace: Str,
+
+    /// The CSS property name of the generated CSS rule.
     ///
-    /// [`generate_wrapper`] (and the more powerful [`generate_at_rules`] and [`generate_class`])
-    /// should be called to generate the CSS rule wrapping.
+    /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
+    /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
+    /// properties.
+    pub prop: PropertyName<Str, ArrayStr>,
+
+    pub template: Option<Str>,
+    pub template_multiple: Option<ArrayStr>,
+
+    #[doc = include_str!("./doc_extra_lines.md")]
+    pub extra_lines: Option<ArrayStr>,
+
+    #[doc = include_str!("./doc_extra_css.md")]
+    pub extra_css: Option<MapStr>,
+    pub extra_class: Option<Str>,
+}
+
+impl<ArrayStr, MapStr> Color<&'static str, ArrayStr, MapStr> {
+    pub const fn default() -> Self {
+        Self {
+            namespace: "",
+            prop: PropertyName::SingleProp(""),
+            template: None,
+            template_multiple: None,
+            extra_lines: None,
+            extra_css: None,
+            extra_class: None,
+        }
+    }
+}
+
+impl<ArrayStr, MapStr> Color<String, ArrayStr, MapStr> {
+    pub fn dynamic_default() -> Self {
+        Self {
+            namespace: String::new(),
+            prop: PropertyName::SingleProp(String::new()),
+            template: None,
+            template_multiple: None,
+            extra_lines: None,
+            extra_css: None,
+            extra_class: None,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct Number<Str, ArrayStr, MapStr> {
+    /// The namespace (i.e common prefix) that all classes need to start with in order to be
+    /// matched by this plugin.
+    pub namespace: Str,
+
+    /// The CSS property name of the generated CSS rule.
     ///
-    /// ### Example
+    /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
+    /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
+    /// properties.
+    pub prop: PropertyName<Str, ArrayStr>,
+
+    pub divide_by: Option<f32>,
+
+    /// Automatically add support for the `auto` modifier.
     ///
-    /// ```
-    /// use encre_css::{Config, generate};
-    /// use encre_css::prelude::build_plugin::*;
-    /// use std::collections::HashMap;
+    /// If this method is called, an `auto` modifier will generate an `auto` CSS property value.
+    pub has_auto: Option<bool>,
+
+    /// Automatically add support for an empty modifier.
     ///
-    /// /// Reads the `emoji` extra field of the configuration to find the replacement emoji.
-    /// fn extract_emoji_value<'a>(config: &'a Config, value: &str) -> Option<&'a str> {
-    ///     config.extra.get("emoji")
-    ///         .and_then(|r| r.as_table())
-    ///         .and_then(|r| r.get(value))
-    ///         .and_then(|r| r.as_str())
-    /// }
+    /// If this method is called, an empty modifier will generate a `1` CSS property value.
+    pub has_empty: Option<bool>,
+
+    /// Automatically add support for negative modifiers.
+    pub has_negative: Option<bool>,
+    pub template: Option<Str>,
+    pub template_multiple: Option<ArrayStr>,
+
+    #[doc = include_str!("./doc_extra_lines.md")]
+    pub extra_lines: Option<ArrayStr>,
+
+    #[doc = include_str!("./doc_extra_css.md")]
+    pub extra_css: Option<MapStr>,
+    pub extra_class: Option<Str>,
+    pub extra_slash: Option<(MapStr, Str)>,
+}
+
+impl<ArrayStr, MapStr> Number<&'static str, ArrayStr, MapStr> {
+    pub const fn default() -> Self {
+        Self {
+            namespace: "",
+            prop: PropertyName::SingleProp(""),
+            divide_by: None,
+            has_auto: None,
+            has_empty: None,
+            has_negative: None,
+            template: None,
+            template_multiple: None,
+            extra_lines: None,
+            extra_css: None,
+            extra_class: None,
+            extra_slash: None,
+        }
+    }
+}
+
+impl<ArrayStr, MapStr> Number<String, ArrayStr, MapStr> {
+    pub fn dynamic_default() -> Self {
+        Self {
+            namespace: String::new(),
+            prop: PropertyName::SingleProp(String::new()),
+            divide_by: None,
+            has_auto: None,
+            has_empty: None,
+            has_negative: None,
+            template: None,
+            template_multiple: None,
+            extra_lines: None,
+            extra_css: None,
+            extra_class: None,
+            extra_slash: None,
+        }
+    }
+}
+
+/// Define a plugin supporting [`arbitrary values`], i.e all selectors in the form
+/// `<namespace>-[...]`
+///
+/// It directly copies the contents given inside brackets as the value of the `<prop>` CSS
+/// propertie(s).
+///
+/// By default, all values are allowed by the plugin and it's up to the final user to only use
+/// valid CSS values for the property. However, if several [`Arbitrary`] plugins
+/// share the same namespace, it's *required* to disambiguate which plugins should handle the
+/// selector. In this case, [`Arbitrary::matchers`] and [`Arbitrary::hints`] should be used to
+/// only handle the selector if the arbitrary CSS value has a specific CSS type.
+///
+/// ### Example
+///
+/// ```
+/// use encre_css::{Config, generate};
+/// use encre_css::prelude::build_plugin::*;
+///
+/// const PLUGIN: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+///     namespace: "mask",
+///     prop: SingleProp("mask-position"),
+///     ..Arbitrary::default()
+/// });
+///
+/// let mut config = Config::default();
+/// config.register_plugin(&PLUGIN);
+///
+/// let generated = generate(["mask-[25%]", "mask-[left_center]"], &config);
+///
+/// assert!(generated.ends_with(r".mask-\[25\%\] {
+///   mask-position: 25%;
+/// }
+///
+/// .mask-\[left_center\] {
+///   mask-position: left center;
+/// }"));
+/// ```
+///
+/// [`arbitrary values`]: crate::selector
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct Arbitrary<Str, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
+    /// The namespace (i.e common prefix) that all classes need to start with in order to be
+    /// matched by this plugin.
+    pub namespace: Str,
+
+    /// The CSS property name of the generated CSS rule.
     ///
-    /// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Functional {
-    ///     namespace: "emoji",
-    ///     can_handle: |context| matches!(context.modifier, Modifier::Builtin {
-    ///         value,
-    ///         ..
-    ///     } if extract_emoji_value(context.config, value).is_some()),
-    ///     handle: |context| {
-    ///         // Only accept static modifiers, and dynamically fetch them from the
-    ///         // `emoji` extra field of the configuration
-    ///         if let Modifier::Builtin { value, .. } = context.modifier
-    ///         && let Some(value) = extract_emoji_value(&context.config, value) {
-    ///             generate_wrapper(context, |context| {
-    ///                 context.buffer.line(format_args!("content: \"{value}\";"));
-    ///             });
-    ///         }
-    ///     },
-    /// });
+    /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
+    /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
+    /// properties.
+    pub prop: PropertyName<Str, ArrayStr>,
+
+    pub shadow_color_replacement: Option<Str>,
+    // TODO: make a structure for matchers + hints (Disambiguate...) and make a default for PluginArbitraryMatcherSeparation
+    pub matchers: Option<(ArrayMatchers, PluginArbitraryMatcherSeparation)>,
+    pub hints: Option<ArrayHints>,
+    pub template: Option<Str>,
+    pub template_multiple: Option<ArrayStr>,
+
+    #[doc = include_str!("./doc_extra_lines.md")]
+    pub extra_lines: Option<ArrayStr>,
+
+    #[doc = include_str!("./doc_extra_css.md")]
+    pub extra_css: Option<MapStr>,
+    pub extra_class: Option<Str>,
+}
+
+impl<ArrayStr, MapStr, ArrayHints, ArrayMatchers> Arbitrary<&'static str, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
+    pub const fn default() -> Self {
+        Self {
+            namespace: "",
+            prop: PropertyName::SingleProp(""),
+            shadow_color_replacement: None,
+            matchers: None,
+            hints: None,
+            template: None,
+            template_multiple: None,
+            extra_lines: None,
+            extra_css: None,
+            extra_class: None,
+
+        }
+    }
+}
+
+impl<ArrayStr, MapStr, ArrayHints, ArrayMatchers> Arbitrary<String, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
+    pub fn dynamic_default() -> Self {
+        Self {
+            namespace: String::new(),
+            prop: PropertyName::SingleProp(String::new()),
+            shadow_color_replacement: None,
+            matchers: None,
+            hints: None,
+            template: None,
+            template_multiple: None,
+            extra_lines: None,
+            extra_css: None,
+            extra_class: None,
+        }
+    }
+}
+
+/// A powerful kind allowing the use a Rust function to handle all selectors in the form
+/// `<namespace>-...`.
+///
+/// This plugin kind is (of course) not serializable.
+///
+/// The [`can_handle`] field function takes a [`ContextCanHandle`] structure and returns whether
+/// the plugin is capable of handling the utility class given in the context.
+///
+/// The [`handle`] field function takes a [`ContextHandle`] structure containing the modifier, the current
+/// configuration and a buffer containing the whole CSS currently generated. You can use the
+/// [`Buffer`] structure (especially the [`Buffer::line`] and [`Buffer::lines`] functions) to
+/// push CSS declarations to it, they will be automatically indented.
+///
+/// [`generate_wrapper`] (and the more powerful [`generate_at_rules`] and [`generate_class`])
+/// should be called to generate the CSS rule wrapping.
+///
+/// ### Example
+///
+/// ```
+/// use encre_css::{Config, generate};
+/// use encre_css::prelude::build_plugin::*;
+/// use std::collections::HashMap;
+///
+/// /// Reads the `emoji` extra field of the configuration to find the replacement emoji.
+/// fn extract_emoji_value<'a>(config: &'a Config, value: &str) -> Option<&'a str> {
+///     config.extra.get("emoji")
+///         .and_then(|r| r.as_table())
+///         .and_then(|r| r.get(value))
+///         .and_then(|r| r.as_str())
+/// }
+///
+/// const PLUGIN: StaticPlugin = Plugin::Functional(Functional {
+///     namespace: "emoji",
+///     can_handle: |context| matches!(context.modifier, Modifier::Builtin {
+///         value,
+///         ..
+///     } if extract_emoji_value(context.config, value).is_some()),
+///     handle: |context| {
+///         // Only accept static modifiers, and dynamically fetch them from the
+///         // `emoji` extra field of the configuration
+///         if let Modifier::Builtin { value, .. } = context.modifier
+///         && let Some(value) = extract_emoji_value(&context.config, value) {
+///             generate_wrapper(context, |context| {
+///                 context.buffer.line(format_args!("content: \"{value}\";"));
+///             });
+///         }
+///     },
+/// });
+///
+/// let mut config = Config::default();
+/// config.extra.add(
+///     "emoji",
+///     HashMap::from_iter([("tada", "\u{1f389}"), ("rocket", "\u{1f680}")]),
+/// );
+/// config.register_plugin(&PLUGIN);
+///
+/// let generated = generate(["emoji-tada", "emoji-rocket"], &config);
+///
+/// assert!(generated.ends_with(".emoji-rocket {
+///   content: \"\u{1f680}\";
+/// }
+///
+/// .emoji-tada {
+///   content: \"\u{1f389}\";
+/// }"));
+/// ```
+///
+/// [`Buffer`]: crate::utils::buffer::Buffer
+/// [`Buffer::line`]: crate::utils::buffer::Buffer::line
+/// [`Buffer::lines`]: crate::utils::buffer::Buffer::lines
+/// [`can_handle`]: Functional::can_handle
+/// [`handle`]: Functional::handle
+/// [`generate_at_rules`]: crate::generator::generate_at_rules
+/// [`generate_class`]: crate::generator::generate_class
+/// [`generate_wrapper`]: crate::generator::generate_wrapper
+#[derive(Debug, PartialEq, Clone)]
+pub struct Functional<Str> {
+    /// The namespace (i.e common prefix) that all classes need to start with in order to be
+    /// matched by this plugin.
+    pub namespace: Str,
+
+    /// A function returning whether a specific class (passed inside the context) is matched by
+    /// this plugin.
+    pub can_handle: fn(&ContextCanHandle) -> bool,
+
+    /// A function called to generate the CSS of a matched class.
     ///
-    /// let mut config = Config::default();
-    /// config.extra.add(
-    ///     "emoji",
-    ///     HashMap::from_iter([("tada", "\u{1f389}"), ("rocket", "\u{1f680}")]),
-    /// );
-    /// config.register_plugin(&PLUGIN);
+    /// It should use [`generate_wrapper`] (and the more powerful [`generate_at_rules`] and [`generate_class`])
+    /// to generate the CSS rule wrapping.
     ///
-    /// let generated = generate(["emoji-tada", "emoji-rocket"], &config);
+    /// Various notes:
     ///
-    /// assert!(generated.ends_with(".emoji-rocket {
-    ///   content: \"\u{1f680}\";
-    /// }
+    /// - The CSS written should end with a newline
+    /// - Arbitrary values are already normalized (e.g. underscores are replaced by spaces)
+    /// - This function is guaranteed to be called only once per selector
     ///
-    /// .emoji-tada {
-    ///   content: \"\u{1f389}\";
-    /// }"));
-    /// ```
-    ///
-    /// [`Buffer`]: crate::utils::buffer::Buffer
-    /// [`Buffer::line`]: crate::utils::buffer::Buffer::line
-    /// [`Buffer::lines`]: crate::utils::buffer::Buffer::lines
-    /// [`can_handle`]: PluginKind::Functional::can_handle
-    /// [`handle`]: PluginKind::Functional::handle
+    /// [`generate_wrapper`]: crate::generator::generate_wrapper
     /// [`generate_at_rules`]: crate::generator::generate_at_rules
     /// [`generate_class`]: crate::generator::generate_class
-    /// [`generate_wrapper`]: crate::generator::generate_wrapper
-    #[serde(skip)]
-    Functional {
-        /// The namespace (i.e common prefix) that all classes need to start with in order to be
-        /// matched by this plugin.
-        namespace: Str,
+    pub handle: fn(&mut ContextHandle),
+}
 
-        /// A function returning whether a specific class (passed inside the context) is matched by
-        /// this plugin.
-        can_handle: fn(&ContextCanHandle) -> bool,
+impl Functional<&'static str> {
+    pub const fn default() -> Self {
+        Self {
+            namespace: "",
+            can_handle: can_handle_nop,
+            handle: handle_nop,
+        }
+    }
+}
 
-        /// A function called to generate the CSS of a matched class.
-        ///
-        /// It can use [`generate_wrapper`] (and the more powerful [`generate_at_rules`] and [`generate_class`])
-        /// to generate the CSS rule wrapping.
-        ///
-        /// Various notes:
-        ///
-        /// - The CSS written should end with a newline
-        /// - Arbitrary values are already normalized (e.g. underscores are replaced by spaces)
-        /// - This function is guaranteed to be called only once per selector
-        ///
-        /// [`generate_wrapper`]: crate::generator::generate_wrapper
-        /// [`generate_at_rules`]: crate::generator::generate_at_rules
-        /// [`generate_class`]: crate::generator::generate_class
-        handle: fn(&mut ContextHandle),
-    },
+impl Functional<String> {
+    pub fn dynamic_default() -> Self {
+        Self {
+            namespace: String::new(),
+            can_handle: can_handle_nop,
+            handle: handle_nop,
+        }
+    }
 }
 
 /// A plugin is a structure capable of generating CSS styles from a CSS selector.
@@ -443,14 +734,13 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 /// Several kinds of plugins exist and define what values are accepted as selector or modifier and
 /// what CSS is generated based on the input selector. The API is designed to be fully declarative
 /// (so that plugin declarations are serializable), except for the
-/// [functional kind](PluginKind::Functional).
+/// [functional kind](Plugin::Functional).
 ///
-/// Each plugin kind has a set of required parameters which are defined in the [`PluginKind`]
-/// enumeration, whereas the [`Plugin`] structure's methods allow overriding some default values
-/// for the chosen kind.
+/// Each plugin kind has a set of required parameters and a set of default parameters which can be
+/// automatically used in Rust using the [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
 ///
 /// It's common to define several plugins to handle a single utility class, and to define static
-/// plugins as constants ([`Plugin::new`] as well as every [`Plugin`] methods are `const fn`s).
+/// plugins as constants (the `default` function on each plugin kind is a `const fn`).
 ///
 /// After you have defined a plugin, you need to register it in the [`Config`] structure by calling
 /// [`Config::register_plugin`].
@@ -460,13 +750,14 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 /// ```
 /// use encre_css::prelude::build_plugin::*;
 ///
-/// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+/// const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
 ///     prop: SingleProp("font-family"),
 ///     values: map! {
 ///         "font-sans" => r#"ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont"#,
 ///         "font-serif" => r#"Georgia, Cambria, "Times New Roman", Times, serif"#,
 ///         "font-mono" => r#"Menlo, Monaco, Consolas, "Liberation Mono", monospace"#,
 ///     },
+///     ..ListValues::default()
 /// });
 /// ```
 ///
@@ -474,40 +765,31 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 ///
 /// ```
 /// use encre_css::prelude::build_plugin::*;
-/// use PluginArbitraryMatcher::*;
 ///
-/// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
+/// const PLUGIN: StaticPlugin = Plugin::Number(Number {
 ///     namespace: "stroke",
 ///     prop: SingleProp("stroke-width"),
-/// })
-/// .template("{}px");
+///     template: Some("{}px"),
+///     ..Number::default()
+/// });
 ///
 /// // There's also a plugin sharing the same `stroke` namespace (which helps changing the
 /// // stroke color, e.g `stroke-red-500`), so it's required to define `hints` and `matchers`
-/// const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+/// const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
 ///     namespace: "stroke",
 ///     prop: SingleProp("stroke-width"),
-/// })
-/// .hints(&[ArbitraryHint::Length, ArbitraryHint::Percentage])
-/// .matchers(&[
-///     Length,
-///     Percentage,
-///     LineWidth,
-///     Number,
-/// ], PluginArbitraryMatcherSeparation::Comma);
-/// ```
-///
-/// # Release a plugin as a crate
-///
-/// If you want to release your custom plugins as a crate, you can export a `register` function
-/// taking a mutable reference to a [`Config`] structure and use the [`Config::register_plugin`]
-/// function to register them.
-///
-/// ```ignore
-/// pub fn register(config: &mut Config) {
-///     config.register_plugin(&PLUGIN);
-///     config.register_plugin(&PLUGIN_ARBITRARY);
-/// }
+///     hints: Some(&[ArbitraryHint::Length, ArbitraryHint::Percentage]),
+///     matchers: Some((
+///         &[
+///             PluginArbitraryMatcher::Length,
+///             PluginArbitraryMatcher::Percentage,
+///             PluginArbitraryMatcher::LineWidth,
+///             PluginArbitraryMatcher::Number,
+///         ],
+///         PluginArbitraryMatcherSeparation::Comma,
+///     )),
+///     ..Arbitrary::default()
+/// });
 /// ```
 ///
 /// # More powerful usage
@@ -531,7 +813,7 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 ///         .and_then(|r| r.as_str())
 /// }
 ///
-/// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Functional {
+/// const PLUGIN: StaticPlugin = Plugin::Functional(Functional {
 ///     namespace: "emoji",
 ///     can_handle: |context| matches!(context.modifier, Modifier::Builtin {
 ///         value,
@@ -561,482 +843,77 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 ///
 /// # Define a plugin in TOML
 ///
-/// All plugin kinds except [`PluginKind::Functional`] are serializable, thus can be defined in
-/// `encre-css`'s TOML configuration (or every other language that uses a `serde` deserializer).
+/// Instead of defining plugins in Rust, you can also define them in `encre-css`'s TOML configuration
+/// (or every other language that uses a `serde` deserializer).
+/// The sole exception is plugins using [`Functional`] which are not serializable.
 ///
 /// To do that, you need to add a new entry in the `custom_plugins` list of the configuration.
-/// You can then use every [`Plugin`] configuration option, just use the method name as a key.
+/// You can then use every [`Plugin`] configuration option.
 ///
 /// ### Example
 ///
 /// ```toml
 /// [[custom_plugins]]
+///
+/// [custom_plugins.Number]
+/// namespace = "stroke"
+/// prop = "stroke-width"
 /// template = "{}px"
 ///
-/// [custom_plugins.kind.Number]
+/// [[custom_plugins]]
+///
+/// [custom_plugins.Arbitrary]
 /// namespace = "stroke"
 /// prop = "stroke-width"
-///
-/// [[custom_plugins]]
 /// hints = ["Length", "Percentage"]
 /// matchers = [["Length", "Percentage", "LineWidth", "Number"], "Comma"]
-///
-/// [custom_plugins.kind.Arbitrary]
-/// namespace = "stroke"
-/// prop = "stroke-width"
 /// ```
 ///
-/// # Quirks
+/// # Advice
 ///
-/// - Only some [`Plugin`] methods are useful to use with a specific [`PluginKind`],
-/// e.g [`Plugin::has_full`] has no sense with a [`PluginKind::ListValues`]. When defining plugins in a
-/// Rust const environment, every methods of [`Plugin`] contains a compile-time check that the
-/// method has a sense with the chosen [`PluginKind`], however, **this check does not happen when
-/// declaring plugins in TOML and these options will silently be ignored**
-/// - `encre-css` builds a [trie structure](https://en.wikipedia.org/wiki/Trie) based on the
+/// `encre-css` builds a [trie structure](https://en.wikipedia.org/wiki/Trie) based on the
 /// namespace of the plugins to optimize matching a utility class to a specific plugin, so it's
 /// **highly discouraged to leave the namespace of a plugin empty**, otherwise the performances will
 /// decrease heavily.
 ///
-/// # What to do next
+/// # Release a plugin as a crate
 ///
-/// 1. The documentation about the different kinds of plugins is [here](PluginKind)
+/// If you want to release your custom plugins as a crate, you can export a `register` function
+/// taking a mutable reference to a [`Config`] structure and use the [`Config::register_plugin`]
+/// function to register them.
+///
+/// ```ignore
+/// pub fn register(config: &mut Config) {
+///     config.register_plugin(&PLUGIN);
+///     config.register_plugin(&PLUGIN_ARBITRARY);
+/// }
+/// ```
 ///
 /// [`Config::register_plugin`]: crate::Config::register_plugin
 /// [`Config`]: crate::Config
-/// [`Functional`]: PluginKind::Functional
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub struct Plugin<Str, ArrayStr, MapStr, MapArrayStr, ArrayHints, ArrayMatchers> {
-    pub(crate) kind: PluginKind<Str, ArrayStr, MapStr, MapArrayStr>,
+pub enum Plugin<Str, ArrayStr, MapStr, MapArrayStr, ArrayHints, ArrayMatchers> {
+    /// See [`ListProperties`].
+    ListProperties(ListProperties<Str, ArrayStr, MapStr, MapArrayStr>),
 
-    #[serde(default)]
-    pub(crate) has_auto: bool,
+    /// See [`ListValues`].
+    ListValues(ListValues<Str, ArrayStr, MapStr>),
 
-    #[serde(default)]
-    pub(crate) has_empty: bool,
+    /// See [`Spacing`].
+    Spacing(Spacing<Str, ArrayStr, MapStr>),
 
-    #[serde(default)]
-    pub(crate) has_full: bool,
+    /// See [`Color`].
+    Color(Color<Str, ArrayStr, MapStr>),
 
-    #[serde(default)]
-    pub(crate) has_negative: bool,
+    /// See [`Number`].
+    Number(Number<Str, ArrayStr, MapStr>),
 
-    pub(crate) extra_lines: Option<ArrayStr>,
-    pub(crate) extra_css: Option<MapStr>,
-    pub(crate) extra_class: Option<Str>,
-    pub(crate) extra_slash: Option<(MapStr, Str)>,
-    pub(crate) template: Option<Str>,
-    pub(crate) template_multiple: Option<ArrayStr>,
-    pub(crate) hints: Option<ArrayHints>,
-    pub(crate) matchers: Option<(ArrayMatchers, PluginArbitraryMatcherSeparation)>,
-    pub(crate) shadow_color_replacement: Option<Str>,
-    pub(crate) namespace: Option<Str>,
-    pub(crate) divide_by: Option<f32>,
-}
+    /// See [`Arbitrary`].
+    Arbitrary(Arbitrary<Str, ArrayStr, MapStr, ArrayHints, ArrayMatchers>),
 
-impl StaticPlugin {
-    /// Make a new [`Plugin`] from a [`PluginKind`] filled with the required values.
+    /// See [`Functional`].
     ///
-    /// It should be used from a const context, e.g
-    ///
-    /// ```ignore
-    /// use encre_css::prelude::build_plugin::*;
-    ///
-    /// const PLUGIN: StaticPlugin = Plugin::new(...);
-    /// ```
-    #[must_use]
-    pub const fn new(kind: StaticPluginKind) -> Self {
-        Self {
-            kind,
-            has_auto: false,
-            has_empty: false,
-            has_full: false,
-            has_negative: false,
-            extra_lines: None,
-            extra_css: None,
-            extra_class: None,
-            extra_slash: None,
-            template: None,
-            template_multiple: None,
-            hints: None,
-            matchers: None,
-            shadow_color_replacement: None,
-            namespace: None,
-            divide_by: None,
-        }
-    }
-
-    /// Automatically add support for the `auto` modifier.
-    ///
-    /// If this method is called, an `auto` modifier will generate an `auto` CSS property value.
-    ///
-    /// <div class="warning">
-    ///
-    /// Only works with [`PluginKind::Spacing`] or [`PluginKind::Number`].
-    ///
-    /// </div>
-    #[must_use]
-    pub const fn has_auto(mut self) -> Self {
-        assert!(
-            matches!(
-                self.kind,
-                PluginKind::Spacing { .. } | PluginKind::Number { .. }
-            ),
-            "Plugin::has_auto only works with PluginKind::Spacing or PluginKind::Number"
-        );
-
-        self.has_auto = true;
-        self
-    }
-
-    /// Automatically add support for an empty modifier.
-    ///
-    /// If this method is called, an empty modifier will generate a `1` CSS property value.
-    ///
-    /// <div class="warning">
-    ///
-    /// Only works with [`PluginKind::Number`].
-    ///
-    /// </div>
-    #[must_use]
-    pub const fn has_empty(mut self) -> Self {
-        assert!(
-            matches!(self.kind, PluginKind::Number { .. }),
-            "Plugin::has_empty only works with PluginKind::Number"
-        );
-
-        self.has_empty = true;
-        self
-    }
-
-    /// Automatically add support for the `full` modifier.
-    ///
-    /// If this method is called, a `full` modifier will generate a `100%` CSS property value.
-    ///
-    /// <div class="warning">
-    ///
-    /// Only works with [`PluginKind::Spacing`].
-    ///
-    /// </div>
-    #[must_use]
-    pub const fn has_full(mut self) -> Self {
-        assert!(
-            matches!(self.kind, PluginKind::Spacing { .. }),
-            "Plugin::has_full only works with PluginKind::Spacing"
-        );
-
-        self.has_full = true;
-        self
-    }
-
-    /// Automatically add support for negative modifiers.
-    ///
-    /// <div class="warning">
-    ///
-    /// Only works with [`PluginKind::Number`].
-    ///
-    /// </div>
-    #[must_use]
-    pub const fn has_negative(mut self) -> Self {
-        assert!(
-            matches!(self.kind, PluginKind::Number { .. }),
-            "Plugin::has_negative only works with PluginKind::Number"
-        );
-
-        self.has_negative = true;
-        self
-    }
-
-    /// Add one or several extra CSS line(s) **inside** the CSS rule generated for the utility class.
-    ///
-    /// ### Example
-    ///
-    /// ```
-    /// use encre_css::{Config, generate};
-    /// use encre_css::prelude::build_plugin::*;
-    ///
-    /// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Spacing {
-    ///     namespace: "custom-translate-x",
-    ///     prop: SingleProp("--translate-x"),
-    /// }).extra_lines(&["transform: translate(var(--translate-x), 12px);"]);
-    ///
-    /// let mut config = Config::default();
-    /// config.register_plugin(&PLUGIN);
-    ///
-    /// let generated = generate(["custom-translate-x-8"], &config);
-    ///
-    /// assert!(generated.ends_with(r".custom-translate-x-8 {
-    ///   --translate-x: 2rem;
-    ///   transform: translate(var(--translate-x), 12px);
-    /// }"));
-    /// ```
-    #[must_use]
-    pub const fn extra_lines(mut self, extra_lines: &'static [&'static str]) -> Self {
-        self.extra_lines = Some(extra_lines);
-        self
-    }
-
-    /// Add one or several extra CSS line(s) **outside** the CSS rule generated for the utility class.
-    ///
-    /// The argument is a map which allows choosing the added CSS based on the modifier value.
-    ///
-    /// ### Example
-    ///
-    /// ```
-    /// use encre_css::{Config, generate};
-    /// use encre_css::prelude::build_plugin::*;
-    ///
-    /// const SPIN_ANIMATION: &str = "@keyframes anim-spin {
-    ///   from {
-    ///     transform: rotate(0deg);
-    ///   }
-    ///   to {
-    ///     transform: rotate(360deg);
-    ///   }
-    /// }\n\n";
-    ///
-    /// const FADE_IN_ANIMATION: &str = "@keyframes anim-fade-in {
-    ///   from {
-    ///     opacity: 0;
-    ///   }
-    ///   to {
-    ///     opacity: 1;
-    ///   }
-    /// }\n\n";
-    ///
-    /// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
-    ///     prop: SingleProp("animation"),
-    ///     values: map! {
-    ///         "custom-animate-spin" => "anim-spin",
-    ///         "custom-animate-fade-in" => "anim-fade-in",
-    ///     },
-    /// }).extra_css(map! {
-    ///     "custom-animate-spin" => SPIN_ANIMATION,
-    ///     "custom-animate-fade-in" => FADE_IN_ANIMATION,
-    /// });
-    ///
-    /// let mut config = Config::default();
-    /// config.register_plugin(&PLUGIN);
-    ///
-    /// let generated = generate(["custom-animate-spin"], &config);
-    ///
-    /// assert!(generated.ends_with(r"@keyframes anim-spin {
-    ///   from {
-    ///     transform: rotate(0deg);
-    ///   }
-    ///   to {
-    ///     transform: rotate(360deg);
-    ///   }
-    /// }
-    ///
-    /// .custom-animate-spin {
-    ///   animation: anim-spin;
-    /// }"));
-    /// ```
-    #[must_use]
-    pub const fn extra_css(mut self, extra_css: phf::Map<&'static str, &'static str>) -> Self {
-        self.extra_css = Some(extra_css);
-        self
-    }
-
-    #[must_use]
-    pub const fn extra_class(mut self, extra_class: &'static str) -> Self {
-        self.extra_class = Some(extra_class);
-        self
-    }
-
-    #[must_use]
-    pub const fn extra_slash(
-        mut self,
-        values: phf::Map<&'static str, &'static str>,
-        default: &'static str,
-    ) -> Self {
-        assert!(
-            matches!(
-                self.kind,
-                PluginKind::ListValues { .. }
-                    | PluginKind::Number { .. }
-                    | PluginKind::Spacing { .. }
-                    | PluginKind::Color { .. }
-            ),
-            "Plugin::extra_slash only works with PluginKind::ListValues or PluginKind::Number or PluginKind::{{Sizing, Spacing, Color}}"
-        );
-
-        self.extra_slash = Some((values, default));
-        self
-    }
-
-    #[must_use]
-    pub const fn template(mut self, template: &'static str) -> Self {
-        assert!(
-            matches!(
-                self.kind,
-                PluginKind::Arbitrary { .. }
-                    | PluginKind::Number { .. }
-                    | PluginKind::Spacing { .. }
-                    | PluginKind::Color { .. }
-            ),
-            "Plugin::template can only be used with PluginKind::Arbitrary or PluginKind::Number or PluginKind::{{Spacing, Sizing, Color}}"
-        );
-
-        self.template = Some(template);
-        self
-    }
-
-    #[must_use]
-    pub const fn template_multiple(mut self, templates: &'static [&'static str]) -> Self {
-        assert!(
-            matches!(
-                self.kind,
-                PluginKind::Arbitrary { .. }
-                    | PluginKind::Number { .. }
-                    | PluginKind::Spacing { .. }
-                    | PluginKind::Color { .. }
-            ),
-            "Plugin::template_multiple can only be used with PluginKind::Arbitrary or PluginKind::Number or PluginKind::{{Spacing, Sizing, Color}}"
-        );
-
-        assert!(
-            matches!(
-                self.kind,
-                PluginKind::Arbitrary {
-                    prop: PropertyName::MultipleProps(..),
-                    ..
-                } | PluginKind::Number {
-                    prop: PropertyName::MultipleProps(..),
-                    ..
-                } | PluginKind::Spacing {
-                    prop: PropertyName::MultipleProps(..),
-                    ..
-                } | PluginKind::Color {
-                    prop: PropertyName::MultipleProps(..),
-                    ..
-                }
-            ),
-            "Plugin::template can only be used with a MultipleProps property name. To define a template for a single property name, use Plugin::template"
-        );
-
-        assert!(
-            matches!(
-                self.kind,
-                PluginKind::Arbitrary {
-                    prop: PropertyName::MultipleProps(p),
-                    ..
-                } | PluginKind::Number {
-                    prop: PropertyName::MultipleProps(p),
-                    ..
-                } | PluginKind::Spacing {
-                    prop: PropertyName::MultipleProps(p),
-                    ..
-                } | PluginKind::Color {
-                    prop: PropertyName::MultipleProps(p),
-                    ..
-                } if p.len() == templates.len()
-            ),
-            "Plugin::template_multiple should have as many elements as the number of properties defined in MultipleProps. Each template will be applied for the corresponding property name in the order they are defined"
-        );
-
-        self.template_multiple = Some(templates);
-        self
-    }
-
-    #[must_use]
-    pub const fn hints(mut self, hints: &'static [ArbitraryHint]) -> Self {
-        assert!(
-            matches!(self.kind, PluginKind::Arbitrary { .. }),
-            "Plugin::hints can only be used with PluginKind::Arbitrary"
-        );
-
-        self.hints = Some(hints);
-        self
-    }
-
-    // TODO(doc): complete example with several Arbitrary plugins sharing the same namespace
-    #[must_use]
-    pub const fn matchers(
-        mut self,
-        matchers: &'static [PluginArbitraryMatcher<&'static str, &'static [&'static str]>],
-        modifier: PluginArbitraryMatcherSeparation,
-    ) -> Self {
-        assert!(
-            matches!(self.kind, PluginKind::Arbitrary { .. }),
-            "Plugin::matchers can only be used with PluginKind::Arbitrary"
-        );
-
-        self.matchers = Some((matchers, modifier));
-        self
-    }
-
-    #[must_use]
-    pub const fn shadow_color_replacement(mut self, replacement: &'static str) -> Self {
-        assert!(
-            matches!(self.kind, PluginKind::Arbitrary { .. }),
-            "Plugin::shadow_color_replacement can only be used with PluginKind::Arbitrary"
-        );
-
-        self.shadow_color_replacement = Some(replacement);
-        self
-    }
-
-    #[must_use]
-    pub const fn namespace(mut self, namespace: &'static str) -> Self {
-        assert!(
-            matches!(
-                self.kind,
-                PluginKind::ListValues { .. } | PluginKind::ListProperties { .. }
-            ),
-            "Plugin::namespace can only be used with PluginKind::ListValues or PluginKind::ListProperties. For other kinds, use the built-in `namespace` field"
-        );
-
-        self.namespace = Some(namespace);
-        self
-    }
-
-    #[must_use]
-    pub const fn divide_by(mut self, factor: f32) -> Self {
-        assert!(
-            matches!(
-                self.kind,
-                PluginKind::Number { .. }
-            ),
-            "Plugin::divide_by can only be used with PluginKind::Number."
-        );
-
-        self.divide_by = Some(factor);
-        self
-    }
-}
-
-impl DynamicPlugin {
-    /// Make a new [`Plugin`] from a [`PluginKind`] filled with the required values.
-    ///
-    /// It should be used from a non-const context, e.g
-    ///
-    /// ```ignore
-    /// use encre_css::prelude::build_plugin::*;
-    ///
-    /// fn main() {
-    ///   let plugin: DynamicPlugin = Plugin::new_dynamic(...);
-    /// }
-    /// ```
-    pub fn new_dynamic(kind: DynamicPluginKind) -> Self {
-        Self {
-            kind,
-            has_auto: false,
-            has_empty: false,
-            has_full: false,
-            has_negative: false,
-            extra_lines: None,
-            extra_css: None,
-            extra_class: None,
-            extra_slash: None,
-            template: None,
-            template_multiple: None,
-            hints: None,
-            matchers: None,
-            shadow_color_replacement: None,
-            namespace: None,
-            divide_by: None,
-        }
-    }
+    /// Not serializable.
+    #[serde(skip)]
+    Functional(Functional<Str>),
 }

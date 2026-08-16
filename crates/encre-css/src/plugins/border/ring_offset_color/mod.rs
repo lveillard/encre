@@ -1,18 +1,22 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Color {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::Color(Color {
     namespace: "ring-offset",
     prop: SingleProp("--en-ring-offset-color"),
-})
-.extra_lines(&["--en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);"]);
+    extra_lines: Some(&[super::ring_offset_width::RING_OFFSET_SHADOW]),
+    ..Color::default()
+});
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "ring-offset",
     prop: SingleProp("--en-ring-offset-color"),
-})
-.hints(&[ArbitraryHint::Color])
-.matchers(&[Color], PluginArbitraryMatcherSeparation::None)
-.extra_lines(&["--en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);"]);
+    hints: Some(&[ArbitraryHint::Color]),
+    matchers: Some((
+        &[PluginArbitraryMatcher::Color],
+        PluginArbitraryMatcherSeparation::None,
+    )),
+    extra_lines: Some(&[super::ring_offset_width::RING_OFFSET_SHADOW]),
+    ..Arbitrary::default()
+});

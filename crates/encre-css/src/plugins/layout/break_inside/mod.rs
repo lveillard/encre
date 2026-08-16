@@ -2,7 +2,7 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("break-inside"),
     values: map! {
         "break-inside-auto" => "auto",
@@ -10,4 +10,5 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "break-inside-avoid-page" => "avoid-page",
         "break-inside-avoid-column" => "avoid-column",
     },
+    ..ListValues::default()
 });

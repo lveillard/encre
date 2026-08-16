@@ -1,28 +1,37 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Color {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::Color(Color {
     namespace: "ring",
     prop: SingleProp("--en-ring-color"),
+    ..Color::default()
 });
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "ring",
     prop: SingleProp("--en-ring-color"),
-})
-.hints(&[ArbitraryHint::Color])
-.matchers(&[Color], PluginArbitraryMatcherSeparation::None);
-
-pub(crate) const PLUGIN_INSET_1: StaticPlugin = Plugin::new(PluginKind::Color {
-    namespace: "inset-ring",
-    prop: SingleProp("--en-inset-ring-color"),
+    hints: Some(&[ArbitraryHint::Color]),
+    matchers: Some((
+        &[PluginArbitraryMatcher::Color],
+        PluginArbitraryMatcherSeparation::None,
+    )),
+    ..Arbitrary::default()
 });
 
-pub(crate) const PLUGIN_INSET_2: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_INSET_1: StaticPlugin = Plugin::Color(Color {
     namespace: "inset-ring",
     prop: SingleProp("--en-inset-ring-color"),
-})
-.hints(&[ArbitraryHint::Color])
-.matchers(&[Color], PluginArbitraryMatcherSeparation::None);
+    ..Color::default()
+});
+
+pub(crate) const PLUGIN_INSET_2: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "inset-ring",
+    prop: SingleProp("--en-inset-ring-color"),
+    hints: Some(&[ArbitraryHint::Color]),
+    matchers: Some((
+        &[PluginArbitraryMatcher::Color],
+        PluginArbitraryMatcherSeparation::None,
+    )),
+    ..Arbitrary::default()
+});

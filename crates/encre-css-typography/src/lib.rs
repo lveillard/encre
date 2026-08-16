@@ -1063,7 +1063,7 @@ const PROSE_INVERT_CSS: &str = "--en-prose-body: var(--en-prose-invert-body);
 --en-prose-kbd-text: var(--en-prose-invert-kbd-text);
 --en-prose-kbd-bg: var(--en-prose-invert-kbd-bg);";
 
-const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
+const PLUGIN: StaticPlugin = Plugin::ListProperties(ListProperties {
     props: map! {
         "prose" => &[],
         "prose-invert" => &[],
@@ -1073,13 +1073,14 @@ const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
         "prose-neutral" => PROSE_NEUTRAL_CSS,
         "prose-stone" => PROSE_STONE_CSS,
     },
-})
-.extra_css(map! {
-    "prose" => PROSE_DEFAULT_CSS,
-    "prose-invert" => PROSE_INVERT_CSS,
+    extra_css: Some(map! {
+        "prose" => PROSE_DEFAULT_CSS,
+        "prose-invert" => PROSE_INVERT_CSS,
+    }),
+    ..ListProperties::default()
 });
 
-const PLUGIN_CUSTOMIZATION: StaticPlugin = Plugin::new(PluginKind::Functional {
+const PLUGIN_CUSTOMIZATION: StaticPlugin = Plugin::Functional(Functional {
     namespace: "prose",
     can_handle: |context| {
         matches!(context.modifier, Modifier::Builtin { value, .. } if [

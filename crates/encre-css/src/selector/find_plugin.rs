@@ -1,20 +1,13 @@
 use std::ops::Range;
 
 use crate::{
-    Config,
-    error::{ParseError, ParseErrorKind},
-    generator::ContextCanHandle,
-    plugins::{
-        CustomPlugin, DynamicPlugin, DynamicPluginArbitraryMatcher, DynamicPluginKind, Plugin,
-        PluginArbitraryMatcher, PluginArbitraryMatcherSeparation, PluginKind,
-        StaticPluginArbitraryMatcher,
-    },
-    selector::{
+    Config, error::{ParseError, ParseErrorKind}, generator::ContextCanHandle, plugins::{
+        Arbitrary, Color, CustomPlugin, DynamicPluginArbitraryMatcher, Functional, ListProperties, ListValues, Number, Plugin, PluginArbitraryMatcher, PluginArbitraryMatcherSeparation, Spacing, StaticPluginArbitraryMatcher,
+    }, selector::{
         Modifier, Selector, Variant,
         parser::{ARBITRARY_END, ARBITRARY_START, LAYER_BUILTIN, LAYER_CUSTOM, to_css_value},
         trie::{Trie, TrieData},
-    },
-    utils::{color, spacing, value_matchers::*},
+    }, utils::{color, spacing, value_matchers::*},
 };
 
 fn is_arbitrary_matching(
@@ -158,14 +151,8 @@ pub(super) fn find_plugin_to_handle_class<'a>(
                     modifier = &modifier[1..];
                 }
 
-                if let CustomPlugin::Static(Plugin {
-                    kind: PluginKind::Arbitrary { .. },
-                    ..
-                })
-                | CustomPlugin::Dynamic(DynamicPlugin {
-                    kind: DynamicPluginKind::Arbitrary { .. },
-                    ..
-                }) = plugin
+                if let CustomPlugin::Static(Plugin::Arbitrary(_))
+                | CustomPlugin::Dynamic(Plugin::Arbitrary(_)) = plugin
                 {
                     if let Some(value) = modifier.strip_prefix(ARBITRARY_START)
                         && let Some(value) = value.strip_suffix(ARBITRARY_END)
@@ -222,26 +209,20 @@ pub(super) fn find_plugin_to_handle_class<'a>(
 fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bool {
     match (&plugin, modifier) {
         (
-            CustomPlugin::Static(Plugin {
-                kind: PluginKind::ListProperties { props },
-                ..
-            }),
+            CustomPlugin::Static(Plugin::ListProperties(ListProperties { props, .. })),
             Modifier::Builtin { value, .. },
         ) => props.contains_key(value),
         (
-            CustomPlugin::Dynamic(DynamicPlugin {
-                kind: DynamicPluginKind::ListProperties { props },
-                ..
-            }),
+            CustomPlugin::Dynamic(Plugin::ListProperties(ListProperties { props, .. })),
             Modifier::Builtin { value, .. },
         ) => props.contains_key(*value),
 
         (
-            CustomPlugin::Static(Plugin {
-                kind: PluginKind::ListValues { values, .. },
+            CustomPlugin::Static(Plugin::ListValues(ListValues {
+                values,
                 extra_slash,
                 ..
-            }),
+            })),
             Modifier::Builtin { value, .. },
         ) => {
             let (value, template_value) = if extra_slash.is_some()
@@ -259,11 +240,11 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
         }
 
         (
-            CustomPlugin::Dynamic(DynamicPlugin {
-                kind: DynamicPluginKind::ListValues { values, .. },
+            CustomPlugin::Dynamic(Plugin::ListValues(ListValues {
+                values,
                 extra_slash,
                 ..
-            }),
+            })),
             Modifier::Builtin { value, .. },
         ) => {
             let (value, template_value) = if extra_slash.is_some()
@@ -281,46 +262,33 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
         }
 
         (
-            CustomPlugin::Static(Plugin {
-                kind: PluginKind::Spacing { .. },
-                has_auto,
-                has_full,
-                ..
-            })
-            | CustomPlugin::Dynamic(DynamicPlugin {
-                kind: DynamicPluginKind::Spacing { .. },
-                has_auto,
-                has_full,
-                ..
-            }),
+            CustomPlugin::Static(Plugin::Spacing(Spacing {
+                has_auto, has_full, ..
+            }))
+            | CustomPlugin::Dynamic(Plugin::Spacing(Spacing {
+                has_auto, has_full, ..
+            })),
             Modifier::Builtin { value, .. },
         ) => {
             spacing::is_matching_builtin_spacing(value)
-                || (*has_auto && *value == "auto")
-                || (*has_full && *value == "full")
+                || (has_auto.unwrap_or(false) && *value == "auto")
+                || (has_full.unwrap_or(false) && *value == "full")
         }
 
         (
-            CustomPlugin::Static(Plugin {
-                kind: PluginKind::Color { .. },
-                ..
-            })
-            | CustomPlugin::Dynamic(DynamicPlugin {
-                kind: DynamicPluginKind::Color { .. },
-                ..
-            }),
+            CustomPlugin::Static(Plugin::Color(Color { .. }))
+            | CustomPlugin::Dynamic(Plugin::Color(Color { .. })),
             Modifier::Builtin { value, .. },
         ) => color::is_matching_builtin_color(config, value),
 
         (
-            CustomPlugin::Static(Plugin {
-                kind: PluginKind::Number { .. },
+            CustomPlugin::Static(Plugin::Number(Number {
                 has_auto,
                 has_empty,
                 has_negative,
                 extra_slash,
                 ..
-            }),
+            })),
             Modifier::Builtin {
                 value, is_negative, ..
             },
@@ -336,19 +304,18 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
             extra_slash
                 .as_ref()
                 .is_none_or(|extra_slash| extra_slash.0.contains_key(template_value.unwrap()))
-                && ((*has_empty && value.is_empty())
-                    || (*has_auto && value == "auto")
-                    || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative)))
+                && ((has_empty.unwrap_or(false) && value.is_empty())
+                    || (has_auto.unwrap_or(false) && value == "auto")
+                    || (value.parse::<usize>().is_ok() && (has_negative.unwrap_or(false) || !*is_negative)))
         }
         (
-            CustomPlugin::Dynamic(DynamicPlugin {
-                kind: DynamicPluginKind::Number { .. },
+            CustomPlugin::Dynamic(Plugin::Number(Number {
                 has_auto,
                 has_empty,
                 has_negative,
                 extra_slash,
                 ..
-            }),
+            })),
             Modifier::Builtin {
                 value, is_negative, ..
             },
@@ -364,51 +331,37 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
             extra_slash
                 .as_ref()
                 .is_none_or(|extra_slash| extra_slash.0.contains_key(template_value.unwrap()))
-                && ((*has_empty && value.is_empty())
-                    || (*has_auto && value == "auto")
-                    || (value.parse::<usize>().is_ok() && (*has_negative || !*is_negative)))
+                && ((has_empty.unwrap_or(false) && value.is_empty())
+                    || (has_auto.unwrap_or(false) && value == "auto")
+                    || (value.parse::<usize>().is_ok() && (has_negative.unwrap_or(false) || !*is_negative)))
         }
 
         (
-            CustomPlugin::Static(Plugin {
-                kind: PluginKind::Arbitrary { .. },
-                hints,
-                matchers,
-                ..
-            }),
+            CustomPlugin::Static(Plugin::Arbitrary(Arbitrary {
+                hints, matchers, ..
+            })),
             Modifier::Arbitrary { hint, value },
         ) => {
             hint.is_some_and(|h| hints.is_some_and(|hints| hints.contains(&h)))
                 || (hint.is_none()
-                    && matchers
-                        .is_none_or(|matchers| is_arbitrary_matching(&matchers, value)))
+                    && matchers.is_none_or(|matchers| is_arbitrary_matching(&matchers, value)))
         }
         (
-            CustomPlugin::Dynamic(DynamicPlugin {
-                kind: DynamicPluginKind::Arbitrary { .. },
-                hints,
-                matchers,
-                ..
-            }),
+            CustomPlugin::Dynamic(Plugin::Arbitrary(Arbitrary {
+                hints, matchers, ..
+            })),
             Modifier::Arbitrary { hint, value },
         ) => {
-            hint.is_some_and(|h| {
-                hints
-                    .as_ref()
-                    .is_some_and(|hints| hints.contains(&h))
-            }) || (hint.is_none()
-                && matchers
-                    .as_ref()
-                    .is_none_or(|matchers| is_parsed_arbitrary_matching(&matchers, value)))
+            hint.is_some_and(|h| hints.as_ref().is_some_and(|hints| hints.contains(&h)))
+                || (hint.is_none()
+                    && matchers
+                        .as_ref()
+                        .is_none_or(|matchers| is_parsed_arbitrary_matching(matchers, value)))
         }
 
-        (
-            CustomPlugin::Static(Plugin {
-                kind: PluginKind::Functional { can_handle, .. },
-                ..
-            }),
-            Modifier::Builtin { .. },
-        ) => can_handle(&ContextCanHandle { config, modifier }),
+        (CustomPlugin::Static(Plugin::Functional(Functional { can_handle, .. })), Modifier::Builtin { .. }) => {
+            can_handle(&ContextCanHandle { config, modifier })
+        }
         _ => false,
     }
 }

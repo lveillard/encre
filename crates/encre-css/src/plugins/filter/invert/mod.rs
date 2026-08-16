@@ -3,11 +3,12 @@
 use super::CSS_FILTER;
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "invert",
     prop: SingleProp("--en-invert"),
-})
-.divide_by(100.0)
-.has_empty()
-.extra_lines(&[CSS_FILTER])
-.template("invert({})");
+    has_empty: Some(true),
+    divide_by: Some(100.0),
+    extra_lines: Some(&[CSS_FILTER]),
+    template: Some("invert({})"),
+    ..Number::default()
+});

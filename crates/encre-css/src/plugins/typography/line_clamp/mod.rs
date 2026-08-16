@@ -2,20 +2,22 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::new(PluginKind::ListProperties {
+pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::ListProperties(ListProperties {
     props: map! {
         "line-clamp-none" => &[
             "-webkit-line-clamp: unset;"
         ]
     },
+    ..ListProperties::default()
 });
 
-pub(crate) const PLUGIN_NUMBER: StaticPlugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN_NUMBER: StaticPlugin = Plugin::Number(Number {
     namespace: "line-clamp",
     prop: SingleProp("-webkit-line-clamp"),
-})
-.extra_lines(&[
-    "overflow: hidden;",
-    "display: -webkit-box;",
-    "-webkit-box-orient: vertical;",
-]);
+    extra_lines: Some(&[
+        "overflow: hidden;",
+        "display: -webkit-box;",
+        "-webkit-box-orient: vertical;",
+    ]),
+    ..Number::default()
+});

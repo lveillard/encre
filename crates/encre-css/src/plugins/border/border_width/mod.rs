@@ -1,21 +1,31 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
-use PluginArbitraryMatcher::*;
 
 type P = (StaticPlugin, StaticPlugin);
 
 const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> P {
     (
-        Plugin::new(PluginKind::Number {
+        Plugin::Number(Number {
             namespace,
             prop,
-        })
-        .has_empty()
-        .template("{}px"),
-        Plugin::new(PluginKind::Arbitrary { namespace, prop })
-            .hints(&[ArbitraryHint::Length, ArbitraryHint::LineWidth])
-            .matchers(&[Length, LineWidth], PluginArbitraryMatcherSeparation::Space),
+            has_empty: Some(true),
+            template: Some("{}px"),
+            ..Number::default()
+        }),
+        Plugin::Arbitrary(Arbitrary {
+            namespace,
+            prop,
+            hints: Some(&[ArbitraryHint::Length, ArbitraryHint::LineWidth]),
+            matchers: Some((
+                &[
+                    PluginArbitraryMatcher::Length,
+                    PluginArbitraryMatcher::LineWidth,
+                ],
+                PluginArbitraryMatcherSeparation::Space,
+            )),
+            ..Arbitrary::default()
+        }),
     )
 }
 

@@ -3,17 +3,19 @@
 use super::CSS_BACKDROP_FILTER;
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "backdrop-hue-rotate",
     prop: SingleProp("--en-backdrop-hue-rotate"),
-})
-.has_negative()
-.extra_lines(&CSS_BACKDROP_FILTER)
-.template("hue-rotate({}deg)");
+    has_negative: Some(true),
+    extra_lines: Some(&CSS_BACKDROP_FILTER),
+    template: Some("hue-rotate({}deg)"),
+    ..Number::default()
+});
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "backdrop-hue-rotate",
     prop: SingleProp("--en-backdrop-hue-rotate"),
-})
-.extra_lines(&CSS_BACKDROP_FILTER)
-.template("hue-rotate({})");
+    extra_lines: Some(&CSS_BACKDROP_FILTER),
+    template: Some("hue-rotate({})"),
+    ..Arbitrary::default()
+});

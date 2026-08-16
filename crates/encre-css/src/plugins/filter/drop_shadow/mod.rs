@@ -3,7 +3,7 @@
 use super::CSS_FILTER;
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("--en-drop-shadow"),
     values: map! {
         "drop-shadow-xs" => "drop-shadow(0 1px 1px rgb(0 0 0 / 0.05))",
@@ -14,12 +14,15 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "drop-shadow-2xl" => "drop-shadow(0 25px 25px rgb(0 0 0 / 0.15))",
         "drop-shadow-none" => "drop-shadow(0 0 #0000)",
     },
-}).extra_lines(&[CSS_FILTER]);
+    extra_lines: Some(&[CSS_FILTER]),
+    ..ListValues::default()
+});
 
 // TODO(in tailwindcss v4.3): support changing drop shadow color with class + replace color by variable in arbitrary plugin like in box_shadow
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "drop-shadow",
     prop: SingleProp("--en-drop-shadow"),
-})
-.extra_lines(&[CSS_FILTER])
-.template("drop-shadow({})");
+    extra_lines: Some(&[CSS_FILTER]),
+    template: Some("drop-shadow({})"),
+    ..Arbitrary::default()
+});

@@ -3,10 +3,11 @@
 use super::CSS_BACKDROP_FILTER;
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "backdrop-brightness",
     prop: SingleProp("--en-backdrop-brightness"),
-})
-.divide_by(100.0)
-.extra_lines(&CSS_BACKDROP_FILTER)
-.template("brightness({})");
+    divide_by: Some(100.0),
+    template: Some("brightness({})"),
+    extra_lines: Some(&CSS_BACKDROP_FILTER),
+    ..Number::default()
+});

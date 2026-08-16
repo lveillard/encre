@@ -1,8 +1,11 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "effect")]
-use crate::{plugins:: PluginArbitraryMatcher::*, prelude::build_plugin::*};
+use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+const BOX_SHADOW: &str = "box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow);";
+const INSET_BOX_SHADOW: &str = "box-shadow: var(--en-inset-shadow), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow, 0 0 #0000);";
+
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("--en-shadow"),
     values: map! {
         "shadow-2xs" => "0 1px var(--en-shadow-color, rgb(0 0 0 / 0.05))",
@@ -14,17 +17,23 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "shadow-2xl" => "0 25px 50px -12px var(--en-shadow-color, rgb(0 0 0 / 0.25))",
         "shadow-none" => "0 0 #0000",
     },
-}).extra_lines(&["box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow);"]);
+    extra_lines: Some(&[BOX_SHADOW]),
+    ..ListValues::default()
+});
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "shadow",
     prop: SingleProp("--en-shadow"),
-})
-.extra_lines(&["box-shadow: var(--en-inset-shadow, 0 0 #0000), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow);"])
-.matchers(&[Shadow], PluginArbitraryMatcherSeparation::None)
-.shadow_color_replacement("var(--en-shadow-color, {})");
+    extra_lines: Some(&[BOX_SHADOW]),
+    matchers: Some((
+        &[PluginArbitraryMatcher::Shadow],
+        PluginArbitraryMatcherSeparation::None,
+    )),
+    shadow_color_replacement: Some("var(--en-shadow-color, {})"),
+    ..Arbitrary::default()
+});
 
-pub(crate) const PLUGIN_INSET_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN_INSET_1: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("--en-inset-shadow"),
     values: map! {
         "inset-shadow-2xs" => "inset 0 1px var(--en-inset-shadow-color, rgb(0 0 0 / 0.05))",
@@ -32,13 +41,19 @@ pub(crate) const PLUGIN_INSET_1: StaticPlugin = Plugin::new(PluginKind::ListValu
         "inset-shadow-sm" => "0 2px 4px var(--en-inset-shadow-color, rgb(0 0 0 / 0.05))",
         "inset-shadow-none" => "inset 0 0 #0000",
     },
-}).extra_lines(&["box-shadow: var(--en-inset-shadow), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow, 0 0 #0000);"]);
+    extra_lines: Some(&[INSET_BOX_SHADOW]),
+    ..ListValues::default()
+});
 
-pub(crate) const PLUGIN_INSET_2: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_INSET_2: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "inset-shadow",
     prop: SingleProp("--en-inset-shadow"),
-})
-.extra_lines(&["box-shadow: var(--en-inset-shadow), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow, 0 0 #0000);"])
-.hints(&[ArbitraryHint::Shadow])
-.matchers(&[Shadow], PluginArbitraryMatcherSeparation::None)
-.shadow_color_replacement("var(--en-inset-shadow-color, {})");
+    extra_lines: Some(&[INSET_BOX_SHADOW]),
+    hints: Some(&[ArbitraryHint::Shadow]),
+    matchers: Some((
+        &[PluginArbitraryMatcher::Shadow],
+        PluginArbitraryMatcherSeparation::None,
+    )),
+    shadow_color_replacement: Some("var(--en-inset-shadow-color, {})"),
+    ..Arbitrary::default()
+});

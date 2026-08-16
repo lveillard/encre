@@ -6,14 +6,20 @@ type P = (StaticPlugin, StaticPlugin);
 
 const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> P {
     (
-        Plugin::new(PluginKind::Number {
+        Plugin::Number(Number {
             namespace,
             prop,
-        })
-        .has_negative()
-        .extra_lines(&[CSS_TRANSFORM])
-        .template("{}deg"),
-        Plugin::new(PluginKind::Arbitrary { namespace, prop }).extra_lines(&[CSS_TRANSFORM]),
+            has_negative: Some(true),
+            extra_lines: Some(&[CSS_TRANSFORM]),
+            template: Some("{}deg"),
+            ..Number::default()
+        }),
+        Plugin::Arbitrary(Arbitrary {
+            namespace,
+            prop,
+            extra_lines: Some(&[CSS_TRANSFORM]),
+            ..Arbitrary::default()
+        }),
     )
 }
 

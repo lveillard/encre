@@ -2,7 +2,7 @@
 #![doc(alias = "filter")]
 use crate::{plugins::filter::CSS_BACKDROP_FILTER, prelude::build_plugin::*};
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("--en-backdrop-blur"),
     values: map! {
         "backdrop-blur-xs" => "blur(4px)",
@@ -14,12 +14,14 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "backdrop-blur-3xl" => "blur(64px)",
         "backdrop-blur-none" => "blur(0)",
     },
-})
-.extra_lines(&CSS_BACKDROP_FILTER);
+    extra_lines: Some(&CSS_BACKDROP_FILTER),
+    ..ListValues::default()
+});
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "backdrop-blur",
     prop: SingleProp("--en-backdrop-blur"),
-})
-.extra_lines(&CSS_BACKDROP_FILTER)
-.template("blur({})");
+    extra_lines: Some(&CSS_BACKDROP_FILTER),
+    template: Some("blur({})"),
+    ..Arbitrary::default()
+});

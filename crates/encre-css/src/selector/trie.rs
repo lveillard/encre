@@ -1,9 +1,7 @@
 use std::{borrow::Cow, collections::HashMap};
 
 use crate::{
-    Config,
-    config::BUILTIN_PLUGINS,
-    plugins::{CustomPlugin, PluginKind},
+    Config, config::BUILTIN_PLUGINS, plugins::{Arbitrary, Color, CustomPlugin, Functional, ListProperties, ListValues, Number, Plugin, Spacing},
 };
 
 #[derive(Debug)]
@@ -108,9 +106,9 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                 }),
         )
     {
-        match &plugin.kind {
-            PluginKind::ListProperties { props } => {
-                if let Some(namespace) = plugin.namespace {
+        match &plugin {
+            Plugin::ListProperties(ListProperties { namespace, props, .. }) => {
+                if let Some(namespace) = namespace {
                     trie.insert(
                         namespace,
                         TrieData {
@@ -134,8 +132,8 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                     }
                 }
             }
-            PluginKind::ListValues { values, .. } => {
-                if let Some(namespace) = plugin.namespace {
+            Plugin::ListValues(ListValues { namespace, values, .. }) => {
+                if let Some(namespace) = namespace {
                     trie.insert(
                         namespace,
                         TrieData {
@@ -159,11 +157,11 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                     }
                 }
             }
-            PluginKind::Spacing { namespace, .. }
-            | PluginKind::Color { namespace, .. }
-            | PluginKind::Number { namespace, .. }
-            | PluginKind::Arbitrary { namespace, .. }
-            | PluginKind::Functional { namespace, .. } => {
+            Plugin::Spacing(Spacing { namespace, .. })
+            | Plugin::Color(Color { namespace, .. })
+            | Plugin::Number(Number { namespace, .. })
+            | Plugin::Arbitrary(Arbitrary { namespace, .. })
+            | Plugin::Functional(Functional { namespace, .. }) => {
                 trie.insert(
                     namespace,
                     TrieData {
@@ -189,9 +187,9 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
             }
         })
     {
-        match &plugin.kind {
-            PluginKind::ListProperties { props } => {
-                if let Some(namespace) = &plugin.namespace {
+        match &plugin {
+            Plugin::ListProperties(ListProperties { namespace, props, .. }) => {
+                if let Some(namespace) = &namespace {
                     trie.insert(
                         namespace,
                         TrieData {
@@ -215,8 +213,8 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                     }
                 }
             }
-            PluginKind::ListValues { values, .. } => {
-                if let Some(namespace) = &plugin.namespace {
+            Plugin::ListValues(ListValues { namespace, values, .. }) => {
+                if let Some(namespace) = &namespace {
                     trie.insert(
                         namespace,
                         TrieData {
@@ -240,24 +238,11 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                     }
                 }
             }
-            PluginKind::Spacing { namespace, .. }
-            | PluginKind::Color { namespace, .. }
-            | PluginKind::Number { namespace, .. }
-            | PluginKind::Arbitrary { namespace, .. } => {
-                trie.insert(
-                    namespace,
-                    TrieData {
-                        has_namespace: true,
-                        is_custom: false,
-                        order,
-                        plugin: CustomPlugin::Dynamic(plugin.clone()),
-                    },
-                );
-            }
-            PluginKind::Functional {
-                namespace,
-                ..
-            } => {
+            Plugin::Spacing(Spacing { namespace, .. })
+            | Plugin::Color(Color { namespace, .. })
+            | Plugin::Number(Number { namespace, .. })
+            | Plugin::Arbitrary(Arbitrary { namespace, .. })
+            | Plugin::Functional(Functional { namespace, .. }) => {
                 trie.insert(
                     namespace,
                     TrieData {

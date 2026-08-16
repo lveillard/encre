@@ -2,13 +2,15 @@
 #![doc(alias = "transition")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::Number {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "delay",
     prop: SingleProp("transition-delay"),
-})
-.template("{}ms");
+    template: Some("{}ms"),
+    ..Number::default()
+});
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "delay",
     prop: SingleProp("transition-delay"),
+    ..Arbitrary::default()
 });

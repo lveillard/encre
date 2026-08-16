@@ -2,7 +2,7 @@
 #![doc(alias("effect", "bg", "background"))]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("background-blend-mode"),
     values: map! {
         "bg-blend-normal" => "normal",
@@ -22,4 +22,5 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "bg-blend-color" => "color",
         "bg-blend-luminosity" => "luminosity",
     },
+    ..ListValues::default()
 });

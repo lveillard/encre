@@ -73,7 +73,7 @@ const BOUNCE_ANIMATION: &str = "@-webkit-keyframes bounce {
   }
 }\n\n";
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: MultipleProps(&["-webkit-animation", "animation"]),
     values: map! {
         "animate-none" => "none",
@@ -82,16 +82,18 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "animate-pulse" => "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "animate-bounce" => "bounce 1s infinite",
     },
-})
-.extra_css(map! {
-    "animate-none" => "",
-    "animate-spin" => SPIN_ANIMATION,
-    "animate-ping" => PING_ANIMATION,
-    "animate-pulse" => PULSE_ANIMATION,
-    "animate-bounce" => BOUNCE_ANIMATION,
+    extra_css: Some(map! {
+        "animate-none" => "",
+        "animate-spin" => SPIN_ANIMATION,
+        "animate-ping" => PING_ANIMATION,
+        "animate-pulse" => PULSE_ANIMATION,
+        "animate-bounce" => BOUNCE_ANIMATION,
+    }),
+    ..ListValues::default()
 });
 
-pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "animate",
     prop: MultipleProps(&["-webkit-animation", "animation"]),
+    ..Arbitrary::default()
 });

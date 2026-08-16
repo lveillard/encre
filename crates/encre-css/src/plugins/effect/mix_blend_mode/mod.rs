@@ -2,7 +2,7 @@
 #![doc(alias = "effect")]
 use crate::prelude::build_plugin::*;
 
-pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     prop: SingleProp("mix-blend-mode"),
     values: map! {
         "mix-blend-normal" => "normal",
@@ -23,4 +23,5 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "mix-blend-luminosity" => "luminosity",
         "mix-blend-plus-lighter" => "plus-lighter",
     },
+    ..ListValues::default()
 });
