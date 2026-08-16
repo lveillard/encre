@@ -2521,6 +2521,37 @@ mod tests {
     }
 
     #[test]
+    fn gen_css_with_custom_parsed_plugin_stroke() {
+        let config = match Config::from_file("tests/fixtures/custom-plugin-stroke.toml") {
+            Ok(c) => c,
+            Err(e) => panic!("{e}"),
+        };
+
+        let generated = generate(["custom-stroke-1", "custom-stroke-[12px]", "custom-stroke-[12%,1px]", "custom-stroke-[length:12px]"], &config);
+
+        assert_eq!(
+            generated,
+            String::from(
+                r".custom-stroke-1 {
+  stroke-width: 1px;
+}
+
+.custom-stroke-\[12\%\,1px\] {
+  stroke-width: 12%,1px;
+}
+
+.custom-stroke-\[12px\] {
+  stroke-width: 12px;
+}
+
+.custom-stroke-\[length\:12px\] {
+  stroke-width: 12px;
+}"
+            )
+        );
+    }
+
+    #[test]
     fn config_is_extended_and_overridden() {
         let config = Config::from_file("tests/fixtures/custom-config.toml").unwrap();
 

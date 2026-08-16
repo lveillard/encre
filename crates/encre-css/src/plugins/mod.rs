@@ -482,6 +482,8 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 /// })
 /// .template("{}px");
 ///
+/// // There's also a plugin sharing the same `stroke` namespace (which helps changing the
+/// // stroke color, e.g `stroke-red-500`), so it's required to define `hints` and `matchers`
 /// const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
 ///     namespace: "stroke",
 ///     prop: SingleProp("stroke-width"),
@@ -574,6 +576,14 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 /// [custom_plugins.kind.Number]
 /// namespace = "stroke"
 /// prop = "stroke-width"
+///
+/// [[custom_plugins]]
+/// hints = ["Length", "Percentage"]
+/// matchers = [["Length", "Percentage", "LineWidth", "Number"], "Comma"]
+///
+/// [custom_plugins.kind.Arbitrary]
+/// namespace = "stroke"
+/// prop = "stroke-width"
 /// ```
 ///
 /// # Quirks
@@ -587,6 +597,10 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 /// namespace of the plugins to optimize matching a utility class to a specific plugin, so it's
 /// **highly discouraged to leave the namespace of a plugin empty**, otherwise the performances will
 /// decrease heavily.
+///
+/// # What to do next
+///
+/// 1. The documentation about the different kinds of plugins is [here](PluginKind)
 ///
 /// [`Config::register_plugin`]: crate::Config::register_plugin
 /// [`Config`]: crate::Config
