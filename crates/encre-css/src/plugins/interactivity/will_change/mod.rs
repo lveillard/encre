@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("will-change"),
-    values: phf_map! {
+    values: map! {
         "will-change-auto" => "auto",
         "will-change-scroll" => "scroll-position",
         "will-change-contents" => "contents",

@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("object-position"),
-    values: phf_map! {
+    values: map! {
         "object-bottom" => "bottom",
         "object-center" => "center",
         "object-left" => "left",

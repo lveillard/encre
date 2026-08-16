@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("text-transform"),
-    values: phf_map! {
+    values: map! {
         "uppercase" => "uppercase",
         "lowercase" => "lowercase",
         "capitalize" => "capitalize",

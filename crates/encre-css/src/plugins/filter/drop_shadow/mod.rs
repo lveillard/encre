@@ -5,7 +5,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("--en-drop-shadow"),
-    values: phf_map! {
+    values: map! {
         "drop-shadow-xs" => "drop-shadow(0 1px 1px rgb(0 0 0 / 0.05))",
         "drop-shadow-sm" => "drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06))",
         "drop-shadow-md" => "drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06))",

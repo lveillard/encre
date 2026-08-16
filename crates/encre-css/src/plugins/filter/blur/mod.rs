@@ -5,7 +5,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("--en-blur"),
-    values: phf_map! {
+    values: map! {
         "blur-xs" => "blur(4px)",
         "blur-sm" => "blur(8px)",
         "blur-md" => "blur(12px)",

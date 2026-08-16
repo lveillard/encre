@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("line-height"),
-    values: phf_map! {
+    values: map! {
         "leading-none" => "1",
         "leading-tight" => "1.25",
         "leading-snug" => "1.375",

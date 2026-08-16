@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("transform-origin"),
-    values: phf_map! {
+    values: map! {
         "origin-bottom" => "bottom",
         "origin-center" => "center",
         "origin-left" => "left",

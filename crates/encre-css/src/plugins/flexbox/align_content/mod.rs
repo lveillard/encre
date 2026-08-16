@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("align-content"),
-    values: phf_map! {
+    values: map! {
         "content-start" => "flex-start",
         "content-center" => "center",
         "content-end" => "flex-end",

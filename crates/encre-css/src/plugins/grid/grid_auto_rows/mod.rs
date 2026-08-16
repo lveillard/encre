@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("grid-auto-rows"),
-    values: phf_map! {
+    values: map! {
         "auto-rows-auto" => "auto",
         "auto-rows-min" => "min-content",
         "auto-rows-max" => "max-content",

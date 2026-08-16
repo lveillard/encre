@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
-    props: phf_map! {
+    props: map! {
         "overflow-auto" => &["overflow: auto;"],
         "overflow-x-auto" => &["overflow-x: auto;"],
         "overflow-y-auto" => &["overflow-y: auto;"],

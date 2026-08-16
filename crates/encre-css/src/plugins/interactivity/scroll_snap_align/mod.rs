@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("scroll-snap-align"),
-    values: phf_map! {
+    values: map! {
         "snap-start" => "start",
         "snap-end" => "end",
         "snap-center" => "center",

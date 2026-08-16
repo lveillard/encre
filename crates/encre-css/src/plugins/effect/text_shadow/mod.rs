@@ -4,7 +4,7 @@ use crate::{plugins:: PluginArbitraryMatcher::*, prelude::build_plugin::*};
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("text-shadow"),
-    values: phf_map! {
+    values: map! {
         "text-shadow-2xs" => "0px 1px 0px var(--en-text-shadow-color, rgb(0 0 0 / 0.15))",
         "text-shadow-xs" => "0px 1px 1px var(--en-text-shadow-color, rgb(0 0 0 / 0.2))",
         "text-shadow-sm" => "0px 1px 0px var(--en-text-shadow-color, rgb(0 0 0 / 0.075)), 0px 1px 1px var(--en-text-shadow-color, rgb(0 0 0 / 0.075)), 0px 2px 2px var(--en-text-shadow-color, rgb(0 0 0 / 0.075))",

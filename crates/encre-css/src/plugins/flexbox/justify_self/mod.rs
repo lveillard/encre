@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("justify-self"),
-    values: phf_map! {
+    values: map! {
         "justify-self-auto" => "auto",
         "justify-self-start" => "flex-start",
         "justify-self-center" => "center",

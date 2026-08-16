@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("pointer-events"),
-    values: phf_map! {
+    values: map! {
         "pointer-events-auto" => "auto",
         "pointer-events-none" => "none",
     },

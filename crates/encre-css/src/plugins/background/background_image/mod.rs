@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 use PluginArbitraryMatcher::*;
 
-const INTERPOLATION_MODES_MAP: phf::Map<&'static str, &'static str> = phf_map! {
+const INTERPOLATION_MODES_MAP: phf::Map<&'static str, &'static str> = map! {
     "longer" => "oklch longer hue",
     "shorter" => "oklch shorter hue",
     "increasing" => "oklch increasing hue",
@@ -16,7 +16,7 @@ const INTERPOLATION_MODES_MAP: phf::Map<&'static str, &'static str> = phf_map! {
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-image"),
-    values: phf_map! {
+    values: map! {
         "bg-none" => "none",
         "bg-gradient-to-t" => "linear-gradient(to top in oklab, var(--en-gradient-stops))",
         "bg-gradient-to-tr" => "linear-gradient(to top right in oklab, var(--en-gradient-stops))",
@@ -38,7 +38,7 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
 
 pub(crate) const PLUGIN_LINEAR_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-image"),
-    values: phf_map! {
+    values: map! {
         "bg-linear-none" => "none",
         "bg-linear-to-t" => "linear-gradient(to top in {/}, var(--en-gradient-stops))",
         "bg-linear-to-tr" => "linear-gradient(to top right in {/}, var(--en-gradient-stops))",
@@ -68,7 +68,7 @@ pub(crate) const PLUGIN_LINEAR_3: StaticPlugin = Plugin::new(PluginKind::Arbitra
 
 pub(crate) const PLUGIN_RADIAL_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-image"),
-    values: phf_map! {
+    values: map! {
         "bg-radial" => "radial-gradient(in {/}, var(--en-gradient-stops))",
     },
 })
@@ -82,7 +82,7 @@ pub(crate) const PLUGIN_RADIAL_2: StaticPlugin = Plugin::new(PluginKind::Arbitra
 
 pub(crate) const PLUGIN_CONIC_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-image"),
-    values: phf_map! {
+    values: map! {
         "bg-conic" => "conic-gradient(in {/}, var(--en-gradient-stops))",
     },
 })

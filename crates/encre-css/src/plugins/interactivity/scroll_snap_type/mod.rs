@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
-    props: phf_map! {
+    props: map! {
         "snap-none" => &["-ms-scroll-snap-type: none;", "scroll-snap-type: none;"],
         "snap-x" => &[
             "-ms-scroll-snap-type: x var(--en-scroll-snap-strictness);",

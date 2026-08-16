@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("vertical-align"),
-    values: phf_map! {
+    values: map! {
         "align-baseline" => "baseline",
         "align-top" => "top",
         "align-middle" => "middle",

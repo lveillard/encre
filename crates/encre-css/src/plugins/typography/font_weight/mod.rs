@@ -5,7 +5,7 @@ use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("font-weight"),
-    values: phf_map! {
+    values: map! {
         "font-thin" => "100",
         "font-extralight" => "200",
         "font-light" => "300",

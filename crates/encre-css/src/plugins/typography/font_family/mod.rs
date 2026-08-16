@@ -5,7 +5,7 @@ use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("font-family"),
-    values: phf_map! {
+    values: map! {
         "font-sans" => r#"ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"#,
         "font-serif" => r#"Georgia, Cambria, "Times New Roman", Times, serif"#,
         "font-mono" => r#"Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace"#,

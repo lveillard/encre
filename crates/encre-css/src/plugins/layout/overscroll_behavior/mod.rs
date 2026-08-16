@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
-    props: phf_map! {
+    props: map! {
         "overscroll-auto" => &["overscroll-behavior: auto;"],
         "overscroll-x-auto" => &["overscroll-behavior-x: auto;"],
         "overscroll-y-auto" => &["overscroll-behavior-y: auto;"],

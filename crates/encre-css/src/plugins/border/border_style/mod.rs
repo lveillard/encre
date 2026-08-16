@@ -5,7 +5,7 @@ use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("border-style"),
-    values: phf_map! {
+    values: map! {
         "border-solid" => "solid",
         "border-dashed" => "dashed",
         "border-dotted" => "dotted",

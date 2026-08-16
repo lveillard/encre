@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("border-style"),
-    values: phf_map! {
+    values: map! {
         "divide-solid" => "solid",
         "divide-dashed" => "dashed",
         "divide-dotted" => "dotted",

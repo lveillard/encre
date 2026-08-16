@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("break-after"),
-    values: phf_map! {
+    values: map! {
         "break-after-auto" => "auto",
         "break-after-avoid" => "avoid",
         "break-after-all" => "all",

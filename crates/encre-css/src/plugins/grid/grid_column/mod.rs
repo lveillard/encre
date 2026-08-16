@@ -12,7 +12,7 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName, template: &'s
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("grid-column"),
-    values: phf_map! {
+    values: map! {
         "col-auto" => "auto"
     },
 });
@@ -24,7 +24,7 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::new(PluginKind::Arbitr
 
 pub(crate) const PLUGIN_SPAN_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("grid-column"),
-    values: phf_map! {
+    values: map! {
         "col-span-full" => "1 / -1",
     },
 });
@@ -33,7 +33,7 @@ pub(crate) const PLUGIN_SPAN_2: StaticPlugin =
 
 pub(crate) const PLUGIN_START_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("grid-column-start"),
-    values: phf_map! {
+    values: map! {
         "col-start-auto" => "auto",
     },
 });
@@ -41,7 +41,7 @@ pub(crate) const PLUGIN_START_2: StaticPlugin = plugin("col-start", SingleProp("
 
 pub(crate) const PLUGIN_END_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("grid-column-end"),
-    values: phf_map! {
+    values: map! {
         "col-end-auto" => "auto",
     },
 });

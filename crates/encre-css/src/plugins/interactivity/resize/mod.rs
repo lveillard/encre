@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("resize"),
-    values: phf_map! {
+    values: map! {
         "resize" => "both",
         "resize-none" => "none",
         "resize-x" => "horizontal",

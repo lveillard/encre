@@ -4,7 +4,7 @@ use crate::{plugins::filter::CSS_BACKDROP_FILTER, prelude::build_plugin::*};
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("--en-backdrop-blur"),
-    values: phf_map! {
+    values: map! {
         "backdrop-blur-xs" => "blur(4px)",
         "backdrop-blur-sm" => "blur(8px)",
         "backdrop-blur-md" => "blur(12px)",

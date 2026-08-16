@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("flex"),
-    values: phf_map! {
+    values: map! {
         "flex-1" => "1 1 0%",
         "flex-auto" => "1 1 auto",
         "flex-initial" => "0 1 auto",

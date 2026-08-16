@@ -10,7 +10,7 @@ pub(crate) const PLUGIN_NUMBER: StaticPlugin = Plugin::new(PluginKind::Number {
 
 pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("grid-template-rows"),
-    values: phf_map! {
+    values: map! {
         "grid-rows-none" => "none",
     },
 });

@@ -5,7 +5,7 @@ use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-size"),
-    values: phf_map! {
+    values: map! {
         "bg-auto" => "auto",
         "bg-cover" => "cover",
         "bg-contain" => "contain",

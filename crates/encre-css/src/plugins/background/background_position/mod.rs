@@ -5,7 +5,7 @@ use PluginArbitraryMatcher::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-position"),
-    values: phf_map! {
+    values: map! {
         "bg-bottom" => "bottom",
         "bg-center" => "center",
         "bg-left" => "left",

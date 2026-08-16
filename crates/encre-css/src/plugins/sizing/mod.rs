@@ -6,9 +6,9 @@ pub mod min_height;
 pub mod min_width;
 pub mod width;
 
-use phf::phf_map;
+use crate::prelude::build_plugin::*;
 
-pub(super) const CSS_SIZE_VALUES_HORIZONTAL: phf::Map<&'static str, &'static str> = phf_map! {
+pub(super) const CSS_SIZE_VALUES_HORIZONTAL: phf::Map<&'static str, &'static str> = map! {
     "none" => "none",
     "screen" => "100vw",
     "min" => "min-content",
@@ -22,7 +22,7 @@ pub(super) const CSS_SIZE_VALUES_HORIZONTAL: phf::Map<&'static str, &'static str
     "dvh" => "100dvh",
 };
 
-pub(super) const CSS_SIZE_VALUES_VERTICAL: phf::Map<&'static str, &'static str> = phf_map! {
+pub(super) const CSS_SIZE_VALUES_VERTICAL: phf::Map<&'static str, &'static str> = map! {
     "none" => "none",
     "screen" => "100vh",
     "min" => "min-content",

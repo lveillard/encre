@@ -11,7 +11,7 @@ pub(crate) const PLUGIN_NUMBER: StaticPlugin = Plugin::new(PluginKind::Number {
 
 pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("text-decoration-thickness"),
-    values: phf_map! {
+    values: map! {
         "decoration-auto" => "auto",
         "decoration-from-font" => "from-font",
     },

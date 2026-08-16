@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("list-style-type"),
-    values: phf_map! {
+    values: map! {
         "list-disc" => "disc",
         "list-decimal" => "decimal",
         "list-none" => "none",

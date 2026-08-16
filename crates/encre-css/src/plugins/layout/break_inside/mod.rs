@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("break-inside"),
-    values: phf_map! {
+    values: map! {
         "break-inside-auto" => "auto",
         "break-inside-avoid" => "avoid",
         "break-inside-avoid-page" => "avoid-page",

@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("order"),
-    values: phf_map! {
+    values: map! {
         "order-first" => "-9999",
         "order-last" => "9999",
         "order-none" => "0",

@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("transition-timing-function"),
-    values: phf_map! {
+    values: map! {
         "ease-linear" => "linear",
         "ease-in" => "cubic-bezier(0.4, 0, 1, 1)",
         "ease-out" => "cubic-bezier(0, 0, 0.2, 1)",

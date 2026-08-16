@@ -9,7 +9,7 @@ pub(crate) const PLUGIN_SPACING: StaticPlugin = Plugin::new(PluginKind::Spacing 
 
 pub(crate) const PLUGIN_LIST_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("max-width"),
-    values: phf_map! {
+    values: map! {
         "max-w-none" => "none",
         "max-w-xs" => "20rem",
         "max-w-sm" => "24rem",

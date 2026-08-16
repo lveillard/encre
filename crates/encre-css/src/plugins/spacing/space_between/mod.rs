@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN_X_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("--en-space-x-reverse"),
-    values: phf_map! {
+    values: map! {
         "space-x-reverse" => "1",
     },
 }).extra_class(" > :not(:last-child)");
@@ -31,7 +31,7 @@ pub(crate) const PLUGIN_X_3: StaticPlugin = Plugin::new(PluginKind::Arbitrary {
 
 pub(crate) const PLUGIN_Y_1: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("--en-space-y-reverse"),
-    values: phf_map! {
+    values: map! {
         "space-y-reverse" => "1",
     },
 }).extra_class(" > :not(:last-child)");

@@ -3,7 +3,7 @@
 use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListProperties {
-    props: phf_map! {
+    props: map! {
         "transition" => &[
             "transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;",
             "transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);",

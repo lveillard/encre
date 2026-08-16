@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("display"),
-    values: phf_map! {
+    values: map! {
         "hidden" => "none",
         "contents" => "contents",
         "list-item" => "list-item",

@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("flex-direction"),
-    values: phf_map! {
+    values: map! {
         "flex-row" => "row",
         "flex-row-reverse" => "row-reverse",
         "flex-col" => "column",

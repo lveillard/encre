@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("text-wrap"),
-    values: phf_map! {
+    values: map! {
         "text-wrap" => "wrap",
         "text-nowrap" => "nowrap",
         "text-balance" => "balance",

@@ -254,7 +254,7 @@ pub mod prelude {
             selector::{Modifier, ArbitraryHint},
             utils::{buffer::Buffer, color, shadow, spacing, value_matchers::*},
         };
-        pub use phf::{self, phf_map};
+        pub use phf::{self, phf_map as map};
         pub use std::fmt::{self, Write};
     }
 }

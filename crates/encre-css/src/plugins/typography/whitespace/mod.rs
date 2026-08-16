@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("white-space"),
-    values: phf_map! {
+    values: map! {
         "whitespace-normal" => "normal",
         "whitespace-nowrap" => "nowrap",
         "whitespace-pre" => "pre",

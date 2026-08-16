@@ -52,7 +52,7 @@ use crate::{
 #[allow(clippy::wildcard_imports)]
 use crate::plugins::*;
 
-use phf::{phf_map, phf_ordered_map};
+use phf::{phf_map as map, phf_ordered_map};
 use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
@@ -320,7 +320,7 @@ use std::{
 /// </table>
 ///
 /// Based on [Tailwind's default color palette](https://tailwindcss.com/docs/customizing-colors).
-pub const BUILTIN_COLORS: phf::Map<&str, &'static str> = phf_map! {
+pub const BUILTIN_COLORS: phf::Map<&str, &'static str> = map! {
     "red-50" => "oklch(97.1% .013 17.38)",
     "red-100" => "oklch(93.6% .032 17.717)",
     "red-200" => "oklch(88.5% .062 18.334)",
@@ -2119,7 +2119,7 @@ impl Config {
     ///
     /// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     ///     prop: SingleProp("color"),
-    ///     values: phf_map! {
+    ///     values: map! {
     ///         "prose" => "#333",
     ///         "prose-invert" => "#eee",
     ///     },
@@ -2434,7 +2434,7 @@ mod tests {
 
         const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
             prop: SingleProp("content"),
-            values: phf_map! {
+            values: map! {
                 "emoji-tada" => "\"\u{1f389}\"",
                 "emoji-rocket" => "\"\u{1f680}\"",
             },

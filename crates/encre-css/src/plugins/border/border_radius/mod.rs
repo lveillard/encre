@@ -7,7 +7,7 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlu
     (
         Plugin::new(PluginKind::ListValues {
             prop,
-            values: phf_map! {
+            values: map! {
                 "none" => "0",
                 "xs" => "0.125rem",
                 "sm" => "0.25rem",

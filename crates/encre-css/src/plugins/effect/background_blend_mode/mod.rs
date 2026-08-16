@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-blend-mode"),
-    values: phf_map! {
+    values: map! {
         "bg-blend-normal" => "normal",
         "bg-blend-multiply" => "multiply",
         "bg-blend-screen" => "screen",

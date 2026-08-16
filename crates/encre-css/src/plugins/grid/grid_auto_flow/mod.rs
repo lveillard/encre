@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("grid-auto-flow"),
-    values: phf_map! {
+    values: map! {
         "grid-flow-row" => "row",
         "grid-flow-col" => "column",
         "grid-flow-dense" => "dense",

@@ -438,7 +438,7 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
     },
 }
 
-/// A plugin is a structure capable of generating CSS styles from a selector.
+/// A plugin is a structure capable of generating CSS styles from a CSS selector.
 ///
 /// Several kinds of plugins exist and define what values are accepted as selector or modifier and
 /// what CSS is generated based on the input selector. The API is designed to be fully declarative
@@ -446,7 +446,7 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 /// [functional kind](PluginKind::Functional).
 ///
 /// Each plugin kind has a set of required parameters which are defined in the [`PluginKind`]
-/// enumeration, whereas the [`Plugin`] structure's methods allows overriding some default values
+/// enumeration, whereas the [`Plugin`] structure's methods allow overriding some default values
 /// for the chosen kind.
 ///
 /// It's common to define several plugins to handle a single utility class, and to define static
@@ -462,7 +462,7 @@ pub enum PluginKind<Str, ArrayStr, MapStr, MapArrayStr> {
 ///
 /// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
 ///     prop: SingleProp("font-family"),
-///     values: phf_map! {
+///     values: map! {
 ///         "font-sans" => r#"ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont"#,
 ///         "font-serif" => r#"Georgia, Cambria, "Times New Roman", Times, serif"#,
 ///         "font-mono" => r#"Menlo, Monaco, Consolas, "Liberation Mono", monospace"#,
@@ -792,11 +792,11 @@ impl StaticPlugin {
     ///
     /// const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     ///     prop: SingleProp("animation"),
-    ///     values: phf_map! {
+    ///     values: map! {
     ///         "custom-animate-spin" => "anim-spin",
     ///         "custom-animate-fade-in" => "anim-fade-in",
     ///     },
-    /// }).extra_css(phf_map! {
+    /// }).extra_css(map! {
     ///     "custom-animate-spin" => SPIN_ANIMATION,
     ///     "custom-animate-fade-in" => FADE_IN_ANIMATION,
     /// });

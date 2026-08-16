@@ -75,7 +75,7 @@ const BOUNCE_ANIMATION: &str = "@-webkit-keyframes bounce {
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: MultipleProps(&["-webkit-animation", "animation"]),
-    values: phf_map! {
+    values: map! {
         "animate-none" => "none",
         "animate-spin" => "spin 1s linear infinite",
         "animate-ping" => "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite",
@@ -83,7 +83,7 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
         "animate-bounce" => "bounce 1s infinite",
     },
 })
-.extra_css(phf_map! {
+.extra_css(map! {
     "animate-none" => "",
     "animate-spin" => SPIN_ANIMATION,
     "animate-ping" => PING_ANIMATION,

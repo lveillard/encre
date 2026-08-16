@@ -4,7 +4,7 @@ use crate::prelude::build_plugin::*;
 
 pub(crate) const PLUGIN: StaticPlugin = Plugin::new(PluginKind::ListValues {
     prop: SingleProp("background-repeat"),
-    values: phf_map! {
+    values: map! {
         "bg-repeat" => "repeat",
         "bg-no-repeat" => "no-repeat",
         "bg-repeat-x" => "repeat-x",
