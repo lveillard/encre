@@ -214,10 +214,31 @@ pub enum PluginArbitraryMatcher<Str, ArrayStr> {
     CustomMultiple(ArrayStr),
 }
 
+/// Either a single or several CSS property names.
+///
+/// This enumeration is used when defining plugins to specify which CSS property name should be
+/// generated. In the case of several property names (i.e [`MultipleProps`]), the
+/// CSS value will be copied to all the properties.
+///
+/// When using [the `build_plugin` prelude](`crate::prelude::build_plugin`), the variants of this
+/// enumeration are reexported so that you can simply write [`SingleProp`] and [`MultipleProps`]
+/// without having to prefix them with `PropertyName::`.
+///
+/// When [defining a plugin using TOML](Plugin#define-a-plugin-in-toml), if you use a string, the
+/// [`SingleProp`] variant will automatically be used, and if you use an array, the [`MultipleProps`]
+/// variants will be used.
+///
+/// [`SingleProp`]: PropertyName::SingleProp
+/// [`MultipleProps`]: PropertyName::MultipleProps
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum PropertyName<Str, ArrayStr> {
+    /// A single CSS property name.
     SingleProp(Str),
+
+    /// Several CSS property names in the order they will be generated.
+    ///
+    /// The CSS value defined by the plugin will be copied to each of the properties.
     MultipleProps(ArrayStr),
 }
 
@@ -845,10 +866,10 @@ impl Functional<String> {
 ///
 /// Instead of defining plugins in Rust, you can also define them in `encre-css`'s TOML configuration
 /// (or every other language that uses a `serde` deserializer).
-/// The sole exception is plugins using [`Functional`] which are not serializable.
+/// The sole exception is plugins using the [`Functional`] kind which are not serializable.
 ///
 /// To do that, you need to add a new entry in the `custom_plugins` list of the configuration.
-/// You can then use every [`Plugin`] configuration option.
+/// You can then define plugins as you would do in Rust.
 ///
 /// ### Example
 ///
