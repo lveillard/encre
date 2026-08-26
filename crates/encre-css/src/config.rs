@@ -2109,6 +2109,10 @@ impl Config {
     /// Note that if you are not the maintainer of a crate providing plugins, you can ignore this
     /// function, see [`crate::plugins`].
     ///
+    /// This function requires that the plugin uses `&[]`s, `&'static str`s and other static
+    /// structures. If you only need to use heap-allocated structures, prefer using the
+    /// [`Config::register_dynamic_plugin`] method.
+    ///
     /// See [`crate::plugins::Plugin`] to learn how to write plugins.
     ///
     /// # Example
@@ -2145,6 +2149,47 @@ impl Config {
         self.custom_plugins.push(CustomPlugin::Static(plugin));
     }
 
+    /// Register a custom plugin which will be used during CSS generation.
+    ///
+    /// Note that if you are not the maintainer of a crate providing plugins, you can ignore this
+    /// function, see [`crate::plugins`].
+    ///
+    /// This function requires that the plugin uses `Vec`s, `String`s and other heap-allocated
+    /// structures. If you only need to use static structures, prefer using the
+    /// [`Config::register_plugin`] method.
+    ///
+    /// See [`crate::plugins::Plugin`] to learn how to write plugins.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use encre_css::{Config, prelude::build_plugin::*};
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    ///     prop: SingleProp("color"),
+    ///     values: map! {
+    ///         "prose" => "#333",
+    ///         "prose-invert" => "#eee",
+    ///     },
+    ///     ..ListValues::default()
+    /// });
+    ///
+    /// let mut config = Config::default();
+    /// config.register_plugin(&PLUGIN);
+    ///
+    /// let generated = encre_css::generate(
+    ///     ["prose", "prose-invert"],
+    ///     &config,
+    /// );
+    ///
+    /// assert!(generated.ends_with(".prose {
+    ///   color: #333;
+    /// }
+    ///
+    /// .prose-invert {
+    ///   color: #eee;
+    /// }"));
+    /// ```
     pub fn register_dynamic_plugin(&mut self, plugin: DynamicPlugin) {
         self.custom_plugins.push(CustomPlugin::Dynamic(plugin));
     }
@@ -2468,7 +2513,7 @@ mod tests {
                 (String::from("emoji-tada"), String::from("\"\u{1f389}\"")),
                 (String::from("emoji-rocket"), String::from("\"\u{1f680}\"")),
             ]),
-            ..ListValues::dynamic_default()
+            ..ListValues::default_dynamic()
         }));
 
         let generated = generate(["emoji-tada"], &config);

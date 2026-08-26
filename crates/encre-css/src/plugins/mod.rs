@@ -257,6 +257,35 @@ pub struct ListProperties<Str, ArrayStr, MapStr, MapArrayStr> {
 }
 
 impl<Str, ArrayStr, MapStr> ListProperties<Str, ArrayStr, MapStr, phf::Map<&'static str, &'static [&'static str]>> {
+    /// Make a default [`ListProperties`] plugin kind.
+    ///
+    /// All required fields are initialized with empty values and optional fields are initialized
+    /// with `None`.
+    ///
+    /// You should at least set [`ListProperties::props`] after calling this function.
+    ///
+    /// This function is intended to be used as an automatic filler for default values using the
+    /// [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
+    ///
+    /// The difference with [`ListProperties::default_dynamic`] is that this function can only be used to
+    /// build a plugin using static structures like `&[]`s, `&'static str`s.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::ListProperties(ListProperties {
+    ///     props: map! {
+    ///         "overflow-visible" => &["overflow: visible;"],
+    ///         "overflow-hidden" => &["overflow: hidden;"],
+    ///         "overflow-clip" => &["overflow: clip;"],
+    ///         "overflow-scroll" => &["overflow: scroll;"],
+    ///         "overflow-auto" => &["overflow: auto;"],
+    ///     },
+    ///     ..ListProperties::default()
+    /// });
+    /// ```
     pub const fn default() -> Self {
         Self {
             props: phf::Map::new(),
@@ -269,7 +298,43 @@ impl<Str, ArrayStr, MapStr> ListProperties<Str, ArrayStr, MapStr, phf::Map<&'sta
 }
 
 impl<Str, ArrayStr, MapStr> ListProperties<Str, ArrayStr, MapStr, HashMap<String, Vec<String>>> {
-    pub fn dynamic_default() -> Self {
+    /// Make a default [`ListProperties`] plugin kind.
+    ///
+    /// All required fields are initialized with empty values and optional fields are initialized
+    /// with `None`.
+    ///
+    /// You should at least set [`ListProperties::props`] after calling this function.
+    ///
+    /// This function is intended to be used as an automatic filler for default values using the
+    /// [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
+    ///
+    /// The difference with [`ListProperties::default`] is that this function can only be used to
+    /// build a plugin using heap-allocated structures like `String`s, `Vec`s.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use std::collections::HashMap;
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// fn main() {
+    ///     let props = HashMap::from_iter(
+    ///         ["visible", "hidden", "clip", "scroll", "auto"].iter().map(|v| {
+    ///             (format!("overflow-{v}"), vec![format!("overflow: {v};")])
+    ///         })
+    ///     );
+    ///
+    ///     // Note: the DynamicPlugin type hint is required to help the compiler
+    ///     // find the concrete types of type parameters
+    ///     let _plugin: DynamicPlugin = Plugin::ListProperties(ListProperties {
+    ///         props,
+    ///         ..ListProperties::default_dynamic()
+    ///     });
+    /// }
+    /// ```
+    ///
+    /// This example is equivalent to the one of [`ListProperties::default`].
+    pub fn default_dynamic() -> Self {
         Self {
             props: HashMap::new(),
             namespace: None,
@@ -302,6 +367,34 @@ pub struct ListValues<Str, ArrayStr, MapStr> {
 }
 
 impl<ArrayStr> ListValues<&'static str, ArrayStr, phf::Map<&'static str, &'static str>> {
+    /// Make a default [`ListValues`] plugin kind.
+    ///
+    /// All required fields are initialized with empty values and optional fields are initialized
+    /// with `None`.
+    ///
+    /// You should at least set [`ListValues::prop`] and [`ListValues::values`] after calling this function.
+    ///
+    /// This function is intended to be used as an automatic filler for default values using the
+    /// [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
+    ///
+    /// The difference with [`ListValues::default_dynamic`] is that this function can only be used to
+    /// build a plugin using static structures like `&[]`s, `&'static str`s.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    ///     prop: SingleProp("width"),
+    ///     values: map! {
+    ///         "w-fit" => "fit-content",
+    ///         "w-max" => "max-content",
+    ///         "w-min" => "min-content",
+    ///     },
+    ///     ..ListValues::default()
+    /// });
+    /// ```
     pub const fn default() -> Self {
         Self {
             prop: PropertyName::SingleProp(""),
@@ -316,7 +409,44 @@ impl<ArrayStr> ListValues<&'static str, ArrayStr, phf::Map<&'static str, &'stati
 }
 
 impl<ArrayStr> ListValues<String, ArrayStr, HashMap<String, String>> {
-    pub fn dynamic_default() -> Self {
+    /// Make a default [`ListValues`] plugin kind.
+    ///
+    /// All required fields are initialized with empty values and optional fields are initialized
+    /// with `None`.
+    ///
+    /// You should at least set [`ListValues::prop`] and [`ListValues::values`] after calling this function.
+    ///
+    /// This function is intended to be used as an automatic filler for default values using the
+    /// [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
+    ///
+    /// The difference with [`ListProperties::default`] is that this function can only be used to
+    /// build a plugin using heap-allocated structures like `String`s, `Vec`s.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use std::collections::HashMap;
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// fn main() {
+    ///     let values = HashMap::from_iter(
+    ///         ["fit", "max", "min"].iter().map(|v| {
+    ///             (format!("w-{v}"), format!("width: {v}-content;"))
+    ///         })
+    ///     );
+    ///
+    ///     // Note: the DynamicPlugin type hint is required to help the compiler
+    ///     // find the concrete types of type parameters
+    ///     let _plugin: DynamicPlugin = Plugin::ListValues(ListValues {
+    ///         prop: SingleProp("width".to_string()),
+    ///         values,
+    ///         ..ListValues::default_dynamic()
+    ///     });
+    /// }
+    /// ```
+    ///
+    /// This example is equivalent to the one of [`ListValues::default`].
+    pub fn default_dynamic() -> Self {
         Self {
             prop: PropertyName::SingleProp(String::new()),
             values: HashMap::new(),
@@ -364,6 +494,30 @@ pub struct Spacing<Str, ArrayStr, MapStr> {
 }
 
 impl<ArrayStr, MapStr> Spacing<&'static str, ArrayStr, MapStr> {
+    /// Make a default [`Spacing`] plugin kind.
+    ///
+    /// All required fields are initialized with empty values and optional fields are initialized
+    /// with `None`.
+    ///
+    /// You should at least set [`Spacing::namespace`] and [`Spacing::prop`] after calling this function.
+    ///
+    /// This function is intended to be used as an automatic filler for default values using the
+    /// [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
+    ///
+    /// The difference with [`Spacing::default_dynamic`] is that this function can only be used to
+    /// build a plugin using static structures like `&[]`s, `&'static str`s.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::Spacing(Spacing {
+    ///     namespace: "h",
+    ///     prop: SingleProp("height"),
+    ///     ..Spacing::default()
+    /// });
+    /// ```
     pub const fn default() -> Self {
         Self {
             namespace: "",
@@ -381,7 +535,37 @@ impl<ArrayStr, MapStr> Spacing<&'static str, ArrayStr, MapStr> {
 }
 
 impl<ArrayStr, MapStr> Spacing<String, ArrayStr, MapStr> {
-    pub fn dynamic_default() -> Self {
+    /// Make a default [`Spacing`] plugin kind.
+    ///
+    /// All required fields are initialized with empty values and optional fields are initialized
+    /// with `None`.
+    ///
+    /// You should at least set [`Spacing::namespace`] and [`Spacing::prop`] after calling this function.
+    ///
+    /// This function is intended to be used as an automatic filler for default values using the
+    /// [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
+    ///
+    /// The difference with [`Spacing::default`] is that this function can only be used to
+    /// build a plugin using heap-allocated structures like `String`s, `Vec`s.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// fn main() {
+    ///     // Note: the DynamicPlugin type hint is required to help the compiler
+    ///     // find the concrete types of type parameters
+    ///     let _plugin: DynamicPlugin = Plugin::Spacing(Spacing {
+    ///         namespace: "h".to_string(),
+    ///         prop: SingleProp("height".to_string()),
+    ///         ..Spacing::default_dynamic()
+    ///     });
+    /// }
+    /// ```
+    ///
+    /// This example is equivalent to the one of [`Spacing::default`].
+    pub fn default_dynamic() -> Self {
         Self {
             namespace: String::new(),
             prop: PropertyName::SingleProp(String::new()),
@@ -422,6 +606,30 @@ pub struct Color<Str, ArrayStr, MapStr> {
 }
 
 impl<ArrayStr, MapStr> Color<&'static str, ArrayStr, MapStr> {
+    /// Make a default [`Color`] plugin kind.
+    ///
+    /// All required fields are initialized with empty values and optional fields are initialized
+    /// with `None`.
+    ///
+    /// You should at least set [`Color::namespace`] and [`Color::prop`] after calling this function.
+    ///
+    /// This function is intended to be used as an automatic filler for default values using the
+    /// [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
+    ///
+    /// The difference with [`Color::default_dynamic`] is that this function can only be used to
+    /// build a plugin using static structures like `&[]`s, `&'static str`s.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::Color(Color {
+    ///     namespace: "bg",
+    ///     prop: SingleProp("background-color"),
+    ///     ..Color::default()
+    /// });
+    /// ```
     pub const fn default() -> Self {
         Self {
             namespace: "",
@@ -436,7 +644,37 @@ impl<ArrayStr, MapStr> Color<&'static str, ArrayStr, MapStr> {
 }
 
 impl<ArrayStr, MapStr> Color<String, ArrayStr, MapStr> {
-    pub fn dynamic_default() -> Self {
+    /// Make a default [`Color`] plugin kind.
+    ///
+    /// All required fields are initialized with empty values and optional fields are initialized
+    /// with `None`.
+    ///
+    /// You should at least set [`Color::namespace`] and [`Color::prop`] after calling this function.
+    ///
+    /// This function is intended to be used as an automatic filler for default values using the
+    /// [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
+    ///
+    /// The difference with [`Color::default`] is that this function can only be used to
+    /// build a plugin using heap-allocated structures like `String`s, `Vec`s.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// fn main() {
+    ///     // Note: the DynamicPlugin type hint is required to help the compiler
+    ///     // find the concrete types of type parameters
+    ///     let _plugin: DynamicPlugin = Plugin::Color(Color {
+    ///         namespace: "bg".to_string(),
+    ///         prop: SingleProp("background-color".to_string()),
+    ///         ..Color::default_dynamic()
+    ///     });
+    /// }
+    /// ```
+    ///
+    /// This example is equivalent to the one of [`Color::default`].
+    pub fn default_dynamic() -> Self {
         Self {
             namespace: String::new(),
             prop: PropertyName::SingleProp(String::new()),
@@ -489,6 +727,30 @@ pub struct Number<Str, ArrayStr, MapStr> {
 }
 
 impl<ArrayStr, MapStr> Number<&'static str, ArrayStr, MapStr> {
+    /// Make a default [`Number`] plugin kind.
+    ///
+    /// All required fields are initialized with empty values and optional fields are initialized
+    /// with `None`.
+    ///
+    /// You should at least set [`Number::namespace`] and [`Number::prop`] after calling this function.
+    ///
+    /// This function is intended to be used as an automatic filler for default values using the
+    /// [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
+    ///
+    /// The difference with [`Number::default_dynamic`] is that this function can only be used to
+    /// build a plugin using static structures like `&[]`s, `&'static str`s.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::Number(Number {
+    ///     namespace: "z",
+    ///     prop: SingleProp("z-index"),
+    ///     ..Number::default()
+    /// });
+    /// ```
     pub const fn default() -> Self {
         Self {
             namespace: "",
@@ -508,7 +770,37 @@ impl<ArrayStr, MapStr> Number<&'static str, ArrayStr, MapStr> {
 }
 
 impl<ArrayStr, MapStr> Number<String, ArrayStr, MapStr> {
-    pub fn dynamic_default() -> Self {
+    /// Make a default [`Number`] plugin kind.
+    ///
+    /// All required fields are initialized with empty values and optional fields are initialized
+    /// with `None`.
+    ///
+    /// You should at least set [`Number::namespace`] and [`Number::prop`] after calling this function.
+    ///
+    /// This function is intended to be used as an automatic filler for default values using the
+    /// [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
+    ///
+    /// The difference with [`Number::default`] is that this function can only be used to
+    /// build a plugin using heap-allocated structures like `String`s, `Vec`s.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// fn main() {
+    ///     // Note: the DynamicPlugin type hint is required to help the compiler
+    ///     // find the concrete types of type parameters
+    ///     let _plugin: DynamicPlugin = Plugin::Number(Number {
+    ///         namespace: "z".to_string(),
+    ///         prop: SingleProp("z-index".to_string()),
+    ///         ..Number::default_dynamic()
+    ///     });
+    /// }
+    /// ```
+    ///
+    /// This example is equivalent to the one of [`Number::default`].
+    pub fn default_dynamic() -> Self {
         Self {
             namespace: String::new(),
             prop: PropertyName::SingleProp(String::new()),
@@ -564,6 +856,16 @@ impl<ArrayStr, MapStr> Number<String, ArrayStr, MapStr> {
 /// }"));
 /// ```
 ///
+/// ### Example in TOML
+///
+/// ```toml
+/// [[custom_plugins]]
+///
+/// [custom_plugins.Arbitrary]
+/// namespace = "mask"
+/// prop = "mask-position"
+/// ```
+///
 /// [`arbitrary values`]: crate::selector
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Arbitrary<Str, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
@@ -594,6 +896,30 @@ pub struct Arbitrary<Str, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
 }
 
 impl<ArrayStr, MapStr, ArrayHints, ArrayMatchers> Arbitrary<&'static str, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
+    /// Make a default [`Arbitrary`] plugin kind.
+    ///
+    /// All required fields are initialized with empty values and optional fields are initialized
+    /// with `None`.
+    ///
+    /// You should at least set [`Arbitrary::namespace`] and [`Arbitrary::prop`] after calling this function.
+    ///
+    /// This function is intended to be used as an automatic filler for default values using the
+    /// [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
+    ///
+    /// The difference with [`Arbitrary::default_dynamic`] is that this function can only be used to
+    /// build a plugin using static structures like `&[]`s, `&'static str`s.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    ///     namespace: "gap",
+    ///     prop: SingleProp("gap"),
+    ///     ..Arbitrary::default()
+    /// });
+    /// ```
     pub const fn default() -> Self {
         Self {
             namespace: "",
@@ -612,7 +938,37 @@ impl<ArrayStr, MapStr, ArrayHints, ArrayMatchers> Arbitrary<&'static str, ArrayS
 }
 
 impl<ArrayStr, MapStr, ArrayHints, ArrayMatchers> Arbitrary<String, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
-    pub fn dynamic_default() -> Self {
+    /// Make a default [`Arbitrary`] plugin kind.
+    ///
+    /// All required fields are initialized with empty values and optional fields are initialized
+    /// with `None`.
+    ///
+    /// You should at least set [`Arbitrary::namespace`] and [`Arbitrary::prop`] after calling this function.
+    ///
+    /// This function is intended to be used as an automatic filler for default values using the
+    /// [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
+    ///
+    /// The difference with [`Arbitrary::default`] is that this function can only be used to
+    /// build a plugin using heap-allocated structures like `String`s, `Vec`s.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// fn main() {
+    ///     // Note: the DynamicPlugin type hint is required to help the compiler
+    ///     // find the concrete types of type parameters
+    ///     let _plugin: DynamicPlugin = Plugin::Arbitrary(Arbitrary {
+    ///         namespace: "gap".to_string(),
+    ///         prop: SingleProp("gap".to_string()),
+    ///         ..Arbitrary::default_dynamic()
+    ///     });
+    /// }
+    /// ```
+    ///
+    /// This example is equivalent to the one of [`Arbitrary::default`].
+    pub fn default_dynamic() -> Self {
         Self {
             namespace: String::new(),
             prop: PropertyName::SingleProp(String::new()),
@@ -731,6 +1087,35 @@ pub struct Functional<Str> {
 }
 
 impl Functional<&'static str> {
+    /// Make a default [`Functional`] plugin kind.
+    ///
+    /// All required fields are initialized with empty values and optional fields are initialized
+    /// with `None`.
+    ///
+    /// You should at least set [`Functional::namespace`], [`Functional::can_handle`] and [`Functional::handle`] after calling this function.
+    ///
+    /// This function is intended to be used as an automatic filler for default values using the
+    /// [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
+    ///
+    /// The difference with [`Functional::default_dynamic`] is that this function can only be used to
+    /// build a plugin using static structures like `&[]`s, `&'static str`s.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::Functional(Functional {
+    ///     namespace: "emoji",
+    ///     can_handle: |context| matches!(context.modifier, Modifier::Builtin { value: "tada", .. }),
+    ///     handle: |context| {
+    ///         generate_wrapper(context, |context| {
+    ///             context.buffer.line(format_args!("content: \"\u{1f389}\";"));
+    ///         });
+    ///     },
+    ///     ..Functional::default()
+    /// });
+    /// ```
     pub const fn default() -> Self {
         Self {
             namespace: "",
@@ -741,7 +1126,42 @@ impl Functional<&'static str> {
 }
 
 impl Functional<String> {
-    pub fn dynamic_default() -> Self {
+    /// Make a default [`Functional`] plugin kind.
+    ///
+    /// All required fields are initialized with empty values and optional fields are initialized
+    /// with `None`.
+    ///
+    /// You should at least set [`Functional::namespace`], [`Functional::can_handle`] and [`Functional::handle`] after calling this function.
+    ///
+    /// This function is intended to be used as an automatic filler for default values using the
+    /// [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
+    ///
+    /// The difference with [`Functional::default`] is that this function can only be used to
+    /// build a plugin using heap-allocated structures like `String`s, `Vec`s.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// fn main() {
+    ///     // Note: the DynamicPlugin type hint is required to help the compiler
+    ///     // find the concrete types of type parameters
+    ///     let _plugin: DynamicPlugin = Plugin::Functional(Functional {
+    ///         namespace: "emoji".to_string(),
+    ///         can_handle: |context| matches!(context.modifier, Modifier::Builtin { value: "tada", .. }),
+    ///         handle: |context| {
+    ///             generate_wrapper(context, |context| {
+    ///                 context.buffer.line(format_args!("content: \"\u{1f389}\";"));
+    ///             });
+    ///         },
+    ///         ..Functional::default_dynamic()
+    ///     });
+    /// }
+    /// ```
+    ///
+    /// This example is equivalent to the one of [`Functional::default`].
+    pub fn default_dynamic() -> Self {
         Self {
             namespace: String::new(),
             can_handle: can_handle_nop,
@@ -758,7 +1178,7 @@ impl Functional<String> {
 /// [functional kind](Plugin::Functional).
 ///
 /// Each plugin kind has a set of required parameters and a set of default parameters which can be
-/// automatically used in Rust using the [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
+/// automatically filled in Rust using the [struct update syntax](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#creating-instances-with-struct-update-syntax).
 ///
 /// It's common to define several plugins to handle a single utility class, and to define static
 /// plugins as constants (the `default` function on each plugin kind is a `const fn`).
