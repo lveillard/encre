@@ -5,7 +5,7 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN: StaticPlugin = Plugin::Color(Color {
     namespace: "ring-offset",
     prop: SingleProp("--en-ring-offset-color"),
-    extra_lines: Some(&[super::ring_offset_width::RING_OFFSET_SHADOW]),
+    extra_rule_css: Some(&[super::ring_offset_width::RING_OFFSET_SHADOW]),
     ..Color::default()
 });
 
@@ -17,6 +17,6 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
         &[PluginArbitraryMatcher::Color],
         PluginArbitraryMatcherSeparation::None,
     )),
-    extra_lines: Some(&[super::ring_offset_width::RING_OFFSET_SHADOW]),
+    extra_rule_css: Some(&[super::ring_offset_width::RING_OFFSET_SHADOW]),
     ..Arbitrary::default()
 });

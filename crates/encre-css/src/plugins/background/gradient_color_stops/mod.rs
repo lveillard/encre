@@ -5,7 +5,7 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN_FROM_1: StaticPlugin = Plugin::Color(Color {
     namespace: "from",
     prop: SingleProp("--en-gradient-from"),
-    extra_lines: Some(&[
+    extra_rule_css: Some(&[
         "--en-gradient-stops: var(--en-gradient-from), var(--en-gradient-to, transparent);",
     ]),
     ..Color::default()
@@ -14,7 +14,7 @@ pub(crate) const PLUGIN_FROM_1: StaticPlugin = Plugin::Color(Color {
 pub(crate) const PLUGIN_FROM_2: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "from",
     prop: SingleProp("--en-gradient-from"),
-    extra_lines: Some(&[
+    extra_rule_css: Some(&[
         "--en-gradient-stops: var(--en-gradient-from), var(--en-gradient-to, transparent);",
     ]),
     ..Arbitrary::default()

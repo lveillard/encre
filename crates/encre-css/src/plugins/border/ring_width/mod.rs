@@ -9,7 +9,7 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "ring",
     prop: SingleProp("--en-ring-shadow"),
     has_empty: Some(true),
-    extra_lines: Some(&[BOX_SHADOW]),
+    extra_rule_css: Some(&[BOX_SHADOW]),
     template: Some("0 0 0 calc({}px + var(--en-ring-offset-width)) var(--en-ring-color)"),
     ..Number::default()
 });
@@ -17,7 +17,7 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "ring",
     prop: SingleProp("--en-ring-shadow"),
-    extra_lines: Some(&[BOX_SHADOW]),
+    extra_rule_css: Some(&[BOX_SHADOW]),
     hints: Some(&[ArbitraryHint::Length]),
     matchers: Some((
         &[PluginArbitraryMatcher::Length],
@@ -33,7 +33,7 @@ pub(crate) const PLUGIN_INSET_1: StaticPlugin = Plugin::Number(Number {
     namespace: "inset-ring",
     prop: SingleProp("--en-inset-ring-shadow"),
     has_empty: Some(true),
-    extra_lines: Some(&[INSET_BOX_SHADOW]),
+    extra_rule_css: Some(&[INSET_BOX_SHADOW]),
     template: Some("inset 0 0 0 calc({}px + var(--en-ring-offset-width)) var(--en-ring-color)"),
     ..Number::default()
 });
@@ -41,7 +41,7 @@ pub(crate) const PLUGIN_INSET_1: StaticPlugin = Plugin::Number(Number {
 pub(crate) const PLUGIN_INSET_2: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "inset-ring",
     prop: SingleProp("--en-inset-ring-shadow"),
-    extra_lines: Some(&[INSET_BOX_SHADOW]),
+    extra_rule_css: Some(&[INSET_BOX_SHADOW]),
     hints: Some(&[ArbitraryHint::Length]),
     matchers: Some((
         &[PluginArbitraryMatcher::Length],

@@ -11,13 +11,13 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> P {
             prop,
             has_negative: Some(true),
             divide_by: Some(100.0),
-            extra_lines: Some(&[CSS_TRANSFORM]),
+            extra_rule_css: Some(&[CSS_TRANSFORM]),
             ..Number::default()
         }),
         Plugin::Arbitrary(Arbitrary {
             namespace,
             prop,
-            extra_lines: Some(&[CSS_TRANSFORM]),
+            extra_rule_css: Some(&[CSS_TRANSFORM]),
             ..Arbitrary::default()
         }),
     )

@@ -9,13 +9,13 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlu
             prop,
             has_negative: Some(true),
             template: Some("{}deg"),
-            extra_lines: Some(&[CSS_TRANSFORM]),
+            extra_rule_css: Some(&[CSS_TRANSFORM]),
             ..Number::default()
         }),
         Plugin::Arbitrary(Arbitrary {
             namespace,
             prop,
-            extra_lines: Some(&[CSS_TRANSFORM]),
+            extra_rule_css: Some(&[CSS_TRANSFORM]),
             ..Arbitrary::default()
         }),
     )

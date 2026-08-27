@@ -200,7 +200,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
         (
             CustomPlugin::Static(Plugin::ListProperties(ListProperties {
                 props,
-                extra_lines,
+                extra_rule_css,
                 extra_css,
                 extra_class,
                 ..
@@ -222,8 +222,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         |context| {
                             context.buffer.lines(lines);
 
-                            if let Some(extra_lines) = extra_lines {
-                                context.buffer.lines(*extra_lines);
+                            if let Some(extra_rule_css) = extra_rule_css {
+                                context.buffer.lines(*extra_rule_css);
                             }
                         },
                         extra_class.unwrap_or(""),
@@ -234,7 +234,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
         (
             CustomPlugin::Dynamic(Plugin::ListProperties(ListProperties {
                 props,
-                extra_lines,
+                extra_rule_css,
                 extra_css,
                 extra_class,
                 ..
@@ -256,8 +256,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         |context| {
                             context.buffer.lines(lines);
 
-                            if let Some(extra_lines) = extra_lines {
-                                context.buffer.lines(extra_lines);
+                            if let Some(extra_rule_css) = extra_rule_css {
+                                context.buffer.lines(extra_rule_css);
                             }
                         },
                         extra_class.as_ref().map_or("", String::as_str),
@@ -271,7 +271,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 prop,
                 values,
                 extra_slash,
-                extra_lines,
+                extra_rule_css,
                 extra_css,
                 extra_class,
                 ..
@@ -314,8 +314,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                     |context| {
                         push_css_lines(prop, &value, context);
 
-                        if let Some(extra_lines) = extra_lines {
-                            context.buffer.lines(*extra_lines);
+                        if let Some(extra_rule_css) = extra_rule_css {
+                            context.buffer.lines(*extra_rule_css);
                         }
                     },
                     extra_class.unwrap_or(""),
@@ -327,7 +327,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 prop,
                 values,
                 extra_slash,
-                extra_lines,
+                extra_rule_css,
                 extra_css,
                 extra_class,
                 ..
@@ -370,8 +370,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                     |context| {
                         dynamic_push_css_lines(prop, &value, context);
 
-                        if let Some(extra_lines) = extra_lines {
-                            context.buffer.lines(extra_lines);
+                        if let Some(extra_rule_css) = extra_rule_css {
+                            context.buffer.lines(extra_rule_css);
                         }
                     },
                     extra_class.as_ref().map_or("", String::as_str),
@@ -383,7 +383,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
             CustomPlugin::Static(Plugin::Spacing(Spacing {
                 prop,
                 extra_slash,
-                extra_lines,
+                extra_rule_css,
                 extra_css,
                 extra_class,
                 template,
@@ -431,8 +431,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                             context,
                         );
 
-                        if let Some(extra_lines) = extra_lines {
-                            context.buffer.lines(*extra_lines);
+                        if let Some(extra_rule_css) = extra_rule_css {
+                            context.buffer.lines(*extra_rule_css);
                         }
                     },
                     extra_class.unwrap_or(""),
@@ -443,7 +443,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
             CustomPlugin::Dynamic(Plugin::Spacing(Spacing {
                 prop,
                 extra_slash,
-                extra_lines,
+                extra_rule_css,
                 extra_css,
                 extra_class,
                 template,
@@ -491,8 +491,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                             context,
                         );
 
-                        if let Some(extra_lines) = extra_lines {
-                            context.buffer.lines(extra_lines);
+                        if let Some(extra_rule_css) = extra_rule_css {
+                            context.buffer.lines(extra_rule_css);
                         }
                     },
                     extra_class.as_ref().map_or("", String::as_str),
@@ -504,7 +504,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
             CustomPlugin::Static(Plugin::Color(Color {
                 prop,
                 extra_class,
-                extra_lines,
+                extra_rule_css,
                 extra_css,
                 template,
                 template_multiple,
@@ -530,8 +530,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                             context,
                         );
 
-                        if let Some(extra_lines) = extra_lines {
-                            context.buffer.lines(*extra_lines);
+                        if let Some(extra_rule_css) = extra_rule_css {
+                            context.buffer.lines(*extra_rule_css);
                         }
                     },
                     extra_class.unwrap_or(""),
@@ -542,7 +542,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
             CustomPlugin::Dynamic(Plugin::Color(Color {
                 prop,
                 extra_class,
-                extra_lines,
+                extra_rule_css,
                 extra_css,
                 template,
                 template_multiple,
@@ -568,8 +568,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                             context,
                         );
 
-                        if let Some(extra_lines) = extra_lines {
-                            context.buffer.lines(extra_lines);
+                        if let Some(extra_rule_css) = extra_rule_css {
+                            context.buffer.lines(extra_rule_css);
                         }
                     },
                     extra_class.as_ref().map_or("", String::as_str),
@@ -582,7 +582,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 prop,
                 divide_by,
                 extra_slash,
-                extra_lines,
+                extra_rule_css,
                 extra_css,
                 extra_class,
                 template,
@@ -628,8 +628,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                             context,
                         );
 
-                        if let Some(extra_lines) = extra_lines {
-                            context.buffer.lines(*extra_lines);
+                        if let Some(extra_rule_css) = extra_rule_css {
+                            context.buffer.lines(*extra_rule_css);
                         }
                     },
                     extra_class.unwrap_or(""),
@@ -641,7 +641,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 prop,
                 divide_by,
                 extra_slash,
-                extra_lines,
+                extra_rule_css,
                 extra_css,
                 extra_class,
                 template,
@@ -687,8 +687,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                             context,
                         );
 
-                        if let Some(extra_lines) = extra_lines {
-                            context.buffer.lines(extra_lines);
+                        if let Some(extra_rule_css) = extra_rule_css {
+                            context.buffer.lines(extra_rule_css);
                         }
                     },
                     extra_class.as_ref().map_or("", String::as_str),
@@ -699,7 +699,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
         (
             CustomPlugin::Static(Plugin::Arbitrary(Arbitrary {
                 prop,
-                extra_lines,
+                extra_rule_css,
                 extra_class,
                 extra_css,
                 shadow_color_replacement,
@@ -736,8 +736,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                             context,
                         );
 
-                        if let Some(extra_lines) = extra_lines {
-                            context.buffer.lines(*extra_lines);
+                        if let Some(extra_rule_css) = extra_rule_css {
+                            context.buffer.lines(*extra_rule_css);
                         }
                     },
                     extra_class.unwrap_or(""),
@@ -747,7 +747,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
         (
             CustomPlugin::Dynamic(Plugin::Arbitrary(Arbitrary {
                 prop,
-                extra_lines,
+                extra_rule_css,
                 extra_css,
                 extra_class,
                 shadow_color_replacement,
@@ -784,8 +784,8 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                             context,
                         );
 
-                        if let Some(extra_lines) = extra_lines {
-                            context.buffer.lines(extra_lines);
+                        if let Some(extra_rule_css) = extra_rule_css {
+                            context.buffer.lines(extra_rule_css);
                         }
                     },
                     extra_class.as_ref().map_or("", String::as_str),

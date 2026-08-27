@@ -14,14 +14,14 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
         "backdrop-blur-3xl" => "blur(64px)",
         "backdrop-blur-none" => "blur(0)",
     },
-    extra_lines: Some(&CSS_BACKDROP_FILTER),
+    extra_rule_css: Some(&CSS_BACKDROP_FILTER),
     ..ListValues::default()
 });
 
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "backdrop-blur",
     prop: SingleProp("--en-backdrop-blur"),
-    extra_lines: Some(&CSS_BACKDROP_FILTER),
+    extra_rule_css: Some(&CSS_BACKDROP_FILTER),
     template: Some("blur({})"),
     ..Arbitrary::default()
 });

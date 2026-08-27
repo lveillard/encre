@@ -1,5 +1,8 @@
 Add one or several extra CSS line(s) **inside** the CSS rule generated for the utility class.
 
+This field takes an array which represents the CSS lines that will be properly indented and added,
+one after another, in the order they are defined, to the CSS rule.
+
 ### Example
 
 ```
@@ -9,7 +12,7 @@ use encre_css::prelude::build_plugin::*;
 const PLUGIN: StaticPlugin = Plugin::Spacing(Spacing {
     namespace: "custom-translate-x",
     prop: SingleProp("--translate-x"),
-    extra_lines: Some(&["transform: translate(var(--translate-x), 12px);"]),
+    extra_rule_css: Some(&["transform: translate(var(--translate-x), 12px);"]),
     ..Spacing::default()
 });
 

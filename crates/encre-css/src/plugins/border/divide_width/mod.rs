@@ -19,7 +19,7 @@ pub(crate) const PLUGIN_X_2: StaticPlugin = Plugin::Number(Number {
         "calc({}px * var(--en-divide-x-reverse))",
         "calc({}px * calc(1 - var(--en-divide-x-reverse)))",
     ]),
-    extra_lines: Some(&["--en-divide-x-reverse: 0;"]),
+    extra_rule_css: Some(&["--en-divide-x-reverse: 0;"]),
     ..Number::default()
 });
 
@@ -39,7 +39,7 @@ pub(crate) const PLUGIN_X_3: StaticPlugin = Plugin::Arbitrary(Arbitrary {
         "calc({} * var(--en-divide-x-reverse))",
         "calc({} * calc(1 - var(--en-divide-x-reverse)))",
     ]),
-    extra_lines: Some(&["--en-divide-x-reverse: 0;"]),
+    extra_rule_css: Some(&["--en-divide-x-reverse: 0;"]),
     ..Arbitrary::default()
 });
 
@@ -60,7 +60,7 @@ pub(crate) const PLUGIN_Y_2: StaticPlugin = Plugin::Number(Number {
         "calc({}px * var(--en-divide-y-reverse))",
         "calc({}px * calc(1 - var(--en-divide-y-reverse)))",
     ]),
-    extra_lines: Some(&["--en-divide-y-reverse: 0;"]),
+    extra_rule_css: Some(&["--en-divide-y-reverse: 0;"]),
     ..Number::default()
 });
 
@@ -80,6 +80,6 @@ pub(crate) const PLUGIN_Y_3: StaticPlugin = Plugin::Arbitrary(Arbitrary {
         "calc({} * var(--en-divide-y-reverse))",
         "calc({} * calc(1 - var(--en-divide-y-reverse)))",
     ]),
-    extra_lines: Some(&["--en-divide-y-reverse: 0;"]),
+    extra_rule_css: Some(&["--en-divide-y-reverse: 0;"]),
     ..Arbitrary::default()
 });

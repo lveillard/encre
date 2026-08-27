@@ -7,7 +7,7 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "contrast",
     prop: SingleProp("--en-contrast"),
     divide_by: Some(100.0),
-    extra_lines: Some(&[CSS_FILTER]),
+    extra_rule_css: Some(&[CSS_FILTER]),
     template: Some("contrast({})"),
     ..Number::default()
 });

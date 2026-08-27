@@ -9,13 +9,13 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlu
             prop,
             has_auto: Some(true),
             has_full: Some(true),
-            extra_lines: Some(&[CSS_TRANSFORM]),
+            extra_rule_css: Some(&[CSS_TRANSFORM]),
             ..Spacing::default()
         }),
         Plugin::Arbitrary(Arbitrary {
             namespace,
             prop,
-            extra_lines: Some(&[CSS_TRANSFORM]),
+            extra_rule_css: Some(&[CSS_TRANSFORM]),
             ..Arbitrary::default()
         }),
     )

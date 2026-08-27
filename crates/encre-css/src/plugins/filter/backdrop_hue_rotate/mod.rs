@@ -7,7 +7,7 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "backdrop-hue-rotate",
     prop: SingleProp("--en-backdrop-hue-rotate"),
     has_negative: Some(true),
-    extra_lines: Some(&CSS_BACKDROP_FILTER),
+    extra_rule_css: Some(&CSS_BACKDROP_FILTER),
     template: Some("hue-rotate({}deg)"),
     ..Number::default()
 });
@@ -15,7 +15,7 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "backdrop-hue-rotate",
     prop: SingleProp("--en-backdrop-hue-rotate"),
-    extra_lines: Some(&CSS_BACKDROP_FILTER),
+    extra_rule_css: Some(&CSS_BACKDROP_FILTER),
     template: Some("hue-rotate({})"),
     ..Arbitrary::default()
 });

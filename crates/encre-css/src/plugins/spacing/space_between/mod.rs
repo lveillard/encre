@@ -18,7 +18,7 @@ pub(crate) const PLUGIN_X_2: StaticPlugin = Plugin::Spacing(Spacing {
         "calc({} * var(--en-space-x-reverse))",
         "calc({} * calc(1 - var(--en-space-x-reverse)))",
     ]),
-    extra_lines: Some(&["--en-space-x-reverse: 0;"]),
+    extra_rule_css: Some(&["--en-space-x-reverse: 0;"]),
     extra_class: Some(" > :not(:last-child)"),
     ..Spacing::default()
 });
@@ -30,7 +30,7 @@ pub(crate) const PLUGIN_X_3: StaticPlugin = Plugin::Arbitrary(Arbitrary {
         "calc({} * var(--en-space-x-reverse))",
         "calc({} * calc(1 - var(--en-space-x-reverse)))",
     ]),
-    extra_lines: Some(&["--en-space-x-reverse: 0;"]),
+    extra_rule_css: Some(&["--en-space-x-reverse: 0;"]),
     extra_class: Some(" > :not(:last-child)"),
     ..Arbitrary::default()
 });
@@ -51,7 +51,7 @@ pub(crate) const PLUGIN_Y_2: StaticPlugin = Plugin::Spacing(Spacing {
         "calc({} * var(--en-space-y-reverse))",
         "calc({} * calc(1 - var(--en-space-y-reverse)))",
     ]),
-    extra_lines: Some(&["--en-space-y-reverse: 0;"]),
+    extra_rule_css: Some(&["--en-space-y-reverse: 0;"]),
     extra_class: Some(" > :not(:last-child)"),
     ..Spacing::default()
 });
@@ -63,7 +63,7 @@ pub(crate) const PLUGIN_Y_3: StaticPlugin = Plugin::Arbitrary(Arbitrary {
         "calc({} * var(--en-space-y-reverse))",
         "calc({} * calc(1 - var(--en-space-y-reverse)))",
     ]),
-    extra_lines: Some(&["--en-space-y-reverse: 0;"]),
+    extra_rule_css: Some(&["--en-space-y-reverse: 0;"]),
     extra_class: Some(" > :not(:last-child)"),
     ..Arbitrary::default()
 });

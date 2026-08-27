@@ -10,13 +10,13 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlu
         Plugin::Spacing(Spacing {
             namespace,
             prop,
-            extra_lines: Some(&[BORDER_SPACING_CSS]),
+            extra_rule_css: Some(&[BORDER_SPACING_CSS]),
             ..Spacing::default()
         }),
         Plugin::Arbitrary(Arbitrary {
             namespace,
             prop,
-            extra_lines: Some(&[BORDER_SPACING_CSS]),
+            extra_rule_css: Some(&[BORDER_SPACING_CSS]),
             ..Arbitrary::default()
         }),
     )

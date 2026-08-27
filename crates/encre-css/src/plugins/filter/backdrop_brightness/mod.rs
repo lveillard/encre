@@ -8,6 +8,6 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     prop: SingleProp("--en-backdrop-brightness"),
     divide_by: Some(100.0),
     template: Some("brightness({})"),
-    extra_lines: Some(&CSS_BACKDROP_FILTER),
+    extra_rule_css: Some(&CSS_BACKDROP_FILTER),
     ..Number::default()
 });

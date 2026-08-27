@@ -10,14 +10,14 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> P {
             namespace,
             prop,
             has_negative: Some(true),
-            extra_lines: Some(&[CSS_TRANSFORM]),
+            extra_rule_css: Some(&[CSS_TRANSFORM]),
             template: Some("{}deg"),
             ..Number::default()
         }),
         Plugin::Arbitrary(Arbitrary {
             namespace,
             prop,
-            extra_lines: Some(&[CSS_TRANSFORM]),
+            extra_rule_css: Some(&[CSS_TRANSFORM]),
             ..Arbitrary::default()
         }),
     )

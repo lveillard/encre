@@ -14,7 +14,7 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
         "drop-shadow-2xl" => "drop-shadow(0 25px 25px rgb(0 0 0 / 0.15))",
         "drop-shadow-none" => "drop-shadow(0 0 #0000)",
     },
-    extra_lines: Some(&[CSS_FILTER]),
+    extra_rule_css: Some(&[CSS_FILTER]),
     ..ListValues::default()
 });
 
@@ -22,7 +22,7 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "drop-shadow",
     prop: SingleProp("--en-drop-shadow"),
-    extra_lines: Some(&[CSS_FILTER]),
+    extra_rule_css: Some(&[CSS_FILTER]),
     template: Some("drop-shadow({})"),
     ..Arbitrary::default()
 });

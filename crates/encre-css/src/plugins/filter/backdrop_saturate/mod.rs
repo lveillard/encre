@@ -7,7 +7,7 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "backdrop-saturate",
     prop: SingleProp("--en-backdrop-saturate"),
     divide_by: Some(100.0),
-    extra_lines: Some(&CSS_BACKDROP_FILTER),
+    extra_rule_css: Some(&CSS_BACKDROP_FILTER),
     template: Some("saturate({})"),
     ..Number::default()
 });

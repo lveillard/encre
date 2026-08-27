@@ -7,7 +7,7 @@ pub(crate) const RING_OFFSET_SHADOW: &str = "--en-ring-offset-shadow: var(--en-r
 pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "ring-offset",
     prop: SingleProp("--en-ring-offset-width"),
-    extra_lines: Some(&[RING_OFFSET_SHADOW]),
+    extra_rule_css: Some(&[RING_OFFSET_SHADOW]),
     template: Some("{}px"),
     ..Number::default()
 });
@@ -20,6 +20,6 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
         &[PluginArbitraryMatcher::Length],
         PluginArbitraryMatcherSeparation::None,
     )),
-    extra_lines: Some(&[RING_OFFSET_SHADOW]),
+    extra_rule_css: Some(&[RING_OFFSET_SHADOW]),
     ..Arbitrary::default()
 });

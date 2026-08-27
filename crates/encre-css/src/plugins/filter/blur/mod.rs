@@ -15,14 +15,14 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
         "blur-3xl" => "blur(64px)",
         "blur-none" => "blur(0)",
     },
-    extra_lines: Some(&[CSS_FILTER]),
+    extra_rule_css: Some(&[CSS_FILTER]),
     ..ListValues::default()
 });
 
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "blur",
     prop: SingleProp("--en-blur"),
-    extra_lines: Some(&[CSS_FILTER]),
+    extra_rule_css: Some(&[CSS_FILTER]),
     template: Some("blur({})"),
     ..Arbitrary::default()
 });

@@ -14,7 +14,7 @@ pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::ListProperties(ListProperti
 pub(crate) const PLUGIN_NUMBER: StaticPlugin = Plugin::Number(Number {
     namespace: "line-clamp",
     prop: SingleProp("-webkit-line-clamp"),
-    extra_lines: Some(&[
+    extra_rule_css: Some(&[
         "overflow: hidden;",
         "display: -webkit-box;",
         "-webkit-box-orient: vertical;",

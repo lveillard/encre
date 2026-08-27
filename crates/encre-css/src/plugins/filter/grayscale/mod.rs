@@ -8,7 +8,7 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     prop: SingleProp("--en-grayscale"),
     has_empty: Some(true),
     divide_by: Some(100.0),
-    extra_lines: Some(&[CSS_FILTER]),
+    extra_rule_css: Some(&[CSS_FILTER]),
     template: Some("grayscale({})"),
     ..Number::default()
 });

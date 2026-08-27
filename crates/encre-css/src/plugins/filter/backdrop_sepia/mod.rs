@@ -8,7 +8,7 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     prop: SingleProp("--en-backdrop-sepia"),
     has_empty: Some(true),
     divide_by: Some(100.0),
-    extra_lines: Some(&CSS_BACKDROP_FILTER),
+    extra_rule_css: Some(&CSS_BACKDROP_FILTER),
     template: Some("sepia({})"),
     ..Number::default()
 });

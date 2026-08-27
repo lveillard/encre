@@ -17,14 +17,14 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
         "shadow-2xl" => "0 25px 50px -12px var(--en-shadow-color, rgb(0 0 0 / 0.25))",
         "shadow-none" => "0 0 #0000",
     },
-    extra_lines: Some(&[BOX_SHADOW]),
+    extra_rule_css: Some(&[BOX_SHADOW]),
     ..ListValues::default()
 });
 
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "shadow",
     prop: SingleProp("--en-shadow"),
-    extra_lines: Some(&[BOX_SHADOW]),
+    extra_rule_css: Some(&[BOX_SHADOW]),
     matchers: Some((
         &[PluginArbitraryMatcher::Shadow],
         PluginArbitraryMatcherSeparation::None,
@@ -41,14 +41,14 @@ pub(crate) const PLUGIN_INSET_1: StaticPlugin = Plugin::ListValues(ListValues {
         "inset-shadow-sm" => "0 2px 4px var(--en-inset-shadow-color, rgb(0 0 0 / 0.05))",
         "inset-shadow-none" => "inset 0 0 #0000",
     },
-    extra_lines: Some(&[INSET_BOX_SHADOW]),
+    extra_rule_css: Some(&[INSET_BOX_SHADOW]),
     ..ListValues::default()
 });
 
 pub(crate) const PLUGIN_INSET_2: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "inset-shadow",
     prop: SingleProp("--en-inset-shadow"),
-    extra_lines: Some(&[INSET_BOX_SHADOW]),
+    extra_rule_css: Some(&[INSET_BOX_SHADOW]),
     hints: Some(&[ArbitraryHint::Shadow]),
     matchers: Some((
         &[PluginArbitraryMatcher::Shadow],

@@ -373,8 +373,8 @@ pub struct ListProperties<Str, ArrayStr, MapStr, MapArrayStr> {
     /// ```
     pub namespace: Option<Str>,
 
-    #[doc = include_str!("./doc_extra_lines.md")]
-    pub extra_lines: Option<ArrayStr>,
+    #[doc = include_str!("./doc_extra_rule_css.md")]
+    pub extra_rule_css: Option<ArrayStr>,
 
     #[doc = include_str!("./doc_extra_css.md")]
     pub extra_css: Option<MapStr>,
@@ -417,7 +417,7 @@ impl<Str, ArrayStr, MapStr> ListProperties<Str, ArrayStr, MapStr, phf::Map<&'sta
         Self {
             props: phf::Map::new(),
             namespace: None,
-            extra_lines: None,
+            extra_rule_css: None,
             extra_css: None,
             extra_class: None,
         }
@@ -465,7 +465,7 @@ impl<Str, ArrayStr, MapStr> ListProperties<Str, ArrayStr, MapStr, HashMap<String
         Self {
             props: HashMap::new(),
             namespace: None,
-            extra_lines: None,
+            extra_rule_css: None,
             extra_css: None,
             extra_class: None,
         }
@@ -567,8 +567,8 @@ pub struct ListValues<Str, ArrayStr, MapStr> {
     /// ```
     pub namespace: Option<Str>,
 
-    #[doc = include_str!("./doc_extra_lines.md")]
-    pub extra_lines: Option<ArrayStr>,
+    #[doc = include_str!("./doc_extra_rule_css.md")]
+    pub extra_rule_css: Option<ArrayStr>,
 
     #[doc = include_str!("./doc_extra_css.md")]
     pub extra_css: Option<MapStr>,
@@ -614,7 +614,7 @@ impl<ArrayStr> ListValues<&'static str, ArrayStr, phf::Map<&'static str, &'stati
             prop: PropertyName::SingleProp(""),
             values: phf::Map::new(),
             namespace: None,
-            extra_lines: None,
+            extra_rule_css: None,
             extra_css: None,
             extra_class: None,
             extra_slash: None,
@@ -665,7 +665,7 @@ impl<ArrayStr> ListValues<String, ArrayStr, HashMap<String, String>> {
             prop: PropertyName::SingleProp(String::new()),
             values: HashMap::new(),
             namespace: None,
-            extra_lines: None,
+            extra_rule_css: None,
             extra_css: None,
             extra_class: None,
             extra_slash: None,
@@ -695,11 +695,13 @@ pub struct Spacing<Str, ArrayStr, MapStr> {
     ///
     /// If this method is called, a `full` modifier will generate a `100%` CSS property value.
     pub has_full: Option<bool>,
+
+    #[doc = include_str!("./doc_template.md")]
     pub template: Option<Str>,
     pub template_multiple: Option<ArrayStr>,
 
-    #[doc = include_str!("./doc_extra_lines.md")]
-    pub extra_lines: Option<ArrayStr>,
+    #[doc = include_str!("./doc_extra_rule_css.md")]
+    pub extra_rule_css: Option<ArrayStr>,
 
     #[doc = include_str!("./doc_extra_css.md")]
     pub extra_css: Option<MapStr>,
@@ -744,7 +746,7 @@ impl<ArrayStr, MapStr> Spacing<&'static str, ArrayStr, MapStr> {
             has_full: None,
             template: None,
             template_multiple: None,
-            extra_lines: None,
+            extra_rule_css: None,
             extra_css: None,
             extra_class: None,
             extra_slash: None,
@@ -791,7 +793,7 @@ impl<ArrayStr, MapStr> Spacing<String, ArrayStr, MapStr> {
             has_full: None,
             template: None,
             template_multiple: None,
-            extra_lines: None,
+            extra_rule_css: None,
             extra_css: None,
             extra_class: None,
             extra_slash: None,
@@ -815,8 +817,8 @@ pub struct Color<Str, ArrayStr, MapStr> {
     pub template: Option<Str>,
     pub template_multiple: Option<ArrayStr>,
 
-    #[doc = include_str!("./doc_extra_lines.md")]
-    pub extra_lines: Option<ArrayStr>,
+    #[doc = include_str!("./doc_extra_rule_css.md")]
+    pub extra_rule_css: Option<ArrayStr>,
 
     #[doc = include_str!("./doc_extra_css.md")]
     pub extra_css: Option<MapStr>,
@@ -856,7 +858,7 @@ impl<ArrayStr, MapStr> Color<&'static str, ArrayStr, MapStr> {
             prop: PropertyName::SingleProp(""),
             template: None,
             template_multiple: None,
-            extra_lines: None,
+            extra_rule_css: None,
             extra_css: None,
             extra_class: None,
         }
@@ -900,7 +902,7 @@ impl<ArrayStr, MapStr> Color<String, ArrayStr, MapStr> {
             prop: PropertyName::SingleProp(String::new()),
             template: None,
             template_multiple: None,
-            extra_lines: None,
+            extra_rule_css: None,
             extra_css: None,
             extra_class: None,
         }
@@ -937,8 +939,8 @@ pub struct Number<Str, ArrayStr, MapStr> {
     pub template: Option<Str>,
     pub template_multiple: Option<ArrayStr>,
 
-    #[doc = include_str!("./doc_extra_lines.md")]
-    pub extra_lines: Option<ArrayStr>,
+    #[doc = include_str!("./doc_extra_rule_css.md")]
+    pub extra_rule_css: Option<ArrayStr>,
 
     #[doc = include_str!("./doc_extra_css.md")]
     pub extra_css: Option<MapStr>,
@@ -985,7 +987,7 @@ impl<ArrayStr, MapStr> Number<&'static str, ArrayStr, MapStr> {
             has_negative: None,
             template: None,
             template_multiple: None,
-            extra_lines: None,
+            extra_rule_css: None,
             extra_css: None,
             extra_class: None,
             extra_slash: None,
@@ -1034,7 +1036,7 @@ impl<ArrayStr, MapStr> Number<String, ArrayStr, MapStr> {
             has_negative: None,
             template: None,
             template_multiple: None,
-            extra_lines: None,
+            extra_rule_css: None,
             extra_css: None,
             extra_class: None,
             extra_slash: None,
@@ -1111,8 +1113,8 @@ pub struct Arbitrary<Str, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
     pub template: Option<Str>,
     pub template_multiple: Option<ArrayStr>,
 
-    #[doc = include_str!("./doc_extra_lines.md")]
-    pub extra_lines: Option<ArrayStr>,
+    #[doc = include_str!("./doc_extra_rule_css.md")]
+    pub extra_rule_css: Option<ArrayStr>,
 
     #[doc = include_str!("./doc_extra_css.md")]
     pub extra_css: Option<MapStr>,
@@ -1155,7 +1157,7 @@ impl<ArrayStr, MapStr, ArrayHints, ArrayMatchers> Arbitrary<&'static str, ArrayS
             hints: None,
             template: None,
             template_multiple: None,
-            extra_lines: None,
+            extra_rule_css: None,
             extra_css: None,
             extra_class: None,
 
@@ -1203,7 +1205,7 @@ impl<ArrayStr, MapStr, ArrayHints, ArrayMatchers> Arbitrary<String, ArrayStr, Ma
             hints: None,
             template: None,
             template_multiple: None,
-            extra_lines: None,
+            extra_rule_css: None,
             extra_css: None,
             extra_class: None,
         }
