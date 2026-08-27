@@ -239,20 +239,113 @@ pub enum PropertyName<Str, ArrayStr> {
     /// Several CSS property names in the order they will be generated.
     ///
     /// The CSS value defined by the plugin will be copied to each of the properties.
+    // TODO: example
     MultipleProps(ArrayStr),
 }
 
+/// Define a plugin using a map between utility classes and raw CSS lines.
+///
+/// It directly generates the CSS of the map value if the utility class as map key is scanned.
+///
+/// Map values are arrays which represent individual lines of the CSS so that each line can be
+/// correctly indented.
+///
+/// If a utility class maps to an empty array, no class will be generated at all. This behavior can
+/// be combined with [`ListProperties::extra_css`] to generate root-level CSS blocks (like
+/// `@keyframe` animations).
+///
+/// If you instead need to map CSS property values to a single CSS property, use [`ListValues`].
+///
+/// ### Example
+///
+/// ```
+/// use encre_css::{Config, generate};
+/// use encre_css::prelude::build_plugin::*;
+///
+/// const PLUGIN: StaticPlugin = Plugin::ListProperties(ListProperties {
+///     props: map! {
+///         "overflow-visible" => &["overflow: visible;"],
+///         "overflow-hidden" => &["overflow: hidden;"],
+///         "overflow-clip" => &["overflow: clip;"],
+///         "overflow-scroll" => &["overflow: scroll;"],
+///         "overflow-auto" => &["overflow: auto;"],
+///     },
+///     ..ListProperties::default()
+/// });
+///
+/// let mut config = Config::default();
+/// config.register_plugin(&PLUGIN);
+///
+/// let generated = generate(["overflow-scroll"], &config);
+///
+/// assert!(generated.ends_with(r".overflow-scroll {
+///   overflow: scroll;
+/// }"));
+/// ```
+///
+/// ### Example in TOML
+///
+/// ```toml
+/// [[custom_plugins]]
+///
+/// [custom_plugins.ListProperties]
+///
+/// [custom_plugins.ListProperties.props]
+/// overflow-visible = ["overflow: visible;"]
+/// overflow-hidden = ["overflow: hidden;"]
+/// overflow-clip = ["overflow: clip;"]
+/// overflow-scroll = ["overflow: scroll;"]
+/// overflow-auto = ["overflow: auto;"]
+/// ```
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ListProperties<Str, ArrayStr, MapStr, MapArrayStr> {
+    /// The map between utility classes and raw CSS lines.
+    ///
+    /// This field should be assigned separately after calling [`ListProperties::default`] (or
+    /// [`ListProperties::default_dynamic`]).
     pub props: MapArrayStr,
 
+    /// Define a [namespace](crate::selector) (i.e a prefix) common to all utility classes declared in the map keys.
+    ///
+    /// The last dash character (`-`) should be omitted due to the way the parsing of utility classes work
+    /// (e.g in the example below, `overflow` is correct while `overflow-` is **incorrect**).
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::{Config, generate};
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::ListProperties(ListProperties {
+    ///     namespace: Some("overflow"),
+    ///     props: map! {
+    ///         "visible" => &["overflow: visible;"],
+    ///         "hidden" => &["overflow: hidden;"],
+    ///         "clip" => &["overflow: clip;"],
+    ///         "scroll" => &["overflow: scroll;"],
+    ///         "auto" => &["overflow: auto;"],
+    ///     },
+    ///     ..ListProperties::default()
+    /// });
+    ///
+    /// let mut config = Config::default();
+    /// config.register_plugin(&PLUGIN);
+    ///
+    /// let generated = generate(["overflow-scroll"], &config);
+    ///
+    /// assert!(generated.ends_with(r".overflow-scroll {
+    ///   overflow: scroll;
+    /// }"));
+    /// ```
     pub namespace: Option<Str>,
 
     #[doc = include_str!("./doc_extra_lines.md")]
-    pub extra_lines: Option<ArrayStr>, // TODO: use Str instead?
+    pub extra_lines: Option<ArrayStr>,
 
     #[doc = include_str!("./doc_extra_css.md")]
     pub extra_css: Option<MapStr>,
+
+    #[doc = include_str!("./doc_extra_class.md")]
     pub extra_class: Option<Str>,
 }
 
@@ -345,6 +438,50 @@ impl<Str, ArrayStr, MapStr> ListProperties<Str, ArrayStr, MapStr, HashMap<String
     }
 }
 
+/// Define a plugin using a map between utility classes and the values of a single CSS property.
+///
+/// If you instead need to generate several CSS properties or to have more control on the CSS lines
+/// generated, use [`ListProperties`].
+///
+/// ### Example
+///
+/// ```
+/// use encre_css::{Config, generate};
+/// use encre_css::prelude::build_plugin::*;
+///
+/// const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+///     prop: SingleProp("width"),
+///     values: map! {
+///         "w-fit" => "fit-content",
+///         "w-max" => "max-content",
+///         "w-min" => "min-content",
+///     },
+///     ..ListValues::default()
+/// });
+///
+/// let mut config = Config::default();
+/// config.register_plugin(&PLUGIN);
+///
+/// let generated = generate(["w-max"], &config);
+///
+/// assert!(generated.ends_with(r".w-max {
+///   width: max-content;
+/// }"));
+/// ```
+///
+/// ### Example in TOML
+///
+/// ```toml
+/// [[custom_plugins]]
+///
+/// [custom_plugins.ListValues]
+/// prop = "width"
+///
+/// [custom_plugins.ListValues.values]
+/// w-fit = "fit-content"
+/// w-max = "max-content"
+/// w-min = "min-content"
+/// ```
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ListValues<Str, ArrayStr, MapStr> {
     /// The CSS property name of the generated CSS rule.
@@ -352,9 +489,48 @@ pub struct ListValues<Str, ArrayStr, MapStr> {
     /// It can be a single property using [`PropertyName::SingleProp`] or a list of properties
     /// using [`PropertyName::MultipleProps`], in which case the value will be copied for all
     /// properties.
+    ///
+    /// This field should be assigned separately after calling [`ListValues::default`] (or
+    /// [`ListValues::default_dynamic`]).
     pub prop: PropertyName<Str, ArrayStr>,
+
+    /// The map between utility classes and the CSS values of the property [`ListValues::prop`].
+    ///
+    /// This field should be assigned separately after calling [`ListValues::default`] (or
+    /// [`ListValues::default_dynamic`]).
     pub values: MapStr,
 
+    /// Define a [namespace](crate::selector) (i.e a prefix) common to all utility classes declared in the map keys.
+    ///
+    /// The last dash character (`-`) should be omitted due to the way the parsing of utility classes work
+    /// (e.g in the example below, `overflow` is correct while `overflow-` is **incorrect**).
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::{Config, generate};
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    ///     namespace: Some("w"),
+    ///     prop: SingleProp("width"),
+    ///     values: map! {
+    ///         "fit" => "fit-content",
+    ///         "max" => "max-content",
+    ///         "min" => "min-content",
+    ///     },
+    ///     ..ListValues::default()
+    /// });
+    ///
+    /// let mut config = Config::default();
+    /// config.register_plugin(&PLUGIN);
+    ///
+    /// let generated = generate(["w-max"], &config);
+    ///
+    /// assert!(generated.ends_with(r".w-max {
+    ///   width: max-content;
+    /// }"));
+    /// ```
     pub namespace: Option<Str>,
 
     #[doc = include_str!("./doc_extra_lines.md")]
@@ -362,7 +538,11 @@ pub struct ListValues<Str, ArrayStr, MapStr> {
 
     #[doc = include_str!("./doc_extra_css.md")]
     pub extra_css: Option<MapStr>,
+
+    #[doc = include_str!("./doc_extra_class.md")]
     pub extra_class: Option<Str>,
+
+    #[doc = include_str!("./doc_extra_slash.md")]
     pub extra_slash: Option<(MapStr, Str)>,
 }
 
@@ -489,7 +669,11 @@ pub struct Spacing<Str, ArrayStr, MapStr> {
 
     #[doc = include_str!("./doc_extra_css.md")]
     pub extra_css: Option<MapStr>,
+
+    #[doc = include_str!("./doc_extra_class.md")]
     pub extra_class: Option<Str>,
+
+    #[doc = include_str!("./doc_extra_slash.md")]
     pub extra_slash: Option<(MapStr, Str)>,
 }
 
@@ -602,6 +786,8 @@ pub struct Color<Str, ArrayStr, MapStr> {
 
     #[doc = include_str!("./doc_extra_css.md")]
     pub extra_css: Option<MapStr>,
+
+    #[doc = include_str!("./doc_extra_class.md")]
     pub extra_class: Option<Str>,
 }
 
@@ -722,7 +908,11 @@ pub struct Number<Str, ArrayStr, MapStr> {
 
     #[doc = include_str!("./doc_extra_css.md")]
     pub extra_css: Option<MapStr>,
+
+    #[doc = include_str!("./doc_extra_class.md")]
     pub extra_class: Option<Str>,
+
+    #[doc = include_str!("./doc_extra_slash.md")]
     pub extra_slash: Option<(MapStr, Str)>,
 }
 
@@ -892,6 +1082,8 @@ pub struct Arbitrary<Str, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
 
     #[doc = include_str!("./doc_extra_css.md")]
     pub extra_css: Option<MapStr>,
+
+    #[doc = include_str!("./doc_extra_class.md")]
     pub extra_class: Option<Str>,
 }
 

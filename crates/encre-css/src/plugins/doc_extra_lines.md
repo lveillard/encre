@@ -18,7 +18,7 @@ config.register_plugin(&PLUGIN);
 
 let generated = generate(["custom-translate-x-8"], &config);
 
-assert!(generated.ends_with(r".custom-translate-x-8 {
+assert!(generated.ends_with(".custom-translate-x-8 {
   --translate-x: 2rem;
   transform: translate(var(--translate-x), 12px);
 }"));

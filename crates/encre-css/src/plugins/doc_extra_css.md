@@ -33,9 +33,9 @@ const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
         "custom-animate-fade-in" => "anim-fade-in",
     },
     extra_css: Some(map! {
-    "custom-animate-spin" => SPIN_ANIMATION,
-    "custom-animate-fade-in" => FADE_IN_ANIMATION,
-}),
+        "custom-animate-spin" => SPIN_ANIMATION,
+        "custom-animate-fade-in" => FADE_IN_ANIMATION,
+    }),
     ..ListValues::default()
 });
 
@@ -44,7 +44,7 @@ config.register_plugin(&PLUGIN);
 
 let generated = generate(["custom-animate-spin"], &config);
 
-assert!(generated.ends_with(r"@keyframes anim-spin {
+assert!(generated.ends_with("@keyframes anim-spin {
   from {
     transform: rotate(0deg);
   }
