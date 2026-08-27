@@ -239,7 +239,29 @@ pub enum PropertyName<Str, ArrayStr> {
     /// Several CSS property names in the order they will be generated.
     ///
     /// The CSS value defined by the plugin will be copied to each of the properties.
-    // TODO: example
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::{Config, generate};
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// pub(crate) const PLUGIN: StaticPlugin = Plugin::Color(Color {
+    ///     namespace: "custom-decoration",
+    ///     prop: MultipleProps(&["-webkit-text-decoration-color", "text-decoration-color"]),
+    ///     ..Color::default()
+    /// });
+    ///
+    /// let mut config = Config::default();
+    /// config.register_plugin(&PLUGIN);
+    ///
+    /// let generated = generate(["custom-decoration-red-200"], &config);
+    ///
+    /// assert!(generated.ends_with(r".custom-decoration-red-200 {
+    ///   -webkit-text-decoration-color: oklch(88.5% .062 18.334);
+    ///   text-decoration-color: oklch(88.5% .062 18.334);
+    /// }"));
+    /// ```
     MultipleProps(ArrayStr),
 }
 
