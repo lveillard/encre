@@ -243,6 +243,18 @@ pub enum PropertyName<Str, ArrayStr> {
     MultipleProps(ArrayStr),
 }
 
+#[doc = include_str!("./doc_extra_slash.md")]
+#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
+pub struct ExtraSlash<Str, MapStr> {
+    /// The mapping between the string parsed after the slash (`/`) and the actual values generated
+    /// in the CSS value.
+    pub values: MapStr,
+
+    /// The key in [`ExtraSlash::values`] which is chosen by default when no slash is present in the
+    /// utility class.
+    pub default: Str,
+}
+
 /// Define a plugin using a map between utility classes and raw CSS lines.
 ///
 /// It directly generates the CSS of the map value if the utility class as map key is scanned.
@@ -543,7 +555,7 @@ pub struct ListValues<Str, ArrayStr, MapStr> {
     pub extra_class: Option<Str>,
 
     #[doc = include_str!("./doc_extra_slash.md")]
-    pub extra_slash: Option<(MapStr, Str)>,
+    pub extra_slash: Option<ExtraSlash<Str, MapStr>>,
 }
 
 impl<ArrayStr> ListValues<&'static str, ArrayStr, phf::Map<&'static str, &'static str>> {
@@ -674,7 +686,7 @@ pub struct Spacing<Str, ArrayStr, MapStr> {
     pub extra_class: Option<Str>,
 
     #[doc = include_str!("./doc_extra_slash.md")]
-    pub extra_slash: Option<(MapStr, Str)>,
+    pub extra_slash: Option<ExtraSlash<Str, MapStr>>,
 }
 
 impl<ArrayStr, MapStr> Spacing<&'static str, ArrayStr, MapStr> {
@@ -913,7 +925,7 @@ pub struct Number<Str, ArrayStr, MapStr> {
     pub extra_class: Option<Str>,
 
     #[doc = include_str!("./doc_extra_slash.md")]
-    pub extra_slash: Option<(MapStr, Str)>,
+    pub extra_slash: Option<ExtraSlash<Str, MapStr>>,
 }
 
 impl<ArrayStr, MapStr> Number<&'static str, ArrayStr, MapStr> {

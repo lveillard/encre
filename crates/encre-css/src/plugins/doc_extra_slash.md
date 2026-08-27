@@ -16,10 +16,13 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     values: map! {
         "custom-bg-img" => "linear-gradient(to top in {/}, #00aaff, #00ffaa)",
     },
-    extra_slash: Some((map! {
-        "increasing" => "oklch increasing hue",
-        "oklab" => "oklab",
-    }, "oklab")),
+    extra_slash: Some(ExtraSlash {
+        values: map! {
+            "increasing" => "oklch increasing hue",
+            "oklab" => "oklab",
+        },
+        default: "oklab",
+    }),
     ..ListValues::default()
 });
 

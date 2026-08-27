@@ -231,11 +231,11 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (*value, extra_slash.as_ref().map(|e| e.1))
+                (*value, extra_slash.as_ref().map(|e| e.default))
             };
             extra_slash
                 .as_ref()
-                .is_none_or(|extra_slash| extra_slash.0.contains_key(template_value.unwrap()))
+                .is_none_or(|extra_slash| extra_slash.values.contains_key(template_value.unwrap()))
                 && values.contains_key(value)
         }
 
@@ -253,11 +253,11 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (*value, extra_slash.as_ref().map(|e| e.1.as_str()))
+                (*value, extra_slash.as_ref().map(|e| e.default.as_str()))
             };
             extra_slash
                 .as_ref()
-                .is_none_or(|extra_slash| extra_slash.0.contains_key(template_value.unwrap()))
+                .is_none_or(|extra_slash| extra_slash.values.contains_key(template_value.unwrap()))
                 && values.contains_key(value)
         }
 
@@ -299,11 +299,11 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (*value, extra_slash.as_ref().map(|e| e.1))
+                (*value, extra_slash.as_ref().map(|e| e.default))
             };
             extra_slash
                 .as_ref()
-                .is_none_or(|extra_slash| extra_slash.0.contains_key(template_value.unwrap()))
+                .is_none_or(|extra_slash| extra_slash.values.contains_key(template_value.unwrap()))
                 && ((has_empty.unwrap_or(false) && value.is_empty())
                     || (has_auto.unwrap_or(false) && value == "auto")
                     || (value.parse::<usize>().is_ok() && (has_negative.unwrap_or(false) || !*is_negative)))
@@ -326,11 +326,11 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (*value, extra_slash.as_ref().map(|e| e.1.as_str()))
+                (*value, extra_slash.as_ref().map(|e| e.default.as_str()))
             };
             extra_slash
                 .as_ref()
-                .is_none_or(|extra_slash| extra_slash.0.contains_key(template_value.unwrap()))
+                .is_none_or(|extra_slash| extra_slash.values.contains_key(template_value.unwrap()))
                 && ((has_empty.unwrap_or(false) && value.is_empty())
                     || (has_auto.unwrap_or(false) && value == "auto")
                     || (value.parse::<usize>().is_ok() && (has_negative.unwrap_or(false) || !*is_negative)))

@@ -53,7 +53,10 @@ pub(crate) const PLUGIN_LINEAR_1: StaticPlugin = Plugin::ListValues(ListValues {
         "bg-linear-to-l" => "linear-gradient(to left in {/}, var(--en-gradient-stops))",
         "bg-linear-to-tl" => "linear-gradient(to top left in {/}, var(--en-gradient-stops))",
     },
-    extra_slash: Some((INTERPOLATION_MODES_MAP, "oklab")),
+    extra_slash: Some(ExtraSlash {
+        values: INTERPOLATION_MODES_MAP,
+        default: "oklab",
+    }),
     ..ListValues::default()
 });
 
@@ -62,7 +65,10 @@ pub(crate) const PLUGIN_LINEAR_2: StaticPlugin = Plugin::Number(Number {
     prop: SingleProp("background-image"),
     has_negative: Some(true),
     template: Some("linear-gradient({}deg in {/}, var(--en-gradient-stops))"),
-    extra_slash: Some((INTERPOLATION_MODES_MAP, "oklab")),
+    extra_slash: Some(ExtraSlash {
+        values: INTERPOLATION_MODES_MAP,
+        default: "oklab",
+    }),
     ..Number::default()
 });
 
@@ -78,7 +84,10 @@ pub(crate) const PLUGIN_RADIAL_1: StaticPlugin = Plugin::ListValues(ListValues {
     values: map! {
         "bg-radial" => "radial-gradient(in {/}, var(--en-gradient-stops))",
     },
-    extra_slash: Some((INTERPOLATION_MODES_MAP, "oklab")),
+    extra_slash: Some(ExtraSlash {
+        values: INTERPOLATION_MODES_MAP,
+        default: "oklab",
+    }),
     ..ListValues::default()
 });
 
@@ -94,7 +103,10 @@ pub(crate) const PLUGIN_CONIC_1: StaticPlugin = Plugin::ListValues(ListValues {
     values: map! {
         "bg-conic" => "conic-gradient(in {/}, var(--en-gradient-stops))",
     },
-    extra_slash: Some((INTERPOLATION_MODES_MAP, "oklab")),
+    extra_slash: Some(ExtraSlash {
+        values: INTERPOLATION_MODES_MAP,
+        default: "oklab",
+    }),
     ..ListValues::default()
 });
 
@@ -103,7 +115,10 @@ pub(crate) const PLUGIN_CONIC_2: StaticPlugin = Plugin::Number(Number {
     prop: SingleProp("background-image"),
     has_negative: Some(true),
     template: Some("conic-gradient(from {}deg in {/}, var(--en-gradient-stops))"),
-    extra_slash: Some((INTERPOLATION_MODES_MAP, "oklab")),
+    extra_slash: Some(ExtraSlash {
+        values: INTERPOLATION_MODES_MAP,
+        default: "oklab",
+    }),
     ..Number::default()
 });
 

@@ -255,9 +255,10 @@ pub mod prelude {
                 generate_wrapper,
             },
             plugins::{
-                DynamicPlugin, DynamicPropertyName, Plugin, PluginArbitraryMatcher,
-                PluginArbitraryMatcherSeparation, PropertyName, PropertyName::*, StaticPlugin,
-                StaticPropertyName, ListProperties, ListValues, Spacing, Color, Number, Arbitrary, Functional,
+                Arbitrary, Color, DynamicPlugin, DynamicPropertyName, ExtraSlash, Functional,
+                ListProperties, ListValues, Number, Plugin, PluginArbitraryMatcher,
+                PluginArbitraryMatcherSeparation, PropertyName, PropertyName::*, Spacing,
+                StaticPlugin, StaticPropertyName,
             },
             selector::{ArbitraryHint, Modifier},
             utils::{buffer::Buffer, color, shadow, spacing, value_matchers::*},

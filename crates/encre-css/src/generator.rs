@@ -1,16 +1,11 @@
 //! Define the main [`generate`] function used to scan content and to generate CSS styles.
 use crate::{
-    config::{Config, MaxShortcutDepth},
-    plugins::{
-        Arbitrary, Color, CustomPlugin, DynamicPropertyName, Functional,
-        ListProperties, ListValues, Number, Plugin, PropertyName, Spacing, StaticPropertyName,
-    },
-    preflight::Preflight,
-    selector::{
+    config::{Config, MaxShortcutDepth}, plugins::{
+        Arbitrary, Color, CustomPlugin, DynamicPropertyName, ExtraSlash, Functional, ListProperties, ListValues, Number, Plugin, PropertyName, Spacing, StaticPropertyName,
+    }, preflight::Preflight, selector::{
         Modifier, Selector, Variant, parse,
         trie::{Trie, build_trie},
-    },
-    utils::{buffer::Buffer, color, shadow, spacing},
+    }, utils::{buffer::Buffer, color, shadow, spacing},
 };
 
 use std::{
@@ -289,7 +284,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (*value, extra_slash.as_ref().map(|e| e.1))
+                (*value, extra_slash.as_ref().map(|e| e.default))
             };
 
             if let Some(extra_css) = extra_css {
@@ -300,7 +295,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 .get(value)
                 .expect("key existence was checked in can_handle");
 
-            let value = if let Some((values, _)) = &extra_slash {
+            let value = if let Some(ExtraSlash { values, .. }) = &extra_slash {
                 Cow::Owned(
                     value.replace(
                         "{/}",
@@ -345,7 +340,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (*value, extra_slash.as_ref().map(|e| e.1.as_str()))
+                (*value, extra_slash.as_ref().map(|e| e.default.as_str()))
             };
 
             if let Some(extra_css) = extra_css {
@@ -356,7 +351,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 .get(value)
                 .expect("key existence was checked in can_handle");
 
-            let value = if let Some((values, _)) = &extra_slash {
+            let value = if let Some(ExtraSlash { values, .. }) = &extra_slash {
                 Cow::Owned(
                     value.replace(
                         "{/}",
@@ -405,7 +400,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (*value, extra_slash.as_ref().map(|e| e.1))
+                (*value, extra_slash.as_ref().map(|e| e.default))
             };
 
             if let Some(extra_css) = extra_css {
@@ -465,7 +460,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (*value, extra_slash.as_ref().map(|e| e.1.as_str()))
+                (*value, extra_slash.as_ref().map(|e| e.default.as_str()))
             };
 
             if let Some(extra_css) = extra_css {
@@ -602,7 +597,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (*value, extra_slash.as_ref().map(|e| e.1))
+                (*value, extra_slash.as_ref().map(|e| e.default))
             };
 
             if let Some(extra_css) = extra_css {
@@ -661,7 +656,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 let (before, after) = value.split_at(index);
                 (before, Some(&after[1..]))
             } else {
-                (*value, extra_slash.as_ref().map(|e| e.1.as_str()))
+                (*value, extra_slash.as_ref().map(|e| e.default.as_str()))
             };
 
             if let Some(extra_css) = extra_css {
