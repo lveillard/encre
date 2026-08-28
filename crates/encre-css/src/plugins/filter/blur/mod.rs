@@ -23,6 +23,6 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "blur",
     prop: SingleProp("--en-blur"),
     extra_rule_css: Some(&[CSS_FILTER]),
-    template: Some("blur({})"),
+    template: Some(SingleProp("blur({})")),
     ..Arbitrary::default()
 });

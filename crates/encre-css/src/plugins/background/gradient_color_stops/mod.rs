@@ -23,14 +23,14 @@ pub(crate) const PLUGIN_FROM_2: StaticPlugin = Plugin::Arbitrary(Arbitrary {
 pub(crate) const PLUGIN_VIA_1: StaticPlugin = Plugin::Color(Color {
     namespace: "via",
     prop: SingleProp("--en-gradient-stops"),
-    template: Some("var(--en-gradient-from), {}, var(--en-gradient-to, transparent)"),
+    template: Some(SingleProp("var(--en-gradient-from), {}, var(--en-gradient-to, transparent)")),
     ..Color::default()
 });
 
 pub(crate) const PLUGIN_VIA_2: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "via",
     prop: SingleProp("--en-gradient-stops"),
-    template: Some("var(--en-gradient-from), {}, var(--en-gradient-to, transparent)"),
+    template: Some(SingleProp("var(--en-gradient-from), {}, var(--en-gradient-to, transparent)")),
     ..Arbitrary::default()
 });
 

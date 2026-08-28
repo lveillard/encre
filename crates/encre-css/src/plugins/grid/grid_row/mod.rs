@@ -26,7 +26,7 @@ pub(crate) const PLUGIN_SPAN_1: StaticPlugin = Plugin::ListValues(ListValues {
 pub(crate) const PLUGIN_SPAN_2: StaticPlugin = Plugin::Number(Number {
     namespace: "row-span",
     prop: SingleProp("grid-row"),
-    template: Some("span {} / span {}"),
+    template: Some(SingleProp("span {} / span {}")),
     ..Number::default()
 });
 

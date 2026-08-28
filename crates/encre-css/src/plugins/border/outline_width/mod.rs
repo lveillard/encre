@@ -6,7 +6,7 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "outline",
     prop: SingleProp("outline-width"),
     has_empty: Some(true),
-    template: Some("{}px"),
+    template: Some(SingleProp("{}px")),
     ..Number::default()
 });
 

@@ -5,4 +5,4 @@ preflight = "none"
 [custom_plugins.Number]
 namespace = "shape-roof"
 prop = ["border-inline", "border-top"]
-template = "{}px"
+template = ["{}px", "{}px"]

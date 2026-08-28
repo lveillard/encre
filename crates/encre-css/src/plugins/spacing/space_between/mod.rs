@@ -14,10 +14,10 @@ pub(crate) const PLUGIN_X_1: StaticPlugin = Plugin::ListValues(ListValues {
 pub(crate) const PLUGIN_X_2: StaticPlugin = Plugin::Spacing(Spacing {
     namespace: "space-x",
     prop: MultipleProps(&["margin-inline-start", "margin-inline-end"]),
-    template_multiple: Some(&[
+    template: Some(MultipleProps(&[
         "calc({} * var(--en-space-x-reverse))",
         "calc({} * calc(1 - var(--en-space-x-reverse)))",
-    ]),
+    ])),
     extra_rule_css: Some(&["--en-space-x-reverse: 0;"]),
     extra_class: Some(" > :not(:last-child)"),
     ..Spacing::default()
@@ -26,10 +26,10 @@ pub(crate) const PLUGIN_X_2: StaticPlugin = Plugin::Spacing(Spacing {
 pub(crate) const PLUGIN_X_3: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "space-x",
     prop: MultipleProps(&["margin-inline-start", "margin-inline-end"]),
-    template_multiple: Some(&[
+    template: Some(MultipleProps(&[
         "calc({} * var(--en-space-x-reverse))",
         "calc({} * calc(1 - var(--en-space-x-reverse)))",
-    ]),
+    ])),
     extra_rule_css: Some(&["--en-space-x-reverse: 0;"]),
     extra_class: Some(" > :not(:last-child)"),
     ..Arbitrary::default()
@@ -47,10 +47,10 @@ pub(crate) const PLUGIN_Y_1: StaticPlugin = Plugin::ListValues(ListValues {
 pub(crate) const PLUGIN_Y_2: StaticPlugin = Plugin::Spacing(Spacing {
     namespace: "space-y",
     prop: MultipleProps(&["margin-block-start", "margin-block-end"]),
-    template_multiple: Some(&[
+    template: Some(MultipleProps(&[
         "calc({} * var(--en-space-y-reverse))",
         "calc({} * calc(1 - var(--en-space-y-reverse)))",
-    ]),
+    ])),
     extra_rule_css: Some(&["--en-space-y-reverse: 0;"]),
     extra_class: Some(" > :not(:last-child)"),
     ..Spacing::default()
@@ -59,10 +59,10 @@ pub(crate) const PLUGIN_Y_2: StaticPlugin = Plugin::Spacing(Spacing {
 pub(crate) const PLUGIN_Y_3: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "space-y",
     prop: MultipleProps(&["margin-block-start", "margin-block-end"]),
-    template_multiple: Some(&[
+    template: Some(MultipleProps(&[
         "calc({} * var(--en-space-y-reverse))",
         "calc({} * calc(1 - var(--en-space-y-reverse)))",
-    ]),
+    ])),
     extra_rule_css: Some(&["--en-space-y-reverse: 0;"]),
     extra_class: Some(" > :not(:last-child)"),
     ..Arbitrary::default()

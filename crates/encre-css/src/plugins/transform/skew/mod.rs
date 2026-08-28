@@ -8,7 +8,7 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlu
             namespace,
             prop,
             has_negative: Some(true),
-            template: Some("{}deg"),
+            template: Some(SingleProp("{}deg")),
             extra_rule_css: Some(&[CSS_TRANSFORM]),
             ..Number::default()
         }),

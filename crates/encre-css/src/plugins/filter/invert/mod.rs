@@ -9,6 +9,6 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     has_empty: Some(true),
     divide_by: Some(100.0),
     extra_rule_css: Some(&[CSS_FILTER]),
-    template: Some("invert({})"),
+    template: Some(SingleProp("invert({})")),
     ..Number::default()
 });

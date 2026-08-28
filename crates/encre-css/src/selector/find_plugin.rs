@@ -1,14 +1,52 @@
 use std::ops::Range;
 
 use crate::{
-    Config, error::{ParseError, ParseErrorKind}, generator::ContextCanHandle, plugins::{
-        Arbitrary, Color, CustomPlugin, DynamicPluginArbitraryMatcher, Functional, ListProperties, ListValues, Number, Plugin, PluginArbitraryMatcher, PluginArbitraryMatcherSeparation, Spacing, StaticPluginArbitraryMatcher,
-    }, selector::{
+    Config,
+    error::{ParseError, ParseErrorKind},
+    generator::ContextCanHandle,
+    plugins::{
+        Arbitrary, Color, CustomPlugin, DynamicPluginArbitraryMatcher, DynamicPropertyName,
+        Functional, ListProperties, ListValues, Number, Plugin, PluginArbitraryMatcher,
+        PluginArbitraryMatcherSeparation, PropertyName, Spacing, StaticPluginArbitraryMatcher,
+        StaticPropertyName,
+    },
+    selector::{
         Modifier, Selector, Variant,
         parser::{ARBITRARY_END, ARBITRARY_START, LAYER_BUILTIN, LAYER_CUSTOM, to_css_value},
         trie::{Trie, TrieData},
-    }, utils::{color, spacing, value_matchers::*},
+    },
+    utils::{color, spacing, value_matchers::*},
 };
+
+fn is_template_matching_prop_type(
+    template: &StaticPropertyName,
+    prop: &StaticPropertyName,
+) -> bool {
+    match (template, prop) {
+        (PropertyName::SingleProp(_), PropertyName::SingleProp(_)) => true,
+        (PropertyName::MultipleProps(p1), PropertyName::MultipleProps(p2))
+            if p1.len() == p2.len() =>
+        {
+            true
+        }
+        _ => false,
+    }
+}
+
+fn dynamic_is_template_matching_prop_type(
+    template: &DynamicPropertyName,
+    prop: &DynamicPropertyName,
+) -> bool {
+    match (template, prop) {
+        (PropertyName::SingleProp(_), PropertyName::SingleProp(_)) => true,
+        (PropertyName::MultipleProps(p1), PropertyName::MultipleProps(p2))
+            if p1.len() == p2.len() =>
+        {
+            true
+        }
+        _ => false,
+    }
+}
 
 fn is_arbitrary_matching(
     (matchers, modifier): &(
@@ -55,7 +93,7 @@ fn is_arbitrary_matching(
     })
 }
 
-fn is_parsed_arbitrary_matching(
+fn dynamic_is_arbitrary_matching(
     (matchers, modifier): &(
         Vec<DynamicPluginArbitraryMatcher>,
         PluginArbitraryMatcherSeparation,
@@ -140,7 +178,7 @@ pub(super) fn find_plugin_to_handle_class<'a>(
             class
         };
 
-        let parsed_modifier = {
+        let dynamic_modifier = {
             if modifier.is_empty() {
                 Modifier::Builtin {
                     is_negative: false,
@@ -178,7 +216,7 @@ pub(super) fn find_plugin_to_handle_class<'a>(
             }
         };
 
-        if can_handle(plugin, config, &parsed_modifier) {
+        if can_handle(plugin, config, &dynamic_modifier) {
             return variants
                 .into_iter()
                 .map(|variants| {
@@ -190,7 +228,7 @@ pub(super) fn find_plugin_to_handle_class<'a>(
                         } else {
                             val
                         },
-                        modifier: parsed_modifier.clone(),
+                        modifier: dynamic_modifier.clone(),
                         variants,
                         is_important,
                         plugin: plugin.clone(),
@@ -263,30 +301,54 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
 
         (
             CustomPlugin::Static(Plugin::Spacing(Spacing {
-                has_auto, has_full, ..
-            }))
-            | CustomPlugin::Dynamic(Plugin::Spacing(Spacing {
-                has_auto, has_full, ..
+                prop,
+                has_auto,
+                has_full,
+                template,
+                ..
             })),
             Modifier::Builtin { value, .. },
         ) => {
-            spacing::is_matching_builtin_spacing(value)
+            (spacing::is_matching_builtin_spacing(value)
                 || (has_auto.unwrap_or(false) && *value == "auto")
-                || (has_full.unwrap_or(false) && *value == "full")
+                || (has_full.unwrap_or(false) && *value == "full"))
+                && template.is_none_or(|t| is_template_matching_prop_type(&t, prop))
+        }
+        (
+            CustomPlugin::Dynamic(Plugin::Spacing(Spacing {
+                prop,
+                has_auto,
+                has_full,
+                template,
+                ..
+            })),
+            Modifier::Builtin { value, .. },
+        ) => {
+            (spacing::is_matching_builtin_spacing(value)
+                || (has_auto.unwrap_or(false) && *value == "auto")
+                || (has_full.unwrap_or(false) && *value == "full"))
+                && template
+                    .as_ref()
+                    .is_none_or(|t| dynamic_is_template_matching_prop_type(&t, prop))
         }
 
         (
-            CustomPlugin::Static(Plugin::Color(Color { .. }))
-            | CustomPlugin::Dynamic(Plugin::Color(Color { .. })),
+            CustomPlugin::Static(Plugin::Color(Color { prop, template, .. })),
             Modifier::Builtin { value, .. },
-        ) => color::is_matching_builtin_color(config, value),
+        ) => color::is_matching_builtin_color(config, value) && template.is_none_or(|t| is_template_matching_prop_type(&t, prop)),
+        (
+            CustomPlugin::Dynamic(Plugin::Color(Color { prop, template, .. })),
+            Modifier::Builtin { value, .. },
+        ) => color::is_matching_builtin_color(config, value) && template.as_ref().is_none_or(|t| dynamic_is_template_matching_prop_type(&t, prop)),
 
         (
             CustomPlugin::Static(Plugin::Number(Number {
+                prop,
                 has_auto,
                 has_empty,
                 has_negative,
                 extra_slash,
+                template,
                 ..
             })),
             Modifier::Builtin {
@@ -306,14 +368,18 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
                 .is_none_or(|extra_slash| extra_slash.values.contains_key(template_value.unwrap()))
                 && ((has_empty.unwrap_or(false) && value.is_empty())
                     || (has_auto.unwrap_or(false) && value == "auto")
-                    || (value.parse::<usize>().is_ok() && (has_negative.unwrap_or(false) || !*is_negative)))
+                    || (value.parse::<usize>().is_ok()
+                        && (has_negative.unwrap_or(false) || !*is_negative)))
+                 && template.is_none_or(|t| is_template_matching_prop_type(&t, prop))
         }
         (
             CustomPlugin::Dynamic(Plugin::Number(Number {
+                prop,
                 has_auto,
                 has_empty,
                 has_negative,
                 extra_slash,
+                template,
                 ..
             })),
             Modifier::Builtin {
@@ -333,7 +399,9 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
                 .is_none_or(|extra_slash| extra_slash.values.contains_key(template_value.unwrap()))
                 && ((has_empty.unwrap_or(false) && value.is_empty())
                     || (has_auto.unwrap_or(false) && value == "auto")
-                    || (value.parse::<usize>().is_ok() && (has_negative.unwrap_or(false) || !*is_negative)))
+                    || (value.parse::<usize>().is_ok()
+                        && (has_negative.unwrap_or(false) || !*is_negative)))
+                 && template.as_ref().is_none_or(|t| dynamic_is_template_matching_prop_type(&t, prop))
         }
 
         (
@@ -356,12 +424,13 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
                 || (hint.is_none()
                     && matchers
                         .as_ref()
-                        .is_none_or(|matchers| is_parsed_arbitrary_matching(matchers, value)))
+                        .is_none_or(|matchers| dynamic_is_arbitrary_matching(matchers, value)))
         }
 
-        (CustomPlugin::Static(Plugin::Functional(Functional { can_handle, .. })), Modifier::Builtin { .. }) => {
-            can_handle(&ContextCanHandle { config, modifier })
-        }
+        (
+            CustomPlugin::Static(Plugin::Functional(Functional { can_handle, .. })),
+            Modifier::Builtin { .. },
+        ) => can_handle(&ContextCanHandle { config, modifier }),
         _ => false,
     }
 }

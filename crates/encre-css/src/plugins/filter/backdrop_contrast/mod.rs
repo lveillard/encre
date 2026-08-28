@@ -8,6 +8,6 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     prop: SingleProp("--en-backdrop-contrast"),
     divide_by: Some(100.0),
     extra_rule_css: Some(&CSS_BACKDROP_FILTER),
-    template: Some("contrast({})"),
+    template: Some(SingleProp("contrast({})")),
     ..Number::default()
 });

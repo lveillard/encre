@@ -5,7 +5,7 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "duration",
     prop: SingleProp("transition-duration"),
-    template: Some("{}ms"),
+    template: Some(SingleProp("{}ms")),
     ..Number::default()
 });
 

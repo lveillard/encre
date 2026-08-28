@@ -9,6 +9,6 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     divide_by: Some(100.0),
     has_empty: Some(true),
     extra_rule_css: Some(&CSS_BACKDROP_FILTER),
-    template: Some("grayscale({})"),
+    template: Some(SingleProp("grayscale({})")),
     ..Number::default()
 });

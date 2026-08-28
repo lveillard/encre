@@ -13,7 +13,7 @@ pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::ListValues(ListValues {
 pub(crate) const PLUGIN_NUMBER: StaticPlugin = Plugin::Number(Number {
     namespace: "underline-offset",
     prop: SingleProp("text-underline-offset"),
-    template: Some("{}px"),
+    template: Some(SingleProp("{}px")),
     ..Number::default()
 });
 

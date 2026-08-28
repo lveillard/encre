@@ -5,7 +5,7 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN_NUMBER: StaticPlugin = Plugin::Number(Number {
     namespace: "grid-rows",
     prop: SingleProp("grid-template-rows"),
-    template: Some("repeat({}, minmax(0, 1fr))"),
+    template: Some(SingleProp("repeat({}, minmax(0, 1fr))")),
     ..Number::default()
 });
 

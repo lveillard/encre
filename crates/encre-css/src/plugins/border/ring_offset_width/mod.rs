@@ -8,7 +8,7 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "ring-offset",
     prop: SingleProp("--en-ring-offset-width"),
     extra_rule_css: Some(&[RING_OFFSET_SHADOW]),
-    template: Some("{}px"),
+    template: Some(SingleProp("{}px")),
     ..Number::default()
 });
 

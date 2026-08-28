@@ -10,7 +10,7 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> P {
             namespace,
             prop,
             has_empty: Some(true),
-            template: Some("{}px"),
+            template: Some(SingleProp("{}px")),
             ..Number::default()
         }),
         Plugin::Arbitrary(Arbitrary {

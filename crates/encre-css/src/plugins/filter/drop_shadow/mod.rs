@@ -23,6 +23,6 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "drop-shadow",
     prop: SingleProp("--en-drop-shadow"),
     extra_rule_css: Some(&[CSS_FILTER]),
-    template: Some("drop-shadow({})"),
+    template: Some(SingleProp("drop-shadow({})")),
     ..Arbitrary::default()
 });

@@ -8,6 +8,6 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     prop: SingleProp("--en-brightness"),
     divide_by: Some(100.0),
     extra_rule_css: Some(&[CSS_FILTER]),
-    template: Some("brightness({})"),
+    template: Some(SingleProp("brightness({})")),
     ..Number::default()
 });

@@ -64,7 +64,7 @@ pub(crate) const PLUGIN_LINEAR_2: StaticPlugin = Plugin::Number(Number {
     namespace: "bg-linear",
     prop: SingleProp("background-image"),
     has_negative: Some(true),
-    template: Some("linear-gradient({}deg in {/}, var(--en-gradient-stops))"),
+    template: Some(SingleProp("linear-gradient({}deg in {/}, var(--en-gradient-stops))")),
     extra_slash: Some(ExtraSlash {
         values: INTERPOLATION_MODES_MAP,
         default: "oklab",
@@ -75,7 +75,7 @@ pub(crate) const PLUGIN_LINEAR_2: StaticPlugin = Plugin::Number(Number {
 pub(crate) const PLUGIN_LINEAR_3: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "bg-linear",
     prop: SingleProp("background-image"),
-    template: Some("linear-gradient({})"),
+    template: Some(SingleProp("linear-gradient({})")),
     ..Arbitrary::default()
 });
 
@@ -94,7 +94,7 @@ pub(crate) const PLUGIN_RADIAL_1: StaticPlugin = Plugin::ListValues(ListValues {
 pub(crate) const PLUGIN_RADIAL_2: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "bg-radial",
     prop: SingleProp("background-image"),
-    template: Some("radial-gradient({})"),
+    template: Some(SingleProp("radial-gradient({})")),
     ..Arbitrary::default()
 });
 
@@ -114,7 +114,7 @@ pub(crate) const PLUGIN_CONIC_2: StaticPlugin = Plugin::Number(Number {
     namespace: "bg-conic",
     prop: SingleProp("background-image"),
     has_negative: Some(true),
-    template: Some("conic-gradient(from {}deg in {/}, var(--en-gradient-stops))"),
+    template: Some(SingleProp("conic-gradient(from {}deg in {/}, var(--en-gradient-stops))")),
     extra_slash: Some(ExtraSlash {
         values: INTERPOLATION_MODES_MAP,
         default: "oklab",
@@ -125,6 +125,6 @@ pub(crate) const PLUGIN_CONIC_2: StaticPlugin = Plugin::Number(Number {
 pub(crate) const PLUGIN_CONIC_3: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "bg-conic",
     prop: SingleProp("background-image"),
-    template: Some("conic-gradient({})"),
+    template: Some(SingleProp("conic-gradient({})")),
     ..Arbitrary::default()
 });

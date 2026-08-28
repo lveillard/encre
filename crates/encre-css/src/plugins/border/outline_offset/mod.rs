@@ -5,7 +5,7 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
     namespace: "outline-offset",
     prop: SingleProp("outline-offset"),
-    template: Some("{}px"),
+    template: Some(SingleProp("{}px")),
     ..Number::default()
 });
 

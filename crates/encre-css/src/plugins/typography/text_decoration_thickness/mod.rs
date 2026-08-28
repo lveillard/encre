@@ -5,7 +5,7 @@ use crate::prelude::build_plugin::*;
 pub(crate) const PLUGIN_NUMBER: StaticPlugin = Plugin::Number(Number {
     namespace: "decoration",
     prop: SingleProp("text-decoration-thickness"),
-    template: Some("{}px"),
+    template: Some(SingleProp("{}px")),
     ..Number::default()
 });
 

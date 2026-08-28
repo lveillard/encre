@@ -22,6 +22,6 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "backdrop-blur",
     prop: SingleProp("--en-backdrop-blur"),
     extra_rule_css: Some(&CSS_BACKDROP_FILTER),
-    template: Some("blur({})"),
+    template: Some(SingleProp("blur({})")),
     ..Arbitrary::default()
 });

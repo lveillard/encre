@@ -71,8 +71,7 @@ fn dynamic_push_css_lines(prop: &DynamicPropertyName, value: &str, context: &mut
 
 fn push_css_lines_with_templating(
     prop: &StaticPropertyName,
-    template: &Option<&str>,
-    template_multiple: &Option<&[&str]>,
+    template: &Option<StaticPropertyName>,
     value: &str,
     slash_value: Option<&str>,
     context: &mut ContextHandle,
@@ -88,6 +87,9 @@ fn push_css_lines_with_templating(
     match prop {
         PropertyName::SingleProp(prop) => {
             let value = if let Some(template) = template {
+                let PropertyName::SingleProp(template) = template else {
+                    unreachable!("this variant is asserted when finding the plugin in find_plugin.rs");
+                };
                 Cow::Owned(transform_template(template))
             } else {
                 Cow::Borrowed(value)
@@ -96,17 +98,15 @@ fn push_css_lines_with_templating(
             context.buffer.line(format_args!("{prop}: {value};"));
         }
         PropertyName::MultipleProps(props) => {
-            if let Some(templates) = template_multiple {
+            if let Some(template) = template {
+                let PropertyName::MultipleProps(template) = template else {
+                    unreachable!("this variant is asserted when finding the plugin in find_plugin.rs");
+                };
                 for (i, prop) in props.iter().enumerate() {
                     // The length of plugin.template_multiple is asserted to be the
-                    // same as the length of the list of property names at compile
-                    // time in the method Plugin::template_multiple
-                    let value = transform_template(templates[i]);
-                    context.buffer.line(format_args!("{prop}: {value};"));
-                }
-            } else if let Some(template) = template {
-                let value = transform_template(template);
-                for prop in *props {
+                    // same as the length of the list of property names when finding the plugin in
+                    // find_plugin.rs
+                    let value = transform_template(template[i]);
                     context.buffer.line(format_args!("{prop}: {value};"));
                 }
             } else {
@@ -120,8 +120,7 @@ fn push_css_lines_with_templating(
 
 fn dynamic_push_css_lines_with_templating(
     prop: &DynamicPropertyName,
-    template: &Option<String>,
-    template_multiple: &Option<Vec<String>>,
+    template: &Option<DynamicPropertyName>,
     value: &str,
     slash_value: Option<&str>,
     context: &mut ContextHandle,
@@ -137,6 +136,9 @@ fn dynamic_push_css_lines_with_templating(
     match prop {
         DynamicPropertyName::SingleProp(prop) => {
             let value = if let Some(template) = &template {
+                let PropertyName::SingleProp(template) = template else {
+                    unreachable!("this variant is asserted when finding the plugin in find_plugin.rs");
+                };
                 Cow::Owned(transform_template(template))
             } else {
                 Cow::Borrowed(value)
@@ -145,17 +147,15 @@ fn dynamic_push_css_lines_with_templating(
             context.buffer.line(format_args!("{prop}: {value};"));
         }
         DynamicPropertyName::MultipleProps(props) => {
-            if let Some(templates) = &template_multiple {
+            if let Some(template) = &template {
+                let PropertyName::MultipleProps(template) = template else {
+                    unreachable!("this variant is asserted when finding the plugin in find_plugin.rs");
+                };
                 for (i, prop) in props.iter().enumerate() {
                     // The length of plugin.template_multiple is asserted to be the
                     // same as the length of the list of property names at compile
                     // time in the method Plugin::template_multiple
-                    let value = transform_template(&templates[i]);
-                    context.buffer.line(format_args!("{prop}: {value};"));
-                }
-            } else if let Some(template) = &template {
-                let value = transform_template(template);
-                for prop in props {
+                    let value = transform_template(&template[i]);
                     context.buffer.line(format_args!("{prop}: {value};"));
                 }
             } else {
@@ -387,7 +387,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 extra_css,
                 extra_class,
                 template,
-                template_multiple,
                 ..
             })),
             Modifier::Builtin {
@@ -425,7 +424,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         push_css_lines_with_templating(
                             prop,
                             template,
-                            template_multiple,
                             &value,
                             template_value,
                             context,
@@ -447,7 +445,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 extra_css,
                 extra_class,
                 template,
-                template_multiple,
                 ..
             })),
             Modifier::Builtin {
@@ -485,7 +482,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         dynamic_push_css_lines_with_templating(
                             prop,
                             template,
-                            template_multiple,
                             &value,
                             template_value,
                             context,
@@ -507,7 +503,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 extra_rule_css,
                 extra_css,
                 template,
-                template_multiple,
                 ..
             })),
             Modifier::Builtin { value, .. },
@@ -524,7 +519,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         push_css_lines_with_templating(
                             prop,
                             template,
-                            template_multiple,
                             &value,
                             None,
                             context,
@@ -545,7 +539,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 extra_rule_css,
                 extra_css,
                 template,
-                template_multiple,
                 ..
             })),
             Modifier::Builtin { value, .. },
@@ -562,7 +555,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         dynamic_push_css_lines_with_templating(
                             prop,
                             template,
-                            template_multiple,
                             &*value,
                             None,
                             context,
@@ -586,7 +578,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 extra_css,
                 extra_class,
                 template,
-                template_multiple,
                 ..
             })),
             Modifier::Builtin { value, is_negative },
@@ -622,7 +613,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         push_css_lines_with_templating(
                             prop,
                             template,
-                            template_multiple,
                             &value,
                             template_value,
                             context,
@@ -645,7 +635,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 extra_css,
                 extra_class,
                 template,
-                template_multiple,
                 ..
             })),
             Modifier::Builtin { value, is_negative },
@@ -681,7 +670,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         dynamic_push_css_lines_with_templating(
                             prop,
                             template,
-                            template_multiple,
                             &*value,
                             template_value,
                             context,
@@ -704,7 +692,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 extra_css,
                 shadow_color_replacement,
                 template,
-                template_multiple,
                 ..
             })),
             Modifier::Arbitrary { value, .. },
@@ -730,7 +717,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         push_css_lines_with_templating(
                             prop,
                             template,
-                            template_multiple,
                             value,
                             None,
                             context,
@@ -752,7 +738,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                 extra_class,
                 shadow_color_replacement,
                 template,
-                template_multiple,
                 ..
             })),
             Modifier::Arbitrary { value, .. },
@@ -778,7 +763,6 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         dynamic_push_css_lines_with_templating(
                             prop,
                             template,
-                            template_multiple,
                             value,
                             None,
                             context,

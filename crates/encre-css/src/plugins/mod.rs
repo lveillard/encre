@@ -697,8 +697,7 @@ pub struct Spacing<Str, ArrayStr, MapStr> {
     pub has_full: Option<bool>,
 
     #[doc = include_str!("./doc_template.md")]
-    pub template: Option<Str>,
-    pub template_multiple: Option<ArrayStr>,
+    pub template: Option<PropertyName<Str, ArrayStr>>,
 
     #[doc = include_str!("./doc_extra_rule_css.md")]
     pub extra_rule_css: Option<ArrayStr>,
@@ -745,7 +744,6 @@ impl<ArrayStr, MapStr> Spacing<&'static str, ArrayStr, MapStr> {
             has_auto: None,
             has_full: None,
             template: None,
-            template_multiple: None,
             extra_rule_css: None,
             extra_css: None,
             extra_class: None,
@@ -792,7 +790,6 @@ impl<ArrayStr, MapStr> Spacing<String, ArrayStr, MapStr> {
             has_auto: None,
             has_full: None,
             template: None,
-            template_multiple: None,
             extra_rule_css: None,
             extra_css: None,
             extra_class: None,
@@ -814,8 +811,8 @@ pub struct Color<Str, ArrayStr, MapStr> {
     /// properties.
     pub prop: PropertyName<Str, ArrayStr>,
 
-    pub template: Option<Str>,
-    pub template_multiple: Option<ArrayStr>,
+    #[doc = include_str!("./doc_template.md")]
+    pub template: Option<PropertyName<Str, ArrayStr>>,
 
     #[doc = include_str!("./doc_extra_rule_css.md")]
     pub extra_rule_css: Option<ArrayStr>,
@@ -857,7 +854,6 @@ impl<ArrayStr, MapStr> Color<&'static str, ArrayStr, MapStr> {
             namespace: "",
             prop: PropertyName::SingleProp(""),
             template: None,
-            template_multiple: None,
             extra_rule_css: None,
             extra_css: None,
             extra_class: None,
@@ -901,7 +897,6 @@ impl<ArrayStr, MapStr> Color<String, ArrayStr, MapStr> {
             namespace: String::new(),
             prop: PropertyName::SingleProp(String::new()),
             template: None,
-            template_multiple: None,
             extra_rule_css: None,
             extra_css: None,
             extra_class: None,
@@ -936,8 +931,9 @@ pub struct Number<Str, ArrayStr, MapStr> {
 
     /// Automatically add support for negative modifiers.
     pub has_negative: Option<bool>,
-    pub template: Option<Str>,
-    pub template_multiple: Option<ArrayStr>,
+
+    #[doc = include_str!("./doc_template.md")]
+    pub template: Option<PropertyName<Str, ArrayStr>>,
 
     #[doc = include_str!("./doc_extra_rule_css.md")]
     pub extra_rule_css: Option<ArrayStr>,
@@ -986,7 +982,6 @@ impl<ArrayStr, MapStr> Number<&'static str, ArrayStr, MapStr> {
             has_empty: None,
             has_negative: None,
             template: None,
-            template_multiple: None,
             extra_rule_css: None,
             extra_css: None,
             extra_class: None,
@@ -1035,7 +1030,6 @@ impl<ArrayStr, MapStr> Number<String, ArrayStr, MapStr> {
             has_empty: None,
             has_negative: None,
             template: None,
-            template_multiple: None,
             extra_rule_css: None,
             extra_css: None,
             extra_class: None,
@@ -1110,8 +1104,9 @@ pub struct Arbitrary<Str, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
     // TODO: make a structure for matchers + hints (Disambiguate...) and make a default for PluginArbitraryMatcherSeparation
     pub matchers: Option<(ArrayMatchers, PluginArbitraryMatcherSeparation)>,
     pub hints: Option<ArrayHints>,
-    pub template: Option<Str>,
-    pub template_multiple: Option<ArrayStr>,
+
+    #[doc = include_str!("./doc_template.md")]
+    pub template: Option<PropertyName<Str, ArrayStr>>,
 
     #[doc = include_str!("./doc_extra_rule_css.md")]
     pub extra_rule_css: Option<ArrayStr>,
@@ -1156,7 +1151,6 @@ impl<ArrayStr, MapStr, ArrayHints, ArrayMatchers> Arbitrary<&'static str, ArrayS
             matchers: None,
             hints: None,
             template: None,
-            template_multiple: None,
             extra_rule_css: None,
             extra_css: None,
             extra_class: None,
@@ -1204,7 +1198,6 @@ impl<ArrayStr, MapStr, ArrayHints, ArrayMatchers> Arbitrary<String, ArrayStr, Ma
             matchers: None,
             hints: None,
             template: None,
-            template_multiple: None,
             extra_rule_css: None,
             extra_css: None,
             extra_class: None,
@@ -1438,7 +1431,7 @@ impl Functional<String> {
 /// const PLUGIN: StaticPlugin = Plugin::Number(Number {
 ///     namespace: "stroke",
 ///     prop: SingleProp("stroke-width"),
-///     template: Some("{}px"),
+///     template: Some(SingleProp("{}px")),
 ///     ..Number::default()
 /// });
 ///
