@@ -208,9 +208,21 @@ pub struct ExtraSlash<Str, MapStr> {
     pub default: Str,
 }
 
+#[doc = include_str!("./doc_arbitrary_disambiguate.md")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ArbitraryDisambiguate<ArrayMatched> {
+    /// The list of CSS types which are accepted as arbitrary value by this plugin.
     pub matched: ArrayMatched,
+
+    /// Define how values are specified inside the CSS value.
+    ///
+    /// In practice, you can check the values accepted by the CSS property and set this field to
+    ///
+    /// - [`ArbitraryDisambiguateSeparation::Space`] if it accepts several values separated by spaces
+    /// - [`ArbitraryDisambiguateSeparation::Comma`] if it accepts several values separated by commas
+    /// - [`ArbitraryDisambiguateSeparation::Both`] if it accepts several values separated by commas
+    /// which themselves accept several values separated by spaces
+    /// - [`ArbitraryDisambiguateSeparation::None`] otherwise
     pub separation: ArbitraryDisambiguateSeparation,
 }
 
@@ -1602,7 +1614,7 @@ impl Functional<String> {
 ///     prop: SingleProp("stroke-width"),
 ///     disambiguate: Some(ArbitraryDisambiguate {
 ///         matched: &[CssType::Length, CssType::Percentage, CssType::LineWidth, CssType::Number],
-///         separation: ArbitraryDisambiguateSeparation::Comma,
+///         separation: ArbitraryDisambiguateSeparation::None,
 ///     }),
 ///     ..Arbitrary::default()
 /// });
@@ -1682,7 +1694,7 @@ impl Functional<String> {
 /// namespace = "stroke"
 /// prop = "stroke-width"
 /// hints = ["Length", "Percentage"]
-/// matchers = [["Length", "Percentage", "LineWidth", "Number"], "Comma"]
+/// matchers = [["Length", "Percentage", "LineWidth", "Number"], "None"]
 /// ```
 ///
 /// # Advice

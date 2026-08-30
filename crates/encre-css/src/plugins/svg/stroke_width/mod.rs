@@ -19,7 +19,7 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
             CssType::LineWidth,
             CssType::Number,
         ],
-        separation: ArbitraryDisambiguateSeparation::Comma,
+        separation: ArbitraryDisambiguateSeparation::None,
     }),
     ..Arbitrary::default()
 });
