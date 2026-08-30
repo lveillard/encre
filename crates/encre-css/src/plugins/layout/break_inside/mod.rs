@@ -2,23 +2,13 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "auto" | "avoid" | "avoid-page" | "avoid-column",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        if let Modifier::Builtin { value, .. } = context.modifier {
-            context.buffer.line(format_args!("break-inside: {value};"));
-        }
-    }
-}
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("break-inside"),
+    values: map! {
+        "break-inside-auto" => "auto",
+        "break-inside-avoid" => "avoid",
+        "break-inside-avoid-page" => "avoid-page",
+        "break-inside-avoid-column" => "avoid-column",
+    },
+    ..ListValues::default()
+});

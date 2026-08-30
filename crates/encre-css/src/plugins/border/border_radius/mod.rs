@@ -2,259 +2,75 @@
 #![doc(alias("border", "rounded"))]
 use crate::prelude::build_plugin::*;
 
-fn radius_can_handle(context: &ContextCanHandle) -> bool {
-    match context.modifier {
-        Modifier::Builtin { value, .. } => {
-            ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "full", "none"].contains(&&**value)
-        }
-        Modifier::Arbitrary { value, prefix, .. } => {
-            prefix.is_empty()
-                && value
-                    .split(' ')
-                    .all(|v| is_matching_length(v) || is_matching_percentage(v))
-        }
-    }
+const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlugin, StaticPlugin) {
+    (
+        Plugin::ListValues(ListValues {
+            prop,
+            values: map! {
+                "none" => "0",
+                "xs" => "0.125rem",
+                "sm" => "0.25rem",
+                "md" => "0.375rem",
+                "lg" => "0.5rem",
+                "xl" => "0.75rem",
+                "2xl" => "1rem",
+                "3xl" => "1.5rem",
+                "full" => "9999px",
+            },
+            namespace: Some(namespace),
+            ..ListValues::default()
+        }),
+        Plugin::Arbitrary(Arbitrary {
+            namespace,
+            prop,
+            disambiguate: Some(ArbitraryDisambiguate {
+                matched: &[CssType::Length, CssType::Percentage],
+                separation: ArbitraryDisambiguateSeparation::Space,
+            }),
+            ..Arbitrary::default()
+        }),
+    )
 }
 
-fn radius_handle(css_properties: &[&str], context: &mut ContextHandle) {
-    match context.modifier {
-        Modifier::Builtin { value, .. } => {
-            for css_prop in css_properties {
-                context.buffer.line(format_args!(
-                    "{}: {};",
-                    css_prop,
-                    match *value {
-                        "none" => "0",
-                        "xs" => "0.125rem",
-                        "sm" => "0.25rem",
-                        "md" => "0.375rem",
-                        "lg" => "0.5rem",
-                        "xl" => "0.75rem",
-                        "2xl" => "1rem",
-                        "3xl" => "1.5rem",
-                        "full" => "9999px",
-                        _ => unreachable!(),
-                    }
-                ));
-            }
-        }
-        Modifier::Arbitrary { value, .. } => {
-            for css_prop in css_properties {
-                context.buffer.line(format_args!("{css_prop}: {value};"));
-            }
-        }
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        radius_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        radius_handle(&["border-radius"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginStartDefinition;
-
-impl Plugin for PluginStartDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        radius_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        radius_handle(
-            &["border-start-start-radius", "border-end-start-radius"],
-            context,
-        );
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginEndDefinition;
-
-impl Plugin for PluginEndDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        radius_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        radius_handle(
-            &["border-start-end-radius", "border-end-end-radius"],
-            context,
-        );
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginStartStartDefinition;
-
-impl Plugin for PluginStartStartDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        radius_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        radius_handle(&["border-start-start-radius"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginStartEndDefinition;
-
-impl Plugin for PluginStartEndDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        radius_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        radius_handle(&["border-start-end-radius"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginEndEndDefinition;
-
-impl Plugin for PluginEndEndDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        radius_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        radius_handle(&["border-end-end-radius"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginEndStartDefinition;
-
-impl Plugin for PluginEndStartDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        radius_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        radius_handle(&["border-end-start-radius"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginTopRightDefinition;
-
-impl Plugin for PluginTopRightDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        radius_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        radius_handle(&["border-top-right-radius"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginTopLeftDefinition;
-
-impl Plugin for PluginTopLeftDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        radius_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        radius_handle(&["border-top-left-radius"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginBottomRightDefinition;
-
-impl Plugin for PluginBottomRightDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        radius_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        radius_handle(&["border-bottom-right-radius"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginBottomLeftDefinition;
-
-impl Plugin for PluginBottomLeftDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        radius_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        radius_handle(&["border-bottom-left-radius"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginTopDefinition;
-
-impl Plugin for PluginTopDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        radius_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        radius_handle(
-            &["border-top-left-radius", "border-top-right-radius"],
-            context,
-        );
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginBottomDefinition;
-
-impl Plugin for PluginBottomDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        radius_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        radius_handle(
-            &["border-bottom-left-radius", "border-bottom-right-radius"],
-            context,
-        );
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginLeftDefinition;
-
-impl Plugin for PluginLeftDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        radius_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        radius_handle(
-            &["border-top-left-radius", "border-bottom-left-radius"],
-            context,
-        );
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginRightDefinition;
-
-impl Plugin for PluginRightDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        radius_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        radius_handle(
-            &["border-top-right-radius", "border-bottom-right-radius"],
-            context,
-        );
-    }
-}
+pub(crate) const PLUGIN: (StaticPlugin, StaticPlugin) =
+    plugin("rounded", SingleProp("border-radius"));
+pub(crate) const PLUGIN_START: (StaticPlugin, StaticPlugin) = plugin(
+    "rounded-s",
+    MultipleProps(&["border-start-start-radius", "border-end-start-radius"]),
+);
+pub(crate) const PLUGIN_END: (StaticPlugin, StaticPlugin) = plugin(
+    "rounded-e",
+    MultipleProps(&["border-start-end-radius", "border-end-end-radius"]),
+);
+pub(crate) const PLUGIN_START_START: (StaticPlugin, StaticPlugin) =
+    plugin("rounded-ss", SingleProp("border-start-start-radius"));
+pub(crate) const PLUGIN_START_END: (StaticPlugin, StaticPlugin) =
+    plugin("rounded-se", SingleProp("border-start-end-radius"));
+pub(crate) const PLUGIN_END_END: (StaticPlugin, StaticPlugin) =
+    plugin("rounded-ee", SingleProp("border-end-end-radius"));
+pub(crate) const PLUGIN_END_START: (StaticPlugin, StaticPlugin) =
+    plugin("rounded-es", SingleProp("border-end-start-radius"));
+pub(crate) const PLUGIN_TOP_RIGHT: (StaticPlugin, StaticPlugin) =
+    plugin("rounded-tr", SingleProp("border-top-right-radius"));
+pub(crate) const PLUGIN_TOP_LEFT: (StaticPlugin, StaticPlugin) =
+    plugin("rounded-tl", SingleProp("border-top-left-radius"));
+pub(crate) const PLUGIN_BOTTOM_RIGHT: (StaticPlugin, StaticPlugin) =
+    plugin("rounded-br", SingleProp("border-bottom-right-radius"));
+pub(crate) const PLUGIN_BOTTOM_LEFT: (StaticPlugin, StaticPlugin) =
+    plugin("rounded-bl", SingleProp("border-bottom-left-radius"));
+pub(crate) const PLUGIN_TOP: (StaticPlugin, StaticPlugin) = plugin(
+    "rounded-t",
+    MultipleProps(&["border-top-left-radius", "border-top-right-radius"]),
+);
+pub(crate) const PLUGIN_BOTTOM: (StaticPlugin, StaticPlugin) = plugin(
+    "rounded-b",
+    MultipleProps(&["border-bottom-left-radius", "border-bottom-right-radius"]),
+);
+pub(crate) const PLUGIN_LEFT: (StaticPlugin, StaticPlugin) = plugin(
+    "rounded-l",
+    MultipleProps(&["border-top-left-radius", "border-bottom-left-radius"]),
+);
+pub(crate) const PLUGIN_RIGHT: (StaticPlugin, StaticPlugin) = plugin(
+    "rounded-r",
+    MultipleProps(&["border-top-right-radius", "border-bottom-right-radius"]),
+);

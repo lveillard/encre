@@ -21,7 +21,7 @@ numbers are supported. They are however perfectly compatible with Tailwind's val
 
 ### Arbitrary values
 
-Any [`<length>`](crate::utils::value_matchers::is_matching_length) or [`<percentage>`](crate::utils::value_matchers::is_matching_percentage) property or a keyword among `auto` and `from-font` is allowed as arbitrary value.
+Any [`<length>`](crate::utils::value_matchers::is_matching_length) or [`<percentage>`](crate::utils::value_matchers::is_matching_percentage) property or a keyword among `auto` and `from-font` (needs either `length:` or `number:` prefixed as hint before the arbitrary value, ie. `decoration-[length:from-font]`) is allowed as arbitrary value.
 For example, `decoration-[12%]`.
 
 [Tailwind reference](https://tailwindcss.com/docs/text-decoration-thickness)

@@ -2,29 +2,15 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "start" | "end" | "left" | "right" | "both" | "none",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        if let Modifier::Builtin { value, .. } = context.modifier {
-            if *value == "start" {
-                context.buffer.line(format_args!("clear: inline-start;"));
-            } else if *value == "end" {
-                context.buffer.line(format_args!("clear: inline-end;"));
-            } else {
-                context.buffer.line(format_args!("clear: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("clear"),
+    values: map! {
+        "clear-start" => "inline-start",
+        "clear-end" => "inline-end",
+        "clear-left" => "left",
+        "clear-right" => "right",
+        "clear-both" => "both",
+        "clear-none" => "none",
+    },
+    ..ListValues::default()
+});

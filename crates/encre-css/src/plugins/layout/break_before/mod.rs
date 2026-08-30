@@ -2,30 +2,17 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "auto"
-                    | "avoid"
-                    | "all"
-                    | "avoid-page"
-                    | "page"
-                    | "left"
-                    | "right"
-                    | "column",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        if let Modifier::Builtin { value, .. } = context.modifier {
-            context.buffer.line(format_args!("break-before: {value};"));
-        }
-    }
-}
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("break-before"),
+    values: map! {
+        "break-before-auto" => "auto",
+        "break-before-avoid" => "avoid",
+        "break-before-all" => "all",
+        "break-before-avoid-page" => "avoid-page",
+        "break-before-page" => "page",
+        "break-before-left" => "left",
+        "break-before-right" => "right",
+        "break-before-column" => "column",
+    },
+    ..ListValues::default()
+});

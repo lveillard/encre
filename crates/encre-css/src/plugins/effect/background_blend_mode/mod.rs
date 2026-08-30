@@ -2,41 +2,25 @@
 #![doc(alias("effect", "bg", "background"))]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "normal"
-                    | "multiply"
-                    | "screen"
-                    | "overlay"
-                    | "darken"
-                    | "lighten"
-                    | "color-dodge"
-                    | "color-burn"
-                    | "hard-light"
-                    | "soft-light"
-                    | "difference"
-                    | "exclusion"
-                    | "hue"
-                    | "saturation"
-                    | "color"
-                    | "luminosity",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => context
-                .buffer
-                .line(format_args!("background-blend-mode: {value};")),
-            Modifier::Arbitrary { .. } => unreachable!(),
-        }
-    }
-}
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("background-blend-mode"),
+    values: map! {
+        "bg-blend-normal" => "normal",
+        "bg-blend-multiply" => "multiply",
+        "bg-blend-screen" => "screen",
+        "bg-blend-overlay" => "overlay",
+        "bg-blend-darken" => "darken",
+        "bg-blend-lighten" => "lighten",
+        "bg-blend-color-dodge" => "color-dodge",
+        "bg-blend-color-burn" => "color-burn",
+        "bg-blend-hard-light" => "hard-light",
+        "bg-blend-soft-light" => "soft-light",
+        "bg-blend-difference" => "difference",
+        "bg-blend-exclusion" => "exclusion",
+        "bg-blend-hue" => "hue",
+        "bg-blend-saturation" => "saturation",
+        "bg-blend-color" => "color",
+        "bg-blend-luminosity" => "luminosity",
+    },
+    ..ListValues::default()
+});

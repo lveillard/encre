@@ -4,19 +4,10 @@ use crate::{config::BUILTIN_SCREENS, prelude::build_plugin::*};
 
 use std::{borrow::Cow, cmp::Ordering};
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn needs_wrapping(&self) -> bool {
-        false
-    }
-
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(context.modifier, Modifier::Builtin { value: "", .. })
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
+pub(crate) const PLUGIN: StaticPlugin = Plugin::Functional(Functional {
+    namespace: "container",
+    can_handle: |context| matches!(context.modifier, Modifier::Builtin { value: "", .. }),
+    handle: |context| {
         if let Modifier::Builtin { .. } = context.modifier {
             generate_wrapper(context, |context| {
                 context.buffer.line("width: 100%;");
@@ -111,5 +102,6 @@ impl Plugin for PluginDefinition {
                 }
             });
         }
-    }
-}
+    },
+    ..Functional::default()
+});

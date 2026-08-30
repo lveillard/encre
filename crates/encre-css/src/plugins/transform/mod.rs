@@ -8,6 +8,8 @@ pub mod transform_origin;
 pub mod transform_type;
 pub mod translate;
 
+// TODO(in tailwind v4.3): use transform functions in the `--en-translate/rotate/skew` variables,
+// not in the whole `transform` property
 const CSS_TRANSFORM: &str = "transform: translate3d(var(--en-translate-x), var(--en-translate-y), var(--en-translate-z)) rotateX(var(--en-rotate-x)) rotateY(var(--en-rotate-y)) rotateZ(var(--en-rotate-z)) skewX(var(--en-skew-x)) skewY(var(--en-skew-y)) scale3d(var(--en-scale-x), var(--en-scale-y), var(--en-scale-z));";
 
 #[cfg(test)]
@@ -18,22 +20,34 @@ mod tests {
 
     #[test]
     fn perspective() {
-        assert_eq!(generate(["perspective-distant"], &base_config()), ".perspective-distant {
+        assert_eq!(
+            generate(["perspective-distant"], &base_config()),
+            ".perspective-distant {
   perspective: 1200px;
-}");
-        assert_eq!(generate(["perspective-[0.1rem]"], &base_config()), r".perspective-\[0\.1rem\] {
+}"
+        );
+        assert_eq!(
+            generate(["perspective-[0.1rem]"], &base_config()),
+            r".perspective-\[0\.1rem\] {
   perspective: 0.1rem;
-}");
+}"
+        );
     }
 
     #[test]
     fn perspective_origin() {
-        assert_eq!(generate(["perspective-origin-top-left"], &base_config()), ".perspective-origin-top-left {
+        assert_eq!(
+            generate(["perspective-origin-top-left"], &base_config()),
+            ".perspective-origin-top-left {
   perspective-origin: top left;
-}");
-        assert_eq!(generate(["perspective-origin-[0.1rem_center]"], &base_config()), r".perspective-origin-\[0\.1rem_center\] {
+}"
+        );
+        assert_eq!(
+            generate(["perspective-origin-[0.1rem_center]"], &base_config()),
+            r".perspective-origin-\[0\.1rem_center\] {
   perspective-origin: 0.1rem center;
-}");
+}"
+        );
     }
 
     #[test]
@@ -104,10 +118,13 @@ mod tests {
   --en-scale-y: 0.45;
   transform: translate3d(var(--en-translate-x), var(--en-translate-y), var(--en-translate-z)) rotateX(var(--en-rotate-x)) rotateY(var(--en-rotate-y)) rotateZ(var(--en-rotate-z)) skewX(var(--en-skew-x)) skewY(var(--en-skew-y)) scale3d(var(--en-scale-x), var(--en-scale-y), var(--en-scale-z));
 }");
-        assert_eq!(generate(["scale-y-[88.42%]"], &base_config()), r".scale-y-\[88\.42\%\] {
+        assert_eq!(
+            generate(["scale-y-[88.42%]"], &base_config()),
+            r".scale-y-\[88\.42\%\] {
   --en-scale-y: 88.42%;
   transform: translate3d(var(--en-translate-x), var(--en-translate-y), var(--en-translate-z)) rotateX(var(--en-rotate-x)) rotateY(var(--en-rotate-y)) rotateZ(var(--en-rotate-z)) skewX(var(--en-skew-x)) skewY(var(--en-skew-y)) scale3d(var(--en-scale-x), var(--en-scale-y), var(--en-scale-z));
-}");
+}"
+        );
         assert_eq!(generate(["scale-z-45"], &base_config()), ".scale-z-45 {
   --en-scale-z: 0.45;
   transform: translate3d(var(--en-translate-x), var(--en-translate-y), var(--en-translate-z)) rotateX(var(--en-rotate-x)) rotateY(var(--en-rotate-y)) rotateZ(var(--en-rotate-z)) skewX(var(--en-skew-x)) skewY(var(--en-skew-y)) scale3d(var(--en-scale-x), var(--en-scale-y), var(--en-scale-z));
@@ -246,7 +263,7 @@ mod tests {
     #[test]
     fn transform_type() {
         assert_eq!(generate(["transform-gpu"], &base_config()), ".transform-gpu {
-  transform: translate3d(var(--en-translate-x), var(--en-translate-y), var(--en-translate-z)) rotateX(var(--en-rotate-x)) rotateY(var(--en-rotate-y)) rotateZ(var(--en-rotate-z)) skewX(var(--en-skew-x)) skewY(var(--en-skew-y)) scale3d(var(--en-scale-x), var(--en-scale-y), var(--en-scale-z));
+  transform: translateZ(0) translate3d(var(--en-translate-x), var(--en-translate-y), var(--en-translate-z)) rotateX(var(--en-rotate-x)) rotateY(var(--en-rotate-y)) rotateZ(var(--en-rotate-z)) skewX(var(--en-skew-x)) skewY(var(--en-skew-y)) scale3d(var(--en-scale-x), var(--en-scale-y), var(--en-scale-z));
 }");
         assert_eq!(
             generate(["transform-none"], &base_config()),

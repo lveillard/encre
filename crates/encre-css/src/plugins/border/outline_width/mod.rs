@@ -2,37 +2,20 @@
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
+    namespace: "outline",
+    prop: SingleProp("outline-width"),
+    has_empty: Some(true),
+    template: Some(SingleProp("{}px")),
+    ..Number::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => value.parse::<usize>().is_ok(),
-            Modifier::Arbitrary {
-                hint,
-                value,
-                prefix,
-            } => {
-                prefix.is_empty()
-                    && (*hint == "length"
-                        || *hint == "line-width"
-                        || (hint.is_empty()
-                            && (is_matching_length(value) || is_matching_line_width(value))))
-            }
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("outline-width: {value}px;"));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context.buffer.line(format_args!("outline-width: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "outline",
+    prop: SingleProp("outline-width"),
+    disambiguate: Some(ArbitraryDisambiguate {
+        matched: &[CssType::Length, CssType::LineWidth],
+        separation: ArbitraryDisambiguateSeparation::None,
+    }),
+    ..Arbitrary::default()
+});

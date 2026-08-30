@@ -1,9 +1,9 @@
 use super::{Modifier, Selector, Variant};
 use crate::{
-    config::{Config, BUILTIN_PLUGINS, BUILTIN_VARIANTS},
+    config::{BUILTIN_VARIANTS, Config},
     error::{ParseError, ParseErrorKind},
-    generator::ContextCanHandle,
-    plugins::css_property::CssPropertyPlugin,
+    plugins::{CustomPlugin, css_property},
+    selector::{find_plugin::find_plugin_to_handle_class, trie::Trie},
     utils::split_ignore_arbitrary,
 };
 
@@ -15,25 +15,9 @@ pub(crate) const GROUP_START: char = '(';
 pub(crate) const GROUP_END: char = ')';
 pub(crate) const ESCAPE: char = '\\';
 
-const VALID_PLUGIN_HINT: [&str; 13] = [
-    "color",
-    "length",
-    "line-width",
-    "image",
-    "url",
-    "position",
-    "percentage",
-    "number",
-    "generic-name",
-    "family-name",
-    "absolute-size",
-    "relative-size",
-    "shadow",
-];
-
-const LAYER_CUSTOM: i8 = -1;
-const LAYER_BUILTIN: i8 = 0;
-const LAYER_ARBITRARY: i8 = i8::MAX;
+pub(super) const LAYER_CUSTOM: i8 = -1;
+pub(super) const LAYER_BUILTIN: i8 = 0;
+pub(super) const LAYER_ARBITRARY: i8 = i8::MAX;
 
 /// Remove the first and last character of a string.
 pub(crate) fn unwrap_string(val: &mut &str) {
@@ -138,16 +122,25 @@ pub(crate) fn parse<'a>(
     full_class: Option<&'a str>,
     config: &Config,
     config_derived_variants: &[(Cow<'static, str>, Variant<'static>)],
+    trie: &Trie,
 ) -> Vec<Result<Selector<'a>, ParseError<'a>>> {
-    // The shortest selector is `m1`
-    if val.len() < 2 {
+    // The shortest selector is `m-1`
+    if val.len() < 3 {
         return vec![Err(ParseError::new(
             span.unwrap_or(0..val.len()),
             ParseErrorKind::TooShort(val),
         ))];
     }
 
-    parse_recursive(val, span, full_class, None, config, config_derived_variants)
+    parse_recursive(
+        val,
+        span,
+        full_class,
+        None,
+        config,
+        config_derived_variants,
+        trie,
+    )
 }
 
 #[allow(clippy::too_many_lines, clippy::too_many_arguments)]
@@ -211,50 +204,49 @@ fn push_variant<'a>(
                 variant_list.push(variant.clone());
                 return Ok(());
             }
-        } else if let Some((prefix, value)) = group_variant.split_once(ARBITRARY_START) {
-            if !value.starts_with('@') {
-                if let Some(value) = value.strip_suffix(ARBITRARY_END) {
-                    let prefix = prefix.strip_suffix('-').unwrap_or(prefix);
+        } else if let Some((prefix, value)) = group_variant.split_once(ARBITRARY_START)
+            && !value.starts_with('@')
+            && let Some(value) = value.strip_suffix(ARBITRARY_END)
+        {
+            let prefix = prefix.strip_suffix('-').unwrap_or(prefix);
 
-                    let mut variant = if let Some(variant) = BUILTIN_VARIANTS.get(prefix).cloned() {
-                        variant
-                    } else if let Some(variant) = config
-                        .custom_variants
-                        .iter()
-                        .find(|(n, _)| n == prefix)
-                        .cloned()
-                    {
-                        variant.1
-                    } else {
-                        Variant {
-                            order: config.last_variant_order(),
-                            prefixed: false,
-                            template: Cow::Owned("{}".to_string()),
-                        }
-                    };
-
-                    let value = replace_escape_codes(underscores_to_spaces(Cow::from(value)));
-                    variant.template = Cow::Owned(variant.template.replace("{}", &value));
-
-                    let suffix = if let Some(name) = name {
-                        Cow::Owned(format!("\\/{name}"))
-                    } else {
-                        Cow::Borrowed("")
-                    };
-
-                    let template = if variant.template.contains('&') {
-                        variant.template.replace('&', &format!(".group{suffix}"))
-                    } else {
-                        format!(".group{suffix}{}", variant.template)
-                    };
-
-                    let template = Cow::Owned(format!("{template} &"));
-                    variant.template = template;
-
-                    variant_list.push(variant.clone());
-                    return Ok(());
+            let mut variant = if let Some(variant) = BUILTIN_VARIANTS.get(prefix).cloned() {
+                variant
+            } else if let Some(variant) = config
+                .custom_variants
+                .iter()
+                .find(|(n, _)| n == prefix)
+                .cloned()
+            {
+                variant.1
+            } else {
+                Variant {
+                    order: config.last_variant_order(),
+                    prefixed: false,
+                    template: Cow::Owned("{}".to_string()),
                 }
-            }
+            };
+
+            let value = replace_escape_codes(underscores_to_spaces(Cow::from(value)));
+            variant.template = Cow::Owned(variant.template.replace("{}", &value));
+
+            let suffix = if let Some(name) = name {
+                Cow::Owned(format!("\\/{name}"))
+            } else {
+                Cow::Borrowed("")
+            };
+
+            let template = if variant.template.contains('&') {
+                variant.template.replace('&', &format!(".group{suffix}"))
+            } else {
+                format!(".group{suffix}{}", variant.template)
+            };
+
+            let template = Cow::Owned(format!("{template} &"));
+            variant.template = template;
+
+            variant_list.push(variant.clone());
+            return Ok(());
         }
     } else if let Some(peer_not_variant) = full_variant.strip_prefix("peer-not-") {
         let (peer_not_variant, name) =
@@ -283,52 +275,51 @@ fn push_variant<'a>(
                 variant_list.push(variant.clone());
                 return Ok(());
             }
-        } else if let Some((prefix, value)) = peer_not_variant.split_once(ARBITRARY_START) {
-            if !value.starts_with('@') {
-                if let Some(value) = value.strip_suffix(ARBITRARY_END) {
-                    let prefix = prefix.strip_suffix('-').unwrap_or(prefix);
+        } else if let Some((prefix, value)) = peer_not_variant.split_once(ARBITRARY_START)
+            && !value.starts_with('@')
+            && let Some(value) = value.strip_suffix(ARBITRARY_END)
+        {
+            let prefix = prefix.strip_suffix('-').unwrap_or(prefix);
 
-                    let mut variant = if let Some(variant) = BUILTIN_VARIANTS.get(prefix).cloned() {
-                        variant
-                    } else if let Some(variant) = config
-                        .custom_variants
-                        .iter()
-                        .find(|(n, _)| n == prefix)
-                        .cloned()
-                    {
-                        variant.1
-                    } else {
-                        Variant {
-                            order: config.last_variant_order(),
-                            prefixed: false,
-                            template: Cow::Owned("{}".to_string()),
-                        }
-                    };
-
-                    let value = replace_escape_codes(underscores_to_spaces(Cow::from(value)));
-                    variant.template = Cow::Owned(variant.template.replace("{}", &value));
-
-                    let suffix = if let Some(name) = name {
-                        Cow::Owned(format!("\\/{name}"))
-                    } else {
-                        Cow::Borrowed("")
-                    };
-
-                    let template = if variant.template.contains('&') {
-                        variant
-                            .template
-                            .replace('&', &format!(".peer{suffix}:not("))
-                    } else {
-                        format!(".peer{suffix}:not({}", variant.template)
-                    };
-
-                    let template = Cow::Owned(format!("{template}) ~ &"));
-                    variant.template = template;
-
-                    variant_list.push(variant.clone());
-                    return Ok(());
+            let mut variant = if let Some(variant) = BUILTIN_VARIANTS.get(prefix).cloned() {
+                variant
+            } else if let Some(variant) = config
+                .custom_variants
+                .iter()
+                .find(|(n, _)| n == prefix)
+                .cloned()
+            {
+                variant.1
+            } else {
+                Variant {
+                    order: config.last_variant_order(),
+                    prefixed: false,
+                    template: Cow::Owned("{}".to_string()),
                 }
-            }
+            };
+
+            let value = replace_escape_codes(underscores_to_spaces(Cow::from(value)));
+            variant.template = Cow::Owned(variant.template.replace("{}", &value));
+
+            let suffix = if let Some(name) = name {
+                Cow::Owned(format!("\\/{name}"))
+            } else {
+                Cow::Borrowed("")
+            };
+
+            let template = if variant.template.contains('&') {
+                variant
+                    .template
+                    .replace('&', &format!(".peer{suffix}:not("))
+            } else {
+                format!(".peer{suffix}:not({}", variant.template)
+            };
+
+            let template = Cow::Owned(format!("{template}) ~ &"));
+            variant.template = template;
+
+            variant_list.push(variant.clone());
+            return Ok(());
         }
     } else if let Some(peer_variant) = full_variant.strip_prefix("peer-") {
         let (peer_variant, name) = if let Some((variant, name)) = peer_variant.rsplit_once('/') {
@@ -354,81 +345,79 @@ fn push_variant<'a>(
                 variant_list.push(variant.clone());
                 return Ok(());
             }
-        } else if let Some((prefix, value)) = peer_variant.split_once(ARBITRARY_START) {
-            if !value.starts_with('@') {
-                if let Some(value) = value.strip_suffix(ARBITRARY_END) {
-                    let prefix = prefix.strip_suffix('-').unwrap_or(prefix);
+        } else if let Some((prefix, value)) = peer_variant.split_once(ARBITRARY_START)
+            && !value.starts_with('@')
+            && let Some(value) = value.strip_suffix(ARBITRARY_END)
+        {
+            let prefix = prefix.strip_suffix('-').unwrap_or(prefix);
 
-                    let mut variant = if let Some(variant) = BUILTIN_VARIANTS.get(prefix).cloned() {
-                        variant
-                    } else if let Some(variant) = config
-                        .custom_variants
-                        .iter()
-                        .find(|(n, _)| n == prefix)
-                        .cloned()
-                    {
-                        variant.1
-                    } else {
-                        Variant {
-                            order: config.last_variant_order(),
-                            prefixed: false,
-                            template: Cow::Owned("{}".to_string()),
-                        }
-                    };
-
-                    let value = replace_escape_codes(underscores_to_spaces(Cow::from(value)));
-                    variant.template = Cow::Owned(variant.template.replace("{}", &value));
-
-                    let suffix = if let Some(name) = name {
-                        Cow::Owned(format!("\\/{name}"))
-                    } else {
-                        Cow::Borrowed("")
-                    };
-
-                    let template = if variant.template.contains('&') {
-                        variant.template.replace('&', &format!(".peer{suffix}"))
-                    } else {
-                        format!(".peer{suffix}{}", variant.template)
-                    };
-
-                    let template = Cow::Owned(format!("{template} ~ &"));
-                    variant.template = template;
-
-                    variant_list.push(variant.clone());
-                    return Ok(());
+            let mut variant = if let Some(variant) = BUILTIN_VARIANTS.get(prefix).cloned() {
+                variant
+            } else if let Some(variant) = config
+                .custom_variants
+                .iter()
+                .find(|(n, _)| n == prefix)
+                .cloned()
+            {
+                variant.1
+            } else {
+                Variant {
+                    order: config.last_variant_order(),
+                    prefixed: false,
+                    template: Cow::Owned("{}".to_string()),
                 }
-            }
-        }
-    } else if let Some((prefix, value)) = full_variant.split_once(ARBITRARY_START) {
-        if let Some(prefix) = prefix.strip_suffix("-") {
-            if let Some(value) = value.strip_suffix(ARBITRARY_END) {
-                let value = replace_escape_codes(underscores_to_spaces(Cow::Borrowed(value)));
-                let mut variant = if let Some(variant) = BUILTIN_VARIANTS.get(prefix).cloned() {
-                    variant
-                } else if let Some(variant) = config
-                    .custom_variants
-                    .iter()
-                    .find(|(n, _)| n == prefix)
-                    .cloned()
-                {
-                    variant.1
-                } else {
-                    return Err(ParseError::new(
-                        span.clone(),
-                        ParseErrorKind::UnknownVariant(full_variant, val),
-                    ));
-                };
+            };
 
-                variant.template = Cow::Owned(variant.template.replace("{}", &value));
-                variant_list.push(variant.clone());
-                return Ok(());
-            }
-        }
-    } else if let Some(layer_name) = full_variant.strip_prefix("l-") {
-        if let Some(layer_index) = config.layers.get(layer_name) {
-            *forced_variant = Some(*layer_index);
+            let value = replace_escape_codes(underscores_to_spaces(Cow::from(value)));
+            variant.template = Cow::Owned(variant.template.replace("{}", &value));
+
+            let suffix = if let Some(name) = name {
+                Cow::Owned(format!("\\/{name}"))
+            } else {
+                Cow::Borrowed("")
+            };
+
+            let template = if variant.template.contains('&') {
+                variant.template.replace('&', &format!(".peer{suffix}"))
+            } else {
+                format!(".peer{suffix}{}", variant.template)
+            };
+
+            let template = Cow::Owned(format!("{template} ~ &"));
+            variant.template = template;
+
+            variant_list.push(variant.clone());
             return Ok(());
         }
+    } else if let Some((prefix, value)) = full_variant.split_once(ARBITRARY_START)
+        && let Some(prefix) = prefix.strip_suffix("-")
+        && let Some(value) = value.strip_suffix(ARBITRARY_END)
+    {
+        let value = replace_escape_codes(underscores_to_spaces(Cow::Borrowed(value)));
+        let mut variant = if let Some(variant) = BUILTIN_VARIANTS.get(prefix).cloned() {
+            variant
+        } else if let Some(variant) = config
+            .custom_variants
+            .iter()
+            .find(|(n, _)| n == prefix)
+            .cloned()
+        {
+            variant.1
+        } else {
+            return Err(ParseError::new(
+                span.clone(),
+                ParseErrorKind::UnknownVariant(full_variant, val),
+            ));
+        };
+
+        variant.template = Cow::Owned(variant.template.replace("{}", &value));
+        variant_list.push(variant.clone());
+        return Ok(());
+    } else if let Some(layer_name) = full_variant.strip_prefix("l-")
+        && let Some(layer_index) = config.layers.get(layer_name)
+    {
+        *forced_variant = Some(*layer_index);
+        return Ok(());
     }
 
     Err(ParseError::new(
@@ -445,6 +434,7 @@ fn parse_recursive<'a>(
     parent_forced_layer: Option<i8>,
     config: &Config,
     config_derived_variants: &[(Cow<'static, str>, Variant<'static>)],
+    trie: &Trie,
 ) -> Vec<Result<Selector<'a>, ParseError<'a>>> {
     let span = span.unwrap_or(0..val.len());
 
@@ -602,6 +592,7 @@ fn parse_recursive<'a>(
                     forced_layer,
                     config,
                     config_derived_variants,
+                    trie,
                 );
 
                 // Merge the common variants with each child selector variant list
@@ -643,8 +634,6 @@ fn parse_recursive<'a>(
 
         if remaining.1.starts_with(ARBITRARY_START) && remaining.1.ends_with(ARBITRARY_END) {
             // Arbitrary CSS property (without namespace)
-            let plugin = &CssPropertyPlugin;
-
             variants
                 .into_iter()
                 .map(|variants| {
@@ -659,130 +648,31 @@ fn parse_recursive<'a>(
                             val
                         },
                         modifier: Modifier::Arbitrary {
-                            prefix: "",
-                            hint: "",
+                            hint: None,
                             value: to_css_value(&remaining.1[1..remaining.1.len() - 1]),
                         },
                         variants,
                         is_important,
-                        plugin,
+                        plugin: CustomPlugin::Static(&css_property::PLUGIN),
                     })
                 })
                 .collect()
         } else {
             // Find the right plugin for handling this selector
-            for (order, layer, (namespace, plugin)) in BUILTIN_PLUGINS
-                .iter()
-                .enumerate()
-                .map(|p| {
-                    (
-                        p.0,
-                        forced_layer.unwrap_or(parent_forced_layer.unwrap_or(LAYER_BUILTIN)),
-                        p.1,
-                    )
-                })
-                .chain(
-                    // Selectors generated using custom plugins are placed first to be easily
-                    // overridden
-                    config.custom_plugins.iter().enumerate().map(|p| {
-                        (
-                            p.0,
-                            forced_layer.unwrap_or(parent_forced_layer.unwrap_or(LAYER_CUSTOM)),
-                            p.1,
-                        )
-                    }),
-                )
-            {
-                // Find the modifier
-                if let Some(modifier) = remaining
-                    .1
-                    .strip_prefix(&**namespace)
-                    .and_then(|modifier| parse_modifier(modifier, is_negative))
-                {
-                    let context = ContextCanHandle {
-                        config,
-                        modifier: &modifier,
-                    };
-
-                    if let Modifier::Arbitrary { prefix, .. } = modifier {
-                        if !prefix.is_empty() {
-                            // If the modifier is arbitrary, the namespace must be strictly parsed
-                            // to avoid accepting too much selectors, e.g `flex-test-[]` being
-                            // parsed as a `flex` selector
-                            continue;
-                        }
-                    }
-
-                    if plugin.can_handle(context) {
-                        return variants
-                            .into_iter()
-                            .map(|variants| {
-                                Ok(Selector {
-                                    layer,
-                                    order,
-                                    full: if let Some(full_class) = full_class {
-                                        full_class
-                                    } else {
-                                        val
-                                    },
-                                    modifier: modifier.clone(),
-                                    variants,
-                                    is_important,
-                                    plugin: *plugin,
-                                })
-                            })
-                            .collect();
-                    }
-                }
-            }
-
-            vec![Err(ParseError::new(
+            find_plugin_to_handle_class(
+                config,
+                parent_forced_layer,
+                forced_layer,
+                variants,
+                val,
+                full_class,
+                remaining.1,
+                is_negative,
+                is_important,
                 span,
-                ParseErrorKind::UnknownPlugin(val),
-            ))]
+                trie,
+            )
         }
-    }
-}
-
-fn parse_modifier(mut modifier: &str, is_negative: bool) -> Option<Modifier<'_>> {
-    if modifier.is_empty() {
-        return Some(Modifier::Builtin {
-            is_negative: false,
-            value: "",
-        });
-    }
-
-    if modifier.starts_with('-') {
-        modifier = &modifier[1..];
-    }
-
-    if let Some((prefix, mut value)) = modifier.split_once(ARBITRARY_START) {
-        if value.chars().last().is_some_and(|v| v == ARBITRARY_END) {
-            value = &value[..value.len() - 1];
-        } else {
-            return None;
-        }
-
-        let (hint, value) = if let Some((maybe_hint, rest)) = value.split_once(':') {
-            if VALID_PLUGIN_HINT.contains(&maybe_hint) {
-                (maybe_hint, to_css_value(rest))
-            } else {
-                ("", to_css_value(value))
-            }
-        } else {
-            ("", to_css_value(value))
-        };
-
-        Some(Modifier::Arbitrary {
-            prefix,
-            hint,
-            value,
-        })
-    } else {
-        Some(Modifier::Builtin {
-            is_negative,
-            value: modifier,
-        })
     }
 }
 
@@ -793,6 +683,7 @@ mod tests {
     // as Default::default()
     use super::*;
 
+    use crate::selector::{CssType, trie::build_trie};
     #[allow(clippy::wildcard_imports)]
     use crate::{config::Config, plugins::*, selector::Selector};
 
@@ -821,7 +712,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -829,7 +721,7 @@ mod tests {
                 layer: 0,
                 full: "absolute",
                 order: Default::default(), // order is not checked in tests
-                plugin: &layout::position::PluginDefinition,
+                plugin: CustomPlugin::Static(&layout::position::PLUGIN),
                 variants: vec![],
                 modifier: Modifier::Builtin {
                     is_negative: false,
@@ -849,7 +741,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -857,11 +750,11 @@ mod tests {
                 layer: 0,
                 full: "text-center",
                 order: Default::default(),
-                plugin: &typography::text_align::PluginDefinition,
+                plugin: CustomPlugin::Static(&typography::text_align::PLUGIN),
                 variants: vec![],
                 modifier: Modifier::Builtin {
                     is_negative: false,
-                    value: "center",
+                    value: "text-center",
                 },
                 is_important: false,
             }
@@ -877,7 +770,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -885,7 +779,7 @@ mod tests {
                 layer: 0,
                 full: "bg-red-500/25",
                 order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
+                plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                 variants: vec![],
                 modifier: Modifier::Builtin {
                     is_negative: false,
@@ -900,14 +794,21 @@ mod tests {
     fn basic_important() {
         let config = Config::default();
         assert_eq!(
-            parse("!px-4", None, None, &config, &config.get_derived_variants())[0]
-                .as_ref()
-                .unwrap(),
+            parse(
+                "!px-4",
+                None,
+                None,
+                &config,
+                &config.get_derived_variants(),
+                &build_trie(&config)
+            )[0]
+            .as_ref()
+            .unwrap(),
             &Selector {
                 layer: 0,
                 full: "!px-4",
                 order: Default::default(),
-                plugin: &spacing::padding::PluginDefinition,
+                plugin: CustomPlugin::Static(&spacing::padding::PLUGIN.0),
                 variants: vec![],
                 modifier: Modifier::Builtin {
                     is_negative: false,
@@ -922,14 +823,21 @@ mod tests {
     fn basic_negative() {
         let config = Config::default();
         assert_eq!(
-            parse("-px-4", None, None, &config, &config.get_derived_variants())[0]
-                .as_ref()
-                .unwrap(),
+            parse(
+                "-px-4",
+                None,
+                None,
+                &config,
+                &config.get_derived_variants(),
+                &build_trie(&config)
+            )[0]
+            .as_ref()
+            .unwrap(),
             &Selector {
                 layer: 0,
                 full: "-px-4",
                 order: Default::default(),
-                plugin: &spacing::padding::PluginDefinition,
+                plugin: CustomPlugin::Static(&spacing::padding::PLUGIN.0),
                 variants: vec![],
                 modifier: Modifier::Builtin {
                     is_negative: true,
@@ -949,7 +857,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -957,7 +866,7 @@ mod tests {
                 layer: 0,
                 full: "!-px-4",
                 order: Default::default(),
-                plugin: &spacing::padding::PluginDefinition,
+                plugin: CustomPlugin::Static(&spacing::padding::PLUGIN.0),
                 variants: vec![],
                 modifier: Modifier::Builtin {
                     is_negative: true,
@@ -972,14 +881,21 @@ mod tests {
     fn basic_integer() {
         let config = Config::default();
         assert_eq!(
-            parse("px-4", None, None, &config, &config.get_derived_variants())[0]
-                .as_ref()
-                .unwrap(),
+            parse(
+                "px-4",
+                None,
+                None,
+                &config,
+                &config.get_derived_variants(),
+                &build_trie(&config)
+            )[0]
+            .as_ref()
+            .unwrap(),
             &Selector {
                 layer: 0,
                 full: "px-4",
                 order: Default::default(),
-                plugin: &spacing::padding::PluginDefinition,
+                plugin: CustomPlugin::Static(&spacing::padding::PLUGIN.0),
                 variants: vec![],
                 modifier: Modifier::Builtin {
                     is_negative: false,
@@ -999,7 +915,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1007,7 +924,7 @@ mod tests {
                 layer: 0,
                 full: "px-1.5",
                 order: Default::default(),
-                plugin: &spacing::padding::PluginDefinition,
+                plugin: CustomPlugin::Static(&spacing::padding::PLUGIN.0),
                 variants: vec![],
                 modifier: Modifier::Builtin {
                     is_negative: false,
@@ -1027,7 +944,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1035,7 +953,7 @@ mod tests {
                 layer: 0,
                 full: "hover:text-center",
                 order: Default::default(),
-                plugin: &typography::text_align::PluginDefinition,
+                plugin: CustomPlugin::Static(&typography::text_align::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -1043,7 +961,7 @@ mod tests {
                 }],
                 modifier: Modifier::Builtin {
                     is_negative: false,
-                    value: "center",
+                    value: "text-center",
                 },
                 is_important: false,
             }
@@ -1060,6 +978,7 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1067,7 +986,7 @@ mod tests {
                 layer: 0,
                 full: "marker:xl:hover:text-center",
                 order: Default::default(),
-                plugin: &typography::text_align::PluginDefinition,
+                plugin: CustomPlugin::Static(&typography::text_align::PLUGIN),
                 variants: vec![
                     Variant {
                         order: Default::default(),
@@ -1087,7 +1006,7 @@ mod tests {
                 ],
                 modifier: Modifier::Builtin {
                     is_negative: false,
-                    value: "center",
+                    value: "text-center",
                 },
                 is_important: false,
             }
@@ -1103,7 +1022,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1111,7 +1031,7 @@ mod tests {
                 layer: 0,
                 full: "marker:xl:hover:-mx-4",
                 order: Default::default(),
-                plugin: &spacing::margin::PluginXDefinition,
+                plugin: CustomPlugin::Static(&spacing::margin::PLUGIN_X.0),
                 variants: vec![
                     Variant {
                         order: Default::default(),
@@ -1147,7 +1067,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1155,7 +1076,7 @@ mod tests {
                 layer: 0,
                 full: "[&>*]:text-center",
                 order: Default::default(),
-                plugin: &typography::text_align::PluginDefinition,
+                plugin: CustomPlugin::Static(&typography::text_align::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -1163,7 +1084,7 @@ mod tests {
                 }],
                 modifier: Modifier::Builtin {
                     is_negative: false,
-                    value: "center",
+                    value: "text-center",
                 },
                 is_important: false,
             }
@@ -1179,7 +1100,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1187,7 +1109,7 @@ mod tests {
                 layer: 0,
                 full: "group-checked:block",
                 order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
+                plugin: CustomPlugin::Static(&layout::display::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -1207,7 +1129,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1215,7 +1138,7 @@ mod tests {
                 layer: 0,
                 full: "peer-checked:block",
                 order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
+                plugin: CustomPlugin::Static(&layout::display::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -1235,7 +1158,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1243,7 +1167,7 @@ mod tests {
                 layer: 0,
                 full: "peer-not-checked:block",
                 order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
+                plugin: CustomPlugin::Static(&layout::display::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -1263,7 +1187,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1271,7 +1196,7 @@ mod tests {
                 layer: 0,
                 full: "peer-[:focus-within]:block",
                 order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
+                plugin: CustomPlugin::Static(&layout::display::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -1291,7 +1216,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1299,7 +1225,7 @@ mod tests {
                 layer: 0,
                 full: "peer-[:nth-of-type(3)_&]:block",
                 order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
+                plugin: CustomPlugin::Static(&layout::display::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -1319,7 +1245,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1327,7 +1254,7 @@ mod tests {
                 layer: 0,
                 full: "group-has-[#test]:block",
                 order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
+                plugin: CustomPlugin::Static(&layout::display::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -1351,7 +1278,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1359,7 +1287,7 @@ mod tests {
                 layer: 0,
                 full: "group-checked/item:block",
                 order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
+                plugin: CustomPlugin::Static(&layout::display::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -1379,7 +1307,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1387,7 +1316,7 @@ mod tests {
                 layer: 0,
                 full: "peer-checked/item:block",
                 order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
+                plugin: CustomPlugin::Static(&layout::display::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -1407,7 +1336,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1415,7 +1345,7 @@ mod tests {
                 layer: 0,
                 full: "peer-not-checked/item:block",
                 order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
+                plugin: CustomPlugin::Static(&layout::display::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -1435,7 +1365,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1443,7 +1374,7 @@ mod tests {
                 layer: 0,
                 full: "peer-[:focus-within]/item:block",
                 order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
+                plugin: CustomPlugin::Static(&layout::display::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -1463,7 +1394,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1471,7 +1403,7 @@ mod tests {
                 layer: 0,
                 full: "group-has-[#test]/item:block",
                 order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
+                plugin: CustomPlugin::Static(&layout::display::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: true,
@@ -1491,7 +1423,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1499,7 +1432,7 @@ mod tests {
                 layer: 0,
                 full: "group-has-[#page/el]/item:block",
                 order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
+                plugin: CustomPlugin::Static(&layout::display::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: true,
@@ -1524,6 +1457,7 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1531,7 +1465,7 @@ mod tests {
                 layer: 0,
                 full: "[@supports_not_(display:grid)]:grid",
                 order: Default::default(),
-                plugin: &layout::display::PluginDefinition,
+                plugin: CustomPlugin::Static(&layout::display::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -1555,7 +1489,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1563,7 +1498,7 @@ mod tests {
                 layer: 0,
                 full: "xl:[&>*]:focus:text-center",
                 order: Default::default(),
-                plugin: &typography::text_align::PluginDefinition,
+                plugin: CustomPlugin::Static(&typography::text_align::PLUGIN),
                 variants: vec![
                     Variant {
                         order: Default::default(),
@@ -1583,7 +1518,7 @@ mod tests {
                 ],
                 modifier: Modifier::Builtin {
                     is_negative: false,
-                    value: "center",
+                    value: "text-center",
                 },
                 is_important: false,
             }
@@ -1599,7 +1534,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1607,7 +1543,7 @@ mod tests {
                 layer: 0,
                 full: "xl:[&>*]:focus:-m-4",
                 order: Default::default(),
-                plugin: &spacing::margin::PluginDefinition,
+                plugin: CustomPlugin::Static(&spacing::margin::PLUGIN.0),
                 variants: vec![
                     Variant {
                         order: Default::default(),
@@ -1643,7 +1579,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1651,11 +1588,10 @@ mod tests {
                 layer: 0,
                 full: "mx-[12px]",
                 order: Default::default(),
-                plugin: &spacing::margin::PluginDefinition,
+                plugin: CustomPlugin::Static(&spacing::margin::PLUGIN.1),
                 variants: vec![],
                 modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "",
+                    hint: None,
                     value: Cow::from("12px"),
                 },
                 is_important: false,
@@ -1673,6 +1609,7 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1680,11 +1617,10 @@ mod tests {
                 layer: 0,
                 full: "bg-[url('/hello_world.png')]",
                 order: Default::default(),
-                plugin: &background::background_image::PluginDefinition,
+                plugin: CustomPlugin::Static(&background::background_image::PLUGIN),
                 variants: vec![],
                 modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "",
+                    hint: None,
                     value: Cow::from("url('/hello_world.png')"),
                 },
                 is_important: false,
@@ -1701,7 +1637,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1709,11 +1646,10 @@ mod tests {
                 layer: 0,
                 full: "bg-[color:#fff]",
                 order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
+                plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                 variants: vec![],
                 modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "color",
+                    hint: Some(CssType::Color),
                     value: Cow::from("#fff"),
                 },
                 is_important: false,
@@ -1730,7 +1666,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1738,7 +1675,7 @@ mod tests {
                 layer: 0,
                 full: "xl:marker:bg-[#fff]",
                 order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
+                plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                 variants: vec![
                     Variant {
                         order: Default::default(),
@@ -1752,8 +1689,7 @@ mod tests {
                     },
                 ],
                 modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "",
+                    hint: None,
                     value: Cow::from("#fff"),
                 },
                 is_important: false,
@@ -1770,7 +1706,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1778,7 +1715,7 @@ mod tests {
                 layer: 0,
                 full: "xl:marker:bg-[color:#fff]",
                 order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
+                plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                 variants: vec![
                     Variant {
                         order: Default::default(),
@@ -1792,8 +1729,7 @@ mod tests {
                     },
                 ],
                 modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "color",
+                    hint: Some(CssType::Color),
                     value: Cow::from("#fff"),
                 },
                 is_important: false,
@@ -1810,7 +1746,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1818,15 +1755,14 @@ mod tests {
                 layer: 0,
                 full: "[&>*]:bg-[#fff]",
                 order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
+                plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
                     template: Cow::from("&>*")
                 },],
                 modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "",
+                    hint: None,
                     value: Cow::from("#fff"),
                 },
                 is_important: false,
@@ -1844,6 +1780,7 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1851,7 +1788,7 @@ mod tests {
                 layer: 0,
                 full: r"[&#91;type=&#39;input&#39;&#93;_&>:*]:bg-red-300",
                 order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
+                plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -1875,7 +1812,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1883,7 +1821,7 @@ mod tests {
                 layer: 0,
                 full: "xl:[&>*]:hover:bg-[#fff]",
                 order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
+                plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                 variants: vec![
                     Variant {
                         order: Default::default(),
@@ -1902,8 +1840,7 @@ mod tests {
                     }
                 ],
                 modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "",
+                    hint: None,
                     value: Cow::from("#fff"),
                 },
                 is_important: false,
@@ -1921,6 +1858,7 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1928,7 +1866,7 @@ mod tests {
                 layer: 0,
                 full: "xl:[&>*]:hover:bg-[color:#fff]",
                 order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
+                plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                 variants: vec![
                     Variant {
                         order: Default::default(),
@@ -1947,8 +1885,7 @@ mod tests {
                     }
                 ],
                 modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "color",
+                    hint: Some(CssType::Color),
                     value: Cow::from("#fff"),
                 },
                 is_important: false,
@@ -1966,6 +1903,7 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -1973,11 +1911,10 @@ mod tests {
                 layer: 0,
                 full: r"bg-[url(&#34;/url_with_&#93;&#41;&#39;.png&#34;)]",
                 order: Default::default(),
-                plugin: &background::background_image::PluginDefinition,
+                plugin: CustomPlugin::Static(&background::background_image::PLUGIN),
                 variants: vec![],
                 modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "",
+                    hint: None,
                     value: Cow::from(r#"url("/url_with_])'.png")"#),
                 },
                 is_important: false,
@@ -1995,6 +1932,7 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             )[0]
             .as_ref()
             .unwrap(),
@@ -2002,15 +1940,14 @@ mod tests {
                 layer: 127,
                 full: "hover:[mask-type:luminance]",
                 order: Default::default(),
-                plugin: &CssPropertyPlugin,
+                plugin: CustomPlugin::Static(&css_property::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
                     template: Cow::Borrowed("&:hover")
                 }],
                 modifier: Modifier::Arbitrary {
-                    prefix: "",
-                    hint: "",
+                    hint: None,
                     value: Cow::from("mask-type:luminance"),
                 },
                 is_important: false,
@@ -2028,13 +1965,14 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             ),
             vec![
                 Ok(Selector {
                     layer: 0,
                     full: "hover:(focus:bg-gray-500,text-[color:black,])",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2057,15 +1995,14 @@ mod tests {
                     layer: 0,
                     full: "hover:(focus:bg-gray-500,text-[color:black,])",
                     order: Default::default(),
-                    plugin: &typography::text_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&typography::text_color::PLUGIN),
                     variants: vec![Variant {
                         order: Default::default(),
                         prefixed: false,
                         template: Cow::Borrowed("&:hover")
                     }],
                     modifier: Modifier::Arbitrary {
-                        prefix: "",
-                        hint: "color",
+                        hint: Some(CssType::Color),
                         value: Cow::from("black,"),
                     },
                     is_important: false,
@@ -2083,13 +2020,14 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             ),
             vec![Ok(Selector {
                 layer: 0,
                 full: "hover:(bg-gray-500)",
                 order: Default::default(),
-                plugin: &background::background_color::PluginDefinition,
+                plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -2113,7 +2051,8 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             ),
             vec![Err(ParseError::new(
                 0..11,
@@ -2127,13 +2066,14 @@ mod tests {
                 None,
                 None,
                 &config,
-                &config.get_derived_variants()
+                &config.get_derived_variants(),
+                &build_trie(&config),
             ),
             vec![Ok(Selector {
                 layer: 0,
                 full: "min-[475px]:visible",
                 order: Default::default(),
-                plugin: &layout::visibility::PluginDefinition,
+                plugin: CustomPlugin::Static(&layout::visibility::PLUGIN),
                 variants: vec![Variant {
                     order: Default::default(),
                     prefixed: false,
@@ -2158,13 +2098,14 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             ),
             vec![
                 Ok(Selector {
                     layer: 0,
                     full: "focus:([&>*]:-m-4,xl:dark:(bg-red-100,rtl:text-[color:black]))",
                     order: Default::default(),
-                    plugin: &spacing::margin::PluginDefinition,
+                    plugin: CustomPlugin::Static(&spacing::margin::PLUGIN.0),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2187,7 +2128,7 @@ mod tests {
                     layer: 0,
                     full: "focus:([&>*]:-m-4,xl:dark:(bg-red-100,rtl:text-[color:black]))",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2215,7 +2156,7 @@ mod tests {
                     layer: 0,
                     full: "focus:([&>*]:-m-4,xl:dark:(bg-red-100,rtl:text-[color:black]))",
                     order: Default::default(),
-                    plugin: &typography::text_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&typography::text_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2239,8 +2180,7 @@ mod tests {
                         },
                     ],
                     modifier: Modifier::Arbitrary {
-                        prefix: "",
-                        hint: "color",
+                        hint: Some(CssType::Color),
                         value: Cow::from("black"),
                     },
                     is_important: false,
@@ -2259,13 +2199,14 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             ),
             vec![
                 Ok(Selector {
                     layer: 0,
                     full: r"focus:([&>*]:-m-4,xl:dark:([&#91;type=&#39;text&#39;&#93;.light_&,.foo]:bg-red-100,text-[color:black,]))",
                     order: Default::default(),
-                    plugin: &spacing::margin::PluginDefinition,
+                    plugin: CustomPlugin::Static(&spacing::margin::PLUGIN.0),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2288,7 +2229,7 @@ mod tests {
                     layer: 0,
                     full: r"focus:([&>*]:-m-4,xl:dark:([&#91;type=&#39;text&#39;&#93;.light_&,.foo]:bg-red-100,text-[color:black,]))",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2321,7 +2262,7 @@ mod tests {
                     layer: 0,
                     full: r"focus:([&>*]:-m-4,xl:dark:([&#91;type=&#39;text&#39;&#93;.light_&,.foo]:bg-red-100,text-[color:black,]))",
                     order: Default::default(),
-                    plugin: &typography::text_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&typography::text_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2340,8 +2281,7 @@ mod tests {
                         },
                     ],
                     modifier: Modifier::Arbitrary {
-                        prefix: "",
-                        hint: "color",
+                        hint: Some(CssType::Color),
                         value: Cow::from("black,"),
                     },
                     is_important: false,
@@ -2360,13 +2300,14 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             ),
             vec![
                 Ok(Selector {
                     layer: 0,
                     full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
                     order: Default::default(),
-                    plugin: &border::outline_style::PluginDefinition,
+                    plugin: CustomPlugin::Static(&border::outline_style::PLUGIN_LIST_1),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2389,7 +2330,7 @@ mod tests {
                     layer: 0,
                     full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
                     order: Default::default(),
-                    plugin: &border::outline_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&border::outline_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2412,7 +2353,7 @@ mod tests {
                     layer: 0,
                     full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2435,7 +2376,7 @@ mod tests {
                     layer: 0,
                     full: r"xl:(focus:(outline,outline-red-200),dark:(bg-black,text-white))",
                     order: Default::default(),
-                    plugin: &typography::text_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&typography::text_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2469,13 +2410,14 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             ),
             vec![
                 Ok(Selector {
                     layer: 0,
                     full: "(hover,focus):bg-red-400",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![Variant {
                         order: Default::default(),
                         prefixed: false,
@@ -2491,7 +2433,7 @@ mod tests {
                     layer: 0,
                     full: "(hover,focus):bg-red-400",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![Variant {
                         order: Default::default(),
                         prefixed: false,
@@ -2513,13 +2455,14 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             ),
             vec![
                 Ok(Selector {
                     layer: 0,
                     full: "([@supports_(display:flex)],focus-visible):flex",
                     order: Default::default(),
-                    plugin: &flexbox::flex::PluginDefinition,
+                    plugin: CustomPlugin::Static(&flexbox::flex::PLUGIN),
                     variants: vec![Variant {
                         order: Default::default(),
                         prefixed: false,
@@ -2535,7 +2478,7 @@ mod tests {
                     layer: 0,
                     full: "([@supports_(display:flex)],focus-visible):flex",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![Variant {
                         order: Default::default(),
                         prefixed: false,
@@ -2557,13 +2500,14 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             ),
             vec![
                 Ok(Selector {
                     layer: 0,
                     full: "([@supports_(display:flex)],focus-visible):!-m-4",
                     order: Default::default(),
-                    plugin: &spacing::margin::PluginDefinition,
+                    plugin: CustomPlugin::Static(&spacing::margin::PLUGIN.0),
                     variants: vec![Variant {
                         order: Default::default(),
                         prefixed: false,
@@ -2579,7 +2523,7 @@ mod tests {
                     layer: 0,
                     full: "([@supports_(display:flex)],focus-visible):!-m-4",
                     order: Default::default(),
-                    plugin: &spacing::margin::PluginDefinition,
+                    plugin: CustomPlugin::Static(&spacing::margin::PLUGIN.0),
                     variants: vec![Variant {
                         order: Default::default(),
                         prefixed: false,
@@ -2601,13 +2545,14 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             ),
             vec![
                 Ok(Selector {
                     layer: 0,
                     full: "xl:(hover,focus):bg-red-400",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2630,7 +2575,7 @@ mod tests {
                     layer: 0,
                     full: "xl:(hover,focus):bg-red-400",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2661,13 +2606,14 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             ),
             vec![
                 Ok(Selector {
                     layer: 0,
                     full: "(hover:bg-red-400,focus:bg-green-400)",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![Variant {
                         order: Default::default(),
                         prefixed: false,
@@ -2683,7 +2629,7 @@ mod tests {
                     layer: 0,
                     full: "(hover:bg-red-400,focus:bg-green-400)",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![Variant {
                         order: Default::default(),
                         prefixed: false,
@@ -2705,13 +2651,14 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             ),
             vec![
                 Ok(Selector {
                     layer: 0,
                     full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2744,7 +2691,7 @@ mod tests {
                     layer: 0,
                     full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2777,7 +2724,7 @@ mod tests {
                     layer: 0,
                     full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2805,7 +2752,7 @@ mod tests {
                     layer: 0,
                     full: "xl:(hover,focus):target:(dark:bg-red-400,bg-green-400)",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2839,13 +2786,14 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             ),
             vec![
                 Ok(Selector {
                     layer: 0,
                     full: "(hover,focus):(focus-within,target):bg-red-400",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2868,7 +2816,7 @@ mod tests {
                     layer: 0,
                     full: "(hover,focus):(focus-within,target):bg-red-400",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2891,7 +2839,7 @@ mod tests {
                     layer: 0,
                     full: "(hover,focus):(focus-within,target):bg-red-400",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2914,7 +2862,7 @@ mod tests {
                     layer: 0,
                     full: "(hover,focus):(focus-within,target):bg-red-400",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -2943,13 +2891,14 @@ mod tests {
                 None,
                 &config,
                 &config.get_derived_variants(),
+                &build_trie(&config),
             ),
             vec![
                 Ok(Selector {
                     layer: 0,
                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![Variant {
                         order: Default::default(),
                         prefixed: false,
@@ -2965,7 +2914,7 @@ mod tests {
                     layer: 0,
                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![Variant {
                         order: Default::default(),
                         prefixed: false,
@@ -2981,7 +2930,7 @@ mod tests {
                     layer: 0,
                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -3004,7 +2953,7 @@ mod tests {
                     layer: 0,
                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -3027,7 +2976,7 @@ mod tests {
                     layer: 0,
                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),
@@ -3050,7 +2999,7 @@ mod tests {
                     layer: 0,
                     full: "(hover,focus):(bg-red-400,(target,focus-within):bg-green-400)",
                     order: Default::default(),
-                    plugin: &background::background_color::PluginDefinition,
+                    plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                     variants: vec![
                         Variant {
                             order: Default::default(),

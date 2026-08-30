@@ -2,51 +2,26 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("font-weight"),
+    values: map! {
+        "font-thin" => "100",
+        "font-extralight" => "200",
+        "font-light" => "300",
+        "font-normal" => "400",
+        "font-medium" => "500",
+        "font-semibold" => "600",
+        "font-bold" => "700",
+        "font-extrabold" => "800",
+        "font-black" => "900",
+    },
+    ..ListValues::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => [
-                "thin",
-                "extralight",
-                "light",
-                "normal",
-                "medium",
-                "semibold",
-                "bold",
-                "extrabold",
-                "black",
-            ]
-            .contains(&&**value),
-            Modifier::Arbitrary { hint, value, .. } => {
-                *hint == "number"
-                    || (hint.is_empty()
-                        && (["normal", "bold", "lighter", "bolder"].contains(&&**value)
-                            || is_matching_number(value)
-                            || is_matching_var(value)))
-            }
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => match *value {
-                "thin" => context.buffer.line("font-weight: 100;"),
-                "extralight" => context.buffer.line("font-weight: 200;"),
-                "light" => context.buffer.line("font-weight: 300;"),
-                "normal" => context.buffer.line("font-weight: 400;"),
-                "medium" => context.buffer.line("font-weight: 500;"),
-                "semibold" => context.buffer.line("font-weight: 600;"),
-                "bold" => context.buffer.line("font-weight: 700;"),
-                "extrabold" => context.buffer.line("font-weight: 800;"),
-                "black" => context.buffer.line("font-weight: 900;"),
-                _ => unreachable!(),
-            },
-            Modifier::Arbitrary { value, .. } => {
-                context.buffer.line(format_args!("font-weight: {value};"));
-            }
-        }
-    }
-}
+// This plugin is the default when encountering a `font-` utility class with an arbitrary
+// value, so it does not need disambiguation
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "font",
+    prop: SingleProp("font-weight"),
+    ..Arbitrary::default()
+});

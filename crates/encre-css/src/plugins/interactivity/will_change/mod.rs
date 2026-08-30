@@ -2,31 +2,19 @@
 #![doc(alias = "interactivity")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("will-change"),
+    values: map! {
+        "will-change-auto" => "auto",
+        "will-change-scroll" => "scroll-position",
+        "will-change-contents" => "contents",
+        "will-change-transform" => "transform",
+    },
+    ..ListValues::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                ["auto", "scroll", "contents", "transform"].contains(&&**value)
-            }
-            Modifier::Arbitrary { value, .. } => is_matching_all(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => match *value {
-                "auto" => context.buffer.line("will-change: auto;"),
-                "scroll" => context.buffer.line("will-change: scroll-position;"),
-                "contents" => context.buffer.line("will-change: contents;"),
-                "transform" => context.buffer.line("will-change: transform;"),
-                _ => unreachable!(),
-            },
-            Modifier::Arbitrary { value, .. } => {
-                context.buffer.line(format_args!("will-change: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "will-change",
+    prop: SingleProp("will-change"),
+    ..Arbitrary::default()
+});

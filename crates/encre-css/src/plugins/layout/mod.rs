@@ -8,6 +8,7 @@ pub mod break_inside;
 pub mod clear;
 pub mod columns;
 pub mod container;
+pub mod at_container;
 pub mod display;
 pub mod floats;
 pub mod isolation;
@@ -19,7 +20,6 @@ pub mod placement;
 pub mod position;
 pub mod visibility;
 pub mod z_index;
-pub mod at_container;
 
 #[cfg(test)]
 mod tests {
@@ -427,12 +427,22 @@ mod tests {
   z-index: 22;
 }"
         );
+
+        assert_eq!(
+            generate(["z-auto"], &base_config()),
+            ".z-auto {
+  z-index: auto;
+}"
+        );
     }
 
     #[test]
     fn at_container() {
         assert_eq!(
-            generate(["@container @container-[size_scroll-state] @md:bg-red-300"], &base_config()),
+            generate(
+                ["@container @container-[size_scroll-state] @md:bg-red-300"],
+                &base_config()
+            ),
             r".\@container {
   container-type: inline-size;
 }

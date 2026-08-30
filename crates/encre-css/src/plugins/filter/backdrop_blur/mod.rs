@@ -1,41 +1,27 @@
 #![doc = include_str!("README.md")]
 #![doc(alias = "filter")]
-use super::CSS_BACKDROP_FILTER;
-use crate::prelude::build_plugin::*;
+use crate::{plugins::filter::CSS_BACKDROP_FILTER, prelude::build_plugin::*};
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("--en-backdrop-blur"),
+    values: map! {
+        "backdrop-blur-xs" => "blur(4px)",
+        "backdrop-blur-sm" => "blur(8px)",
+        "backdrop-blur-md" => "blur(12px)",
+        "backdrop-blur-lg" => "blur(16px)",
+        "backdrop-blur-xl" => "blur(24px)",
+        "backdrop-blur-2xl" => "blur(40px)",
+        "backdrop-blur-3xl" => "blur(64px)",
+        "backdrop-blur-none" => "blur(0)",
+    },
+    extra_rule_css: Some(&CSS_BACKDROP_FILTER),
+    ..ListValues::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "none"].contains(&&**value)
-            }
-            Modifier::Arbitrary { value, .. } => is_matching_length(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => match *value {
-                "xs" => context.buffer.line("--en-backdrop-blur: blur(4px);"),
-                "sm" => context.buffer.line("--en-backdrop-blur: blur(8px);"),
-                "md" => context.buffer.line("--en-backdrop-blur: blur(12px);"),
-                "lg" => context.buffer.line("--en-backdrop-blur: blur(16px);"),
-                "xl" => context.buffer.line("--en-backdrop-blur: blur(24px);"),
-                "2xl" => context.buffer.line("--en-backdrop-blur: blur(40px);"),
-                "3xl" => context.buffer.line("--en-backdrop-blur: blur(64px);"),
-                "none" => context.buffer.line("--en-backdrop-blur: blur(0);"),
-                _ => unreachable!(),
-            },
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("--en-backdrop-blur: blur({value});"));
-            }
-        }
-
-        context.buffer.lines(CSS_BACKDROP_FILTER);
-    }
-}
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "backdrop-blur",
+    prop: SingleProp("--en-backdrop-blur"),
+    extra_rule_css: Some(&CSS_BACKDROP_FILTER),
+    template: Some(SingleProp("blur({})")),
+    ..Arbitrary::default()
+});

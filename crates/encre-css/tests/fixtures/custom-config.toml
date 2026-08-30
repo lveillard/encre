@@ -1,6 +1,7 @@
 safelist = []
 preflight = "none"
 max_shortcut_depth = 5
+custom_plugins = []
 
 [theme.dark_mode]
 class = ".dark"

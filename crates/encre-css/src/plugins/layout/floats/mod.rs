@@ -2,29 +2,14 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "start" | "end" | "left" | "right" | "none",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        if let Modifier::Builtin { value, .. } = context.modifier {
-            if *value == "start" {
-                context.buffer.line(format_args!("float: inline-start;"));
-            } else if *value == "end" {
-                context.buffer.line(format_args!("float: inline-end;"));
-            } else {
-                context.buffer.line(format_args!("float: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("float"),
+    values: map! {
+        "float-start" => "inline-start",
+        "float-end" => "inline-end",
+        "float-left" => "left",
+        "float-right" => "right",
+        "float-none" => "none",
+    },
+    ..ListValues::default()
+});

@@ -2,61 +2,56 @@
 #![doc(alias = "grid")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("grid-column"),
+    values: map! {
+        "col-auto" => "auto"
+    },
+    ..ListValues::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                *value == "auto"
-                    || value
-                        .strip_prefix("span-")
-                        .is_some_and(|v| v == "full" || v.parse::<usize>().is_ok())
-                    || value
-                        .strip_prefix("start-")
-                        .is_some_and(|v| v == "auto" || v.parse::<usize>().is_ok())
-                    || value
-                        .strip_prefix("end-")
-                        .is_some_and(|v| v == "auto" || v.parse::<usize>().is_ok())
-            }
-            Modifier::Arbitrary { value, .. } => is_matching_all(value),
-        }
-    }
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "col",
+    prop: SingleProp("grid-column"),
+    ..Arbitrary::default()
+});
 
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                if *value == "auto" {
-                    return context.buffer.line("grid-column: auto;");
-                }
+pub(crate) const PLUGIN_SPAN_1: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("grid-column"),
+    values: map! {
+        "col-span-full" => "1 / -1",
+    },
+    ..ListValues::default()
+});
+pub(crate) const PLUGIN_SPAN_2: StaticPlugin = Plugin::Number(Number {
+    namespace: "col-span",
+    prop: SingleProp("grid-column"),
+    template: Some(SingleProp("span {} / span {}")),
+    ..Number::default()
+});
 
-                if let Some(value) = value.strip_prefix("span-") {
-                    if value == "full" {
-                        return context.buffer.line("grid-column: 1 / -1;");
-                    }
-                    context
-                        .buffer
-                        .line(format_args!("grid-column: span {value} / span {value};"));
-                } else if let Some(value) = value.strip_prefix("start-") {
-                    if value == "auto" {
-                        return context.buffer.line("grid-column-start: auto;");
-                    }
-                    context
-                        .buffer
-                        .line(format_args!("grid-column-start: {value};"));
-                } else if let Some(value) = value.strip_prefix("end-") {
-                    if value == "auto" {
-                        return context.buffer.line("grid-column-end: auto;");
-                    }
-                    context
-                        .buffer
-                        .line(format_args!("grid-column-end: {value};"));
-                }
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context.buffer.line(format_args!("grid-column: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_START_1: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("grid-column-start"),
+    values: map! {
+        "col-start-auto" => "auto",
+    },
+    ..ListValues::default()
+});
+pub(crate) const PLUGIN_START_2: StaticPlugin = Plugin::Number(Number {
+    namespace: "col-start",
+    prop: SingleProp("grid-column-start"),
+    ..Number::default()
+});
+
+pub(crate) const PLUGIN_END_1: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("grid-column-end"),
+    values: map! {
+        "col-end-auto" => "auto",
+    },
+    ..ListValues::default()
+});
+pub(crate) const PLUGIN_END_2: StaticPlugin = Plugin::Number(Number {
+    namespace: "col-end",
+    prop: SingleProp("grid-column-end"),
+    ..Number::default()
+});

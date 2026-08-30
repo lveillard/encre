@@ -3,39 +3,26 @@
 use super::CSS_FILTER;
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("--en-blur"),
+    values: map! {
+        "blur-xs" => "blur(4px)",
+        "blur-sm" => "blur(8px)",
+        "blur-md" => "blur(12px)",
+        "blur-lg" => "blur(16px)",
+        "blur-xl" => "blur(24px)",
+        "blur-2xl" => "blur(40px)",
+        "blur-3xl" => "blur(64px)",
+        "blur-none" => "blur(0)",
+    },
+    extra_rule_css: Some(&[CSS_FILTER]),
+    ..ListValues::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "none"].contains(&&**value)
-            }
-            Modifier::Arbitrary { value, .. } => is_matching_length(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => match *value {
-                "xs" => context.buffer.line("--en-blur: blur(4px);"),
-                "sm" => context.buffer.line("--en-blur: blur(8px);"),
-                "md" => context.buffer.line("--en-blur: blur(12px);"),
-                "lg" => context.buffer.line("--en-blur: blur(16px);"),
-                "xl" => context.buffer.line("--en-blur: blur(24px);"),
-                "2xl" => context.buffer.line("--en-blur: blur(40px);"),
-                "3xl" => context.buffer.line("--en-blur: blur(64px);"),
-                "none" => context.buffer.line("--en-blur: blur(0);"),
-                _ => unreachable!(),
-            },
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("--en-blur: blur({value});"));
-            }
-        }
-
-        context.buffer.line(CSS_FILTER);
-    }
-}
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "blur",
+    prop: SingleProp("--en-blur"),
+    extra_rule_css: Some(&[CSS_FILTER]),
+    template: Some(SingleProp("blur({})")),
+    ..Arbitrary::default()
+});

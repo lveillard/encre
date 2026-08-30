@@ -2,25 +2,16 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("--en-content"),
+    values: map! {
+        "content-none" => "none"
+    },
+    ..ListValues::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => *value == "none",
-            Modifier::Arbitrary { value, .. } => is_matching_all(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { .. } => {
-                context.buffer.line(format_args!("--en-content: none;"));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context.buffer.line(format_args!("--en-content: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "content",
+    prop: SingleProp("--en-content"),
+    ..Arbitrary::default()
+});

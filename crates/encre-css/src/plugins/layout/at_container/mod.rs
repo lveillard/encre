@@ -2,27 +2,16 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("container-type"),
+    values: map! {
+        "@container" => "inline-size",
+    },
+    ..ListValues::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => value.is_empty(),
-            Modifier::Arbitrary { value, .. } => is_matching_all(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { .. } => {
-                context
-                    .buffer
-                    .line(format_args!("container-type: inline-size;"));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context.buffer.line(format_args!("container-type: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "@container",
+    prop: SingleProp("container-type"),
+    ..Arbitrary::default()
+});

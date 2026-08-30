@@ -2,31 +2,14 @@
 #![doc(alias = "grid")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "row" | "col" | "dense" | "row-dense" | "col-dense",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        if let Modifier::Builtin { value, .. } = context.modifier {
-            context.buffer.line(format_args!(
-                "grid-auto-flow: {};",
-                match *value {
-                    "col" => "column",
-                    "row-dense" => "row dense",
-                    "col-dense" => "column dense",
-                    _ => value,
-                }
-            ));
-        }
-    }
-}
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("grid-auto-flow"),
+    values: map! {
+        "grid-flow-row" => "row",
+        "grid-flow-col" => "column",
+        "grid-flow-dense" => "dense",
+        "grid-flow-row-dense" => "row dense",
+        "grid-flow-col-dense" => "column dense",
+    },
+    ..ListValues::default()
+});

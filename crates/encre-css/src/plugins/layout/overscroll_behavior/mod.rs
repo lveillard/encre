@@ -2,43 +2,17 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "auto"
-                    | "x-auto"
-                    | "y-auto"
-                    | "contain"
-                    | "x-contain"
-                    | "y-contain"
-                    | "none"
-                    | "x-none"
-                    | "y-none",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => match *value {
-                "auto" => context.buffer.line("overscroll-behavior: auto;"),
-                "x-auto" => context.buffer.line("overscroll-behavior-x: auto;"),
-                "y-auto" => context.buffer.line("overscroll-behavior-y: auto;"),
-                "contain" => context.buffer.line("overscroll-behavior: contain;"),
-                "x-contain" => context.buffer.line("overscroll-behavior-x: contain;"),
-                "y-contain" => context.buffer.line("overscroll-behavior-y: contain;"),
-                "none" => context.buffer.line("overscroll-behavior: none;"),
-                "x-none" => context.buffer.line("overscroll-behavior-x: none;"),
-                "y-none" => context.buffer.line("overscroll-behavior-y: none;"),
-                _ => unreachable!(),
-            },
-            Modifier::Arbitrary { .. } => unreachable!(),
-        }
-    }
-}
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListProperties(ListProperties {
+    props: map! {
+        "overscroll-auto" => &["overscroll-behavior: auto;"],
+        "overscroll-x-auto" => &["overscroll-behavior-x: auto;"],
+        "overscroll-y-auto" => &["overscroll-behavior-y: auto;"],
+        "overscroll-contain" => &["overscroll-behavior: contain;"],
+        "overscroll-x-contain" => &["overscroll-behavior-x: contain;"],
+        "overscroll-y-contain" => &["overscroll-behavior-y: contain;"],
+        "overscroll-none" => &["overscroll-behavior: none;"],
+        "overscroll-x-none" => &["overscroll-behavior-x: none;"],
+        "overscroll-y-none" => &["overscroll-behavior-y: none;"],
+    },
+    ..ListProperties::default()
+});

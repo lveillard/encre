@@ -3,8 +3,8 @@ use crate::{
     config::Config,
     error::{ParseError, ParseErrorKind},
     selector::{
-        parser::{parse, ARBITRARY_END, ARBITRARY_START, ESCAPE, GROUP_END, GROUP_START},
         Selector,
+        parser::{ARBITRARY_END, ARBITRARY_START, ESCAPE, GROUP_END, GROUP_START, parse},
     },
 };
 
@@ -18,15 +18,6 @@ pub mod value_matchers;
 
 #[cfg(test)]
 pub(crate) mod testing;
-
-/// Quickly format a negative value (returns "-" if true or "" otherwise).
-pub fn format_negative(is_negative: &bool) -> &'static str {
-    if *is_negative {
-        "-"
-    } else {
-        ""
-    }
-}
 
 /// While <https://github.com/rust-lang/rust/issues/27721> is pending we need to define
 /// our own minimal [`Pattern`] trait.
@@ -194,10 +185,18 @@ fn sort_selectors_recursive<'a>(
         }
     }
 
+    let trie = crate::selector::trie::build_trie(config);
     let config_derived_variants = config.get_derived_variants();
     let mut selectors = val
         .filter_map(|v| {
-            let selectors = parse(v.trim(), None, None, config, &config_derived_variants);
+            let selectors = parse(
+                v.trim(),
+                None,
+                None,
+                config,
+                &config_derived_variants,
+                &trie,
+            );
 
             if selectors.len() > 1 {
                 // Sort variant groups
@@ -281,7 +280,7 @@ pub fn sort_selectors(val: &str, config: &Config) -> String {
 ///
 /// let value = "bg text-red hover:a lg: focus:() dark:(md:,shadow-8xl) bar:text-black md:foo:flex";
 /// assert_eq!(check_selectors(value, &Config::default()), vec![
-///     ParseError { span: 0..2, kind: ParseErrorKind::UnknownPlugin("bg") },
+///     ParseError { span: 0..2, kind: ParseErrorKind::TooShort("bg") },
 ///     ParseError { span: 3..11, kind: ParseErrorKind::UnknownPlugin("text-red") },
 ///     ParseError { span: 12..19, kind: ParseErrorKind::UnknownPlugin("hover:a") },
 ///     ParseError { span: 20..23, kind: ParseErrorKind::VariantsWithoutModifier("lg:") },
@@ -293,6 +292,7 @@ pub fn sort_selectors(val: &str, config: &Config) -> String {
 /// ]);
 /// ```
 pub fn check_selectors<'a>(val: &'a str, config: &Config) -> Vec<ParseError<'a>> {
+    let trie = crate::selector::trie::build_trie(config);
     let config_derived_variants = config.get_derived_variants();
     val.char_indices()
         .chain(iter::once((val.len(), ' ')))
@@ -303,7 +303,16 @@ pub fn check_selectors<'a>(val: &'a str, config: &Config) -> Vec<ParseError<'a>>
             Some((old_i..i, &val[old_i..i]))
         })
         .filter(|(_, v)| !v.is_empty())
-        .flat_map(|(span, v)| parse(v.trim(), Some(span), None, config, &config_derived_variants))
+        .flat_map(|(span, v)| {
+            parse(
+                v.trim(),
+                Some(span),
+                None,
+                config,
+                &config_derived_variants,
+                &trie,
+            )
+        })
         .filter_map(Result::err)
         .collect::<Vec<ParseError>>()
 }

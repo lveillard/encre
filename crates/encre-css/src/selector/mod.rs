@@ -78,9 +78,8 @@
 //!    same variant but sharing the same modifier), in this case the class will be expanded to `hover:bg-blue-400` and
 //!    `focus-visible:bg-blue-400`.
 //!
-//! As you can see, by default variants are separated by `:`, modifiers by `-` (the dash after the
-//! first modifier can be omitted, e.g. `m1` instead of `m-1`), arbitrary values/variants are surrounded by `[]` and variant
-//! groups are surrounded by `()`.
+//! As you can see, by default variants are separated by `:`, modifiers by `-`,
+//! arbitrary values/variants are surrounded by `[]` and variant groups are surrounded by `()`.
 //!
 //! ### Automatic replacements
 //!
@@ -102,12 +101,91 @@
 //! [`BUILTIN_SCREENS`]: crate::config::BUILTIN_SCREENS
 //! [`BUILTIN_COLORS`]: crate::config::BUILTIN_COLORS
 pub(crate) mod parser;
+pub(super) mod trie;
+pub(super) mod find_plugin;
 
-use crate::plugins::Plugin;
+use crate::plugins::CustomPlugin;
 
-use std::{borrow::Cow, cmp::Ordering};
+use std::{borrow::Cow, cmp::Ordering, str::FromStr};
 
 pub(crate) use parser::parse;
+use serde::{Deserialize, Serialize};
+
+/// The type of an arbitrary CSS value.
+///
+/// This enum is used when matching a class to an [`Arbitrary`] plugin when it needs to be
+/// disambiguated from other plugins sharing the same namespace.
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub enum CssType {
+    /// Match a [`shadow`](crate::utils::value_matchers::is_matching_shadow) CSS property value.
+    Shadow,
+
+    /// Match an [`absolute size`](crate::utils::value_matchers::is_matching_absolute_size) CSS property value.
+    AbsoluteSize,
+
+    /// Match a [`relative size`](crate::utils::value_matchers::is_matching_relative_size) CSS property value.
+    RelativeSize,
+
+    /// Match an [`url`](crate::utils::value_matchers::is_matching_url) CSS property value.
+    Url,
+
+    /// Match a [`line width`](crate::utils::value_matchers::is_matching_line_width`) CSS property value.
+    LineWidth,
+
+    /// Match a [`line style`](crate::utils::value_matchers::is_matching_line_style`) CSS property value.
+    LineStyle,
+
+    /// Match a [`<color>`](crate::utils::value_matchers::is_matching_color`) CSS property value.
+    Color,
+
+    /// Match a [`<length>`](crate::utils::value_matchers::is_matching_length`) CSS property value.
+    Length,
+
+    /// Match a [`<number>`](crate::utils::value_matchers::is_matching_number`) CSS property value.
+    Number,
+
+    /// Match a [`<percentage>`](crate::utils::value_matchers::is_matching_percentage`) CSS property value.
+    Percentage,
+
+    /// Match a [`<time>`](crate::utils::value_matchers::is_matching_time`) CSS property value.
+    Time,
+
+    /// Match a [`<position>`](crate::utils::value_matchers::is_matching_position`) CSS property value.
+    Position,
+
+    /// Match an [`<angle>`](crate::utils::value_matchers::is_matching_angle`) CSS property value.
+    Angle,
+
+    /// Match an [`<image>`](crate::utils::value_matchers::is_matching_image`) CSS property value.
+    Image,
+
+    /// Match a [`font family name`](crate::utils::value_matchers::is_matching_font_family_name`) CSS property value.
+    FontFamilyName,
+}
+
+impl FromStr for CssType {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
+            "shadow" => Self::Shadow,
+            "absolute-size" => Self::AbsoluteSize,
+            "relative-size" => Self::RelativeSize,
+            "url" => Self::Url,
+            "line-width" => Self::LineWidth,
+            "line-style" => Self::LineStyle,
+            "color" => Self::Color,
+            "length" => Self::Length,
+            "percentage" => Self::Percentage,
+            "number" => Self::Number,
+            "position" => Self::Position,
+            "angle" => Self::Angle,
+            "image" => Self::Image,
+            "generic-name" | "family-name" => Self::FontFamilyName,
+            _ => return Err(()),
+        })
+    }
+}
 
 /// The modifier is the rest of the selector after the namespace, it is used to clarify the
 /// CSS needed to be generated.
@@ -133,30 +211,14 @@ pub enum Modifier<'a> {
     /// the [`background color`](crate::plugins::background::background_color) or the
     /// [`background size`](crate::plugins::background::background_size) utility. In this case,
     /// you need to provide a [CSS type](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Types)
-    /// hint (see the list of hints below) before the arbitrary value. For example
+    /// hint before the arbitrary value. For example
     /// `bg-[length:var(--foo)]` will generate `background-size: var(--foo);` (using the
     /// [`background size`](crate::plugins::background::background_size) utility).
     ///
-    /// List of all type hints:
-    /// - `color`
-    /// - `length`
-    /// - `line-width`
-    /// - `image`
-    /// - `url`
-    /// - `position`
-    /// - `percentage`
-    /// - `number`
-    /// - `generic-name`
-    /// - `family-name`
-    /// - `absolute-size`
-    /// - `relative-size`
-    /// - `shadow`
+    /// See [`CssType`] for a list of type hints.
     Arbitrary {
-        /// The rest of the modifier without the arbitrary value (e.g. `bg` in `bg-[rgb(12_12_12)]`).
-        prefix: &'a str,
-
         /// The type hint needed for ambiguous values.
-        hint: &'a str,
+        hint: Option<CssType>,
 
         /// The inner value of the modifier.
         ///
@@ -283,7 +345,7 @@ pub(crate) struct Selector<'a> {
     pub(crate) modifier: Modifier<'a>,
     pub(crate) variants: Vec<Variant<'a>>,
     pub(crate) is_important: bool,
-    pub(crate) plugin: &'static (dyn Plugin + Sync + Send),
+    pub(crate) plugin: CustomPlugin,
 }
 
 impl PartialEq for Selector<'_> {
@@ -372,12 +434,14 @@ mod tests {
     fn sorting_test() {
         let config = Config::default();
 
+        let trie = crate::selector::trie::build_trie(&config);
         let selectors1 = parse(
             "lg:bg-red-500",
             None,
             None,
             &config,
             &config.get_derived_variants(),
+            &trie,
         );
         let selectors2 = parse(
             "bg-red-500",
@@ -385,6 +449,7 @@ mod tests {
             None,
             &config,
             &config.get_derived_variants(),
+            &trie,
         );
 
         let mut selectors = BTreeSet::new();
@@ -402,12 +467,14 @@ mod tests {
     fn layers_test() {
         let config = Config::default();
 
+        let trie = crate::selector::trie::build_trie(&config);
         let selectors1 = parse(
             "lg:bg-red-500",
             None,
             None,
             &config,
             &config.get_derived_variants(),
+            &trie,
         );
         let mut selectors2 = parse(
             "bg-red-500",
@@ -415,6 +482,7 @@ mod tests {
             None,
             &config,
             &config.get_derived_variants(),
+            &trie,
         );
         selectors2[0].as_mut().unwrap().layer = 42;
 

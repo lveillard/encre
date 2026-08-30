@@ -2,44 +2,28 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_NUMBER: StaticPlugin = Plugin::Number(Number {
+    namespace: "decoration",
+    prop: SingleProp("text-decoration-thickness"),
+    template: Some(SingleProp("{}px")),
+    ..Number::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                ["auto", "from-font"].contains(&&**value) || value.parse::<usize>().is_ok()
-            }
-            Modifier::Arbitrary { hint, value, .. } => {
-                *hint == "length"
-                    || *hint == "percentage"
-                    || (hint.is_empty()
-                        && (["auto", "from-font"].contains(&&**value)
-                            || is_matching_length(value)
-                            || is_matching_percentage(value)))
-            }
-        }
-    }
+pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("text-decoration-thickness"),
+    values: map! {
+        "decoration-auto" => "auto",
+        "decoration-from-font" => "from-font",
+    },
+    ..ListValues::default()
+});
 
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                if ["auto", "from-font"].contains(&&**value) {
-                    return context
-                        .buffer
-                        .line(format_args!("text-decoration-thickness: {value};"));
-                }
-
-                context
-                    .buffer
-                    .line(format_args!("text-decoration-thickness: {value}px;"));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("text-decoration-thickness: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "decoration",
+    prop: SingleProp("text-decoration-thickness"),
+    disambiguate: Some(ArbitraryDisambiguate {
+        matched: &[CssType::Length, CssType::Percentage],
+        separation: ArbitraryDisambiguateSeparation::None,
+    }),
+    ..Arbitrary::default()
+});

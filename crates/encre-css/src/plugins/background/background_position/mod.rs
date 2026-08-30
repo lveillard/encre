@@ -2,46 +2,28 @@
 #![doc(alias("background", "bg"))]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("background-position"),
+    values: map! {
+        "bg-bottom" => "bottom",
+        "bg-center" => "center",
+        "bg-left" => "left",
+        "bg-left-bottom" => "left bottom",
+        "bg-left-top" => "left top",
+        "bg-right" => "right",
+        "bg-right-bottom" => "right bottom",
+        "bg-right-top" => "right top",
+        "bg-top" => "top",
+    },
+    ..ListValues::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => [
-                "bottom",
-                "center",
-                "left",
-                "left-bottom",
-                "left-top",
-                "right",
-                "right-bottom",
-                "right-top",
-                "top",
-            ]
-            .contains(value),
-            Modifier::Arbitrary { hint, value, .. } => {
-                // TailwindCSS uses a dedicated `preferOnConflict` variable for choosing this
-                // plugin instead of the `background_size` plugin (https://github.com/tailwindlabs/tailwindcss/blob/master/src/corePlugins.js#L1816)
-                // We can't and won't reproduce this behavior, so the `bg-size` will be chosen when
-                // the `position` hint is not specified
-                *hint == "position"
-                    || (hint.is_empty() && value.split(',').all(is_matching_position))
-            }
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => context.buffer.line(format_args!(
-                "background-position: {};",
-                value.replace('-', " ")
-            )),
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("background-position: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "bg",
+    prop: SingleProp("background-position"),
+    disambiguate: Some(ArbitraryDisambiguate {
+        matched: &[CssType::Position],
+        separation: ArbitraryDisambiguateSeparation::Both,
+    }),
+    ..Arbitrary::default()
+});

@@ -2,40 +2,24 @@
 #![doc(alias = "transform")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("transform-origin"),
+    values: map! {
+        "origin-bottom" => "bottom",
+        "origin-center" => "center",
+        "origin-left" => "left",
+        "origin-bottom-left" => "bottom left",
+        "origin-top-left" => "top left",
+        "origin-right" => "right",
+        "origin-bottom-right" => "bottom right",
+        "origin-top-right" => "top right",
+        "origin-top" => "top",
+    },
+    ..ListValues::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => [
-                "center",
-                "top",
-                "top-right",
-                "right",
-                "bottom-right",
-                "bottom",
-                "bottom-left",
-                "left",
-                "top-left",
-            ]
-            .contains(value),
-            Modifier::Arbitrary { value, .. } => is_matching_position(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("transform-origin: {};", value.replace('-', " ")));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("transform-origin: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "origin",
+    prop: SingleProp("transform-origin"),
+    ..Arbitrary::default()
+});

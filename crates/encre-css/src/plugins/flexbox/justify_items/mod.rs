@@ -2,26 +2,13 @@
 #![doc(alias = "flexbox")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "stretch" | "start" | "center" | "end",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                context.buffer.line(format_args!("justify-items: {value};"));
-            }
-            Modifier::Arbitrary { .. } => unreachable!(),
-        }
-    }
-}
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("justify-items"),
+    values: map! {
+        "justify-items-stretch" => "stretch",
+        "justify-items-start" => "start",
+        "justify-items-center" => "center",
+        "justify-items-end" => "end",
+    },
+    ..ListValues::default()
+});

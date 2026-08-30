@@ -2,32 +2,15 @@
 #![doc(alias = "flexbox")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "start" | "center" | "end" | "between" | "around" | "evenly",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => match *value {
-                "start" => context.buffer.line("place-content: start;"),
-                "center" => context.buffer.line("place-content: center;"),
-                "end" => context.buffer.line("place-content: end;"),
-                "between" => context.buffer.line("place-content: space-between;"),
-                "around" => context.buffer.line("place-content: space-around;"),
-                "evenly" => context.buffer.line("place-content: space-evenly;"),
-                _ => unreachable!(),
-            },
-            Modifier::Arbitrary { .. } => unreachable!(),
-        }
-    }
-}
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("place-content"),
+    values: map! {
+        "place-content-start" => "start",
+        "place-content-center" => "center",
+        "place-content-end" => "end",
+        "place-content-between" => "space-between",
+        "place-content-around" => "space-around",
+        "place-content-evenly" => "space-evenly",
+    },
+    ..ListValues::default()
+});

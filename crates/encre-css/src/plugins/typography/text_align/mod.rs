@@ -2,23 +2,15 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "left" | "center" | "right" | "justify" | "start" | "end",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        if let Modifier::Builtin { value, .. } = context.modifier {
-            context.buffer.line(format_args!("text-align: {value};"));
-        }
-    }
-}
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("text-align"),
+    values: map! {
+        "text-left" => "left",
+        "text-center" => "center",
+        "text-right" => "right",
+        "text-justify" => "justify",
+        "text-start" => "start",
+        "text-end" => "end",
+    },
+    ..ListValues::default()
+});

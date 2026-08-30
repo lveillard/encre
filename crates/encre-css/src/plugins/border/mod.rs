@@ -249,17 +249,17 @@ mod tests {
         assert_eq!(
             generate(["divide-x"], &base_config()),
             ".divide-x > :not([hidden]) ~ :not([hidden]) {
-  --en-divide-x-reverse: 0;
   border-inline-start-width: calc(1px * var(--en-divide-x-reverse));
   border-inline-end-width: calc(1px * calc(1 - var(--en-divide-x-reverse)));
+  --en-divide-x-reverse: 0;
 }"
         );
         assert_eq!(
             generate(["divide-y-2"], &base_config()),
             ".divide-y-2 > :not([hidden]) ~ :not([hidden]) {
-  --en-divide-y-reverse: 0;
   border-block-start-width: calc(2px * var(--en-divide-y-reverse));
   border-block-end-width: calc(2px * calc(1 - var(--en-divide-y-reverse)));
+  --en-divide-y-reverse: 0;
 }"
         );
         assert_eq!(
@@ -271,9 +271,9 @@ mod tests {
         assert_eq!(
             generate(["divide-y-[0.1rem]"], &base_config()),
             r".divide-y-\[0\.1rem\] > :not([hidden]) ~ :not([hidden]) {
-  --en-divide-y-reverse: 0;
   border-block-start-width: calc(0.1rem * var(--en-divide-y-reverse));
   border-block-end-width: calc(0.1rem * calc(1 - var(--en-divide-y-reverse)));
+  --en-divide-y-reverse: 0;
 }"
         );
         assert_eq!(
@@ -414,15 +414,15 @@ mod tests {
         assert_eq!(
             generate(["ring-offset-13"], &base_config()),
             ".ring-offset-13 {
-  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
   --en-ring-offset-width: 13px;
+  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
 }"
         );
         assert_eq!(
             generate(["ring-offset-[13em]"], &base_config()),
             r".ring-offset-\[13em\] {
-  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
   --en-ring-offset-width: 13em;
+  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
 }"
         );
     }
@@ -432,15 +432,15 @@ mod tests {
         assert_eq!(
             generate(["ring-offset-red-400"], &base_config()),
             ".ring-offset-red-400 {
-  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
   --en-ring-offset-color: oklch(70.4% .191 22.216);
+  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
 }"
         );
         assert_eq!(
             generate(["ring-offset-[rgb(12,12,12)]"], &base_config()),
             r".ring-offset-\[rgb\(12\,12\,12\)\] {
-  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
   --en-ring-offset-color: rgb(12,12,12);
+  --en-ring-offset-shadow: var(--en-ring-inset) 0 0 0 var(--en-ring-offset-width) var(--en-ring-offset-color);
 }"
         );
     }

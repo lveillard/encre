@@ -2,145 +2,29 @@
 #![doc(alias = "interactivity")]
 use crate::prelude::build_plugin::*;
 
-fn scroll_margin_can_handle(context: &ContextCanHandle) -> bool {
-    match context.modifier {
-        Modifier::Builtin { value, .. } => spacing::is_matching_builtin_spacing(value),
-        Modifier::Arbitrary { value, prefix, .. } => prefix.is_empty() && is_matching_length(value),
-    }
+type P = (StaticPlugin, StaticPlugin);
+
+const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> P {
+    (
+        Plugin::Spacing(Spacing {
+            namespace,
+            prop,
+            ..Spacing::default()
+        }),
+        Plugin::Arbitrary(Arbitrary {
+            namespace,
+            prop,
+            ..Arbitrary::default()
+        }),
+    )
 }
 
-fn scroll_margin_handle(css_properties: &[&str], context: &mut ContextHandle) {
-    match context.modifier {
-        Modifier::Builtin { is_negative, value } => {
-            for css_prop in css_properties {
-                context.buffer.line(format_args!(
-                    "{}: {};",
-                    css_prop,
-                    spacing::get(value, *is_negative).unwrap(),
-                ));
-            }
-        }
-        Modifier::Arbitrary { value, .. } => {
-            for css_prop in css_properties {
-                context.buffer.line(format_args!("{css_prop}: {value};"));
-            }
-        }
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginXDefinition;
-
-impl Plugin for PluginXDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-inline"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginYDefinition;
-
-impl Plugin for PluginYDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-block"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginStartDefinition;
-
-impl Plugin for PluginStartDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-inline-start"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginEndDefinition;
-
-impl Plugin for PluginEndDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-inline-end"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginLeftDefinition;
-
-impl Plugin for PluginLeftDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-left"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginRightDefinition;
-
-impl Plugin for PluginRightDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-right"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginTopDefinition;
-
-impl Plugin for PluginTopDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-top"], context);
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginBottomDefinition;
-
-impl Plugin for PluginBottomDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        scroll_margin_can_handle(&context)
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        scroll_margin_handle(&["scroll-margin-bottom"], context);
-    }
-}
+pub(crate) const PLUGIN: P = plugin("scroll-m", SingleProp("scroll-margin"));
+pub(crate) const PLUGIN_X: P = plugin("scroll-mx", SingleProp("scroll-margin-inline"));
+pub(crate) const PLUGIN_Y: P = plugin("scroll-my", SingleProp("scroll-margin-block"));
+pub(crate) const PLUGIN_START: P = plugin("scroll-ms", SingleProp("scroll-margin-inline-start"));
+pub(crate) const PLUGIN_END: P = plugin("scroll-me", SingleProp("scroll-margin-inline-end"));
+pub(crate) const PLUGIN_TOP: P = plugin("scroll-mt", SingleProp("scroll-margin-top"));
+pub(crate) const PLUGIN_BOTTOM: P = plugin("scroll-mb", SingleProp("scroll-margin-bottom"));
+pub(crate) const PLUGIN_LEFT: P = plugin("scroll-ml", SingleProp("scroll-margin-left"));
+pub(crate) const PLUGIN_RIGHT: P = plugin("scroll-mr", SingleProp("scroll-margin-right"));

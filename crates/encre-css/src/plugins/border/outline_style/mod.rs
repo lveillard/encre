@@ -2,35 +2,22 @@
 #![doc(alias = "border")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_LIST_1: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("outline-style"),
+    values: map! {
+        "outline-dashed" => "dashed",
+        "outline-dotted" => "dotted",
+        "outline-double" => "double",
+    },
+    ..ListValues::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "" | "dashed" | "dotted" | "double" | "hidden" | "none",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => match *value {
-                "" => context.buffer.line("outline-style: solid;"),
-                "none" => context.buffer.line("outline-style: none;"),
-                "hidden" => {
-                    context.buffer.line("outline: 2px solid transparent;");
-                    context.buffer.line("outline-offset: 2px;");
-                }
-                "dashed" => context.buffer.line("outline-style: dashed;"),
-                "dotted" => context.buffer.line("outline-style: dotted;"),
-                "double" => context.buffer.line("outline-style: double;"),
-                _ => unreachable!(),
-            },
-            Modifier::Arbitrary { .. } => unreachable!(),
-        }
-    }
-}
+pub(crate) const PLUGIN_LIST_2: StaticPlugin = Plugin::ListProperties(ListProperties {
+    props: map! {
+        "outline-hidden" => &[
+            "outline: 2px solid transparent;",
+            "outline-offset: 2px;"
+        ],
+    },
+    ..ListProperties::default()
+});

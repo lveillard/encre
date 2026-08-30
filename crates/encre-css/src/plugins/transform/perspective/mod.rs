@@ -2,38 +2,21 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("perspective"),
+    values: map! {
+        "perspective-dramatic" => "100px",
+        "perspective-near" => "300px",
+        "perspective-normal" => "500px",
+        "perspective-midrange" => "800px",
+        "perspective-distant" => "1200px",
+        "perspective-none" => "none",
+    },
+    ..ListValues::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                ["dramatic", "near", "normal", "midrange", "distant", "none"].contains(value)
-            }
-            Modifier::Arbitrary { hint, value, .. } => {
-                *hint == "length" || (hint.is_empty() && is_matching_length(value))
-            }
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                let value = match *value {
-                    "dramatic" => "100px",
-                    "near" => "300px",
-                    "normal" => "500px",
-                    "midrange" => "800px",
-                    "distant" => "1200px",
-                    "none" => "none",
-                    _ => unreachable!(),
-                };
-                context.buffer.line(format_args!("perspective: {value};"));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context.buffer.line(format_args!("perspective: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "perspective",
+    prop: SingleProp("perspective"),
+    ..Arbitrary::default()
+});

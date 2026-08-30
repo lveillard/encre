@@ -2,10 +2,10 @@
 pub mod background_blend_mode;
 pub mod box_shadow;
 pub mod box_shadow_color;
-pub mod text_shadow;
-pub mod text_shadow_color;
 pub mod mix_blend_mode;
 pub mod opacity;
+pub mod text_shadow;
+pub mod text_shadow_color;
 
 #[cfg(test)]
 mod tests {
@@ -69,7 +69,10 @@ mod tests {
         );
 
         assert_eq!(
-            generate(["inset-shadow-[0_2px_2px_rgb(0_0_0_/_0.1)]"], &base_config()),
+            generate(
+                ["inset-shadow-[0_2px_2px_rgb(0_0_0_/_0.1)]"],
+                &base_config()
+            ),
             r".inset-shadow-\[0_2px_2px_rgb\(0_0_0_\/_0\.1\)\] {
   --en-inset-shadow: 0 2px 2px var(--en-inset-shadow-color, rgb(0 0 0 / 0.1));
   box-shadow: var(--en-inset-shadow), var(--en-inset-ring-shadow, 0 0 #0000), var(--en-ring-offset-shadow, 0 0 #0000), var(--en-ring-shadow, 0 0 #0000), var(--en-shadow, 0 0 #0000);

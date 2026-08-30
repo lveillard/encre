@@ -73,60 +73,27 @@ const BOUNCE_ANIMATION: &str = "@-webkit-keyframes bounce {
   }
 }\n\n";
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: MultipleProps(&["-webkit-animation", "animation"]),
+    values: map! {
+        "animate-none" => "none",
+        "animate-spin" => "spin 1s linear infinite",
+        "animate-ping" => "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite",
+        "animate-pulse" => "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "animate-bounce" => "bounce 1s infinite",
+    },
+    extra_css: Some(map! {
+        "animate-none" => "",
+        "animate-spin" => SPIN_ANIMATION,
+        "animate-ping" => PING_ANIMATION,
+        "animate-pulse" => PULSE_ANIMATION,
+        "animate-bounce" => BOUNCE_ANIMATION,
+    }),
+    ..ListValues::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn needs_wrapping(&self) -> bool {
-        false
-    }
-
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                ["spin", "ping", "pulse", "bounce", "none"].contains(value)
-            }
-            Modifier::Arbitrary { value, .. } => is_matching_all(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                let animation = match *value {
-                    "none" => "none",
-                    "spin" => {
-                        context.buffer.raw(SPIN_ANIMATION);
-                        "spin 1s linear infinite"
-                    }
-                    "ping" => {
-                        context.buffer.raw(PING_ANIMATION);
-                        "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite"
-                    }
-                    "pulse" => {
-                        context.buffer.raw(PULSE_ANIMATION);
-                        "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
-                    }
-                    "bounce" => {
-                        context.buffer.raw(BOUNCE_ANIMATION);
-                        "bounce 1s infinite"
-                    }
-                    _ => unreachable!(),
-                };
-
-                generate_wrapper(context, |context| {
-                    context.buffer.lines([
-                        format_args!("-webkit-animation: {animation};"),
-                        format_args!("animation: {animation};"),
-                    ]);
-                });
-            }
-            Modifier::Arbitrary { value, .. } => generate_wrapper(context, |context| {
-                context.buffer.lines([
-                    format_args!("-webkit-animation: {value};"),
-                    format_args!("animation: {value};"),
-                ]);
-            }),
-        }
-    }
-}
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "animate",
+    prop: MultipleProps(&["-webkit-animation", "animation"]),
+    ..Arbitrary::default()
+});

@@ -2,89 +2,46 @@
 #![doc(alias("background", "bg", "gradient"))]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginFromDefinition;
+pub(crate) const PLUGIN_FROM_1: StaticPlugin = Plugin::Color(Color {
+    namespace: "from",
+    prop: SingleProp("--en-gradient-from"),
+    extra_rule_css: Some(&[
+        "--en-gradient-stops: var(--en-gradient-from), var(--en-gradient-to, transparent);",
+    ]),
+    ..Color::default()
+});
 
-impl Plugin for PluginFromDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                color::is_matching_builtin_color(context.config, value)
-            }
-            Modifier::Arbitrary { hint, value, .. } => {
-                *hint == "color" || (hint.is_empty() && is_matching_color(value))
-            }
-        }
-    }
+pub(crate) const PLUGIN_FROM_2: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "from",
+    prop: SingleProp("--en-gradient-from"),
+    extra_rule_css: Some(&[
+        "--en-gradient-stops: var(--en-gradient-from), var(--en-gradient-to, transparent);",
+    ]),
+    ..Arbitrary::default()
+});
 
-    fn handle(&self, context: &mut ContextHandle) {
-        let value = match context.modifier {
-            Modifier::Builtin { value, .. } => color::get(context.config, value).unwrap(),
-            Modifier::Arbitrary { value, .. } => value.clone(),
-        };
+pub(crate) const PLUGIN_VIA_1: StaticPlugin = Plugin::Color(Color {
+    namespace: "via",
+    prop: SingleProp("--en-gradient-stops"),
+    template: Some(SingleProp("var(--en-gradient-from), {}, var(--en-gradient-to, transparent)")),
+    ..Color::default()
+});
 
-        context
-            .buffer
-            .line(format_args!("--en-gradient-from: {value};"));
-        context.buffer.line(format_args!(
-            "--en-gradient-stops: var(--en-gradient-from), var(--en-gradient-to, transparent);"
-        ));
-    }
-}
+pub(crate) const PLUGIN_VIA_2: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "via",
+    prop: SingleProp("--en-gradient-stops"),
+    template: Some(SingleProp("var(--en-gradient-from), {}, var(--en-gradient-to, transparent)")),
+    ..Arbitrary::default()
+});
 
-#[derive(Debug)]
-pub(crate) struct PluginViaDefinition;
+pub(crate) const PLUGIN_TO_1: StaticPlugin = Plugin::Color(Color {
+    namespace: "to",
+    prop: SingleProp("--en-gradient-to"),
+    ..Color::default()
+});
 
-impl Plugin for PluginViaDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                color::is_matching_builtin_color(context.config, value)
-            }
-            Modifier::Arbitrary { hint, value, .. } => {
-                *hint == "color" || (hint.is_empty() && is_matching_color(value))
-            }
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        let value = match context.modifier {
-            Modifier::Builtin { value, .. } => color::get(context.config, value).unwrap(),
-            Modifier::Arbitrary { value, .. } => value.clone(),
-        };
-
-        context.buffer.line(format_args!(
-            "--en-gradient-stops: var(--en-gradient-from), {value}, var(--en-gradient-to, transparent);",
-        ));
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct PluginToDefinition;
-
-impl Plugin for PluginToDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                color::is_matching_builtin_color(context.config, value)
-            }
-            Modifier::Arbitrary { hint, value, .. } => {
-                *hint == "color" || (hint.is_empty() && is_matching_color(value))
-            }
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => context.buffer.line(format_args!(
-                "--en-gradient-to: {};",
-                color::get(context.config, value).unwrap()
-            )),
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("--en-gradient-to: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_TO_2: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "to",
+    prop: SingleProp("--en-gradient-to"),
+    ..Arbitrary::default()
+});

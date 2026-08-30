@@ -2,38 +2,21 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("letter-spacing"),
+    values: map! {
+        "tracking-tighter" => "-0.05em",
+        "tracking-tight" => "-0.025em",
+        "tracking-normal" => "0",
+        "tracking-wide" => "0.025em",
+        "tracking-wider" => "0.05em",
+        "tracking-widest" => "0.1em",
+    },
+    ..ListValues::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                ["tighter", "tight", "normal", "wide", "wider", "widest"].contains(&&**value)
-            }
-            Modifier::Arbitrary { value, .. } => *value == "normal" || is_matching_length(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => context.buffer.line(format_args!(
-                "letter-spacing: {};",
-                match *value {
-                    "tighter" => "-0.05em",
-                    "tight" => "-0.025em",
-                    "normal" => "0",
-                    "wide" => "0.025em",
-                    "wider" => "0.05em",
-                    "widest" => "0.1em",
-                    _ => unreachable!(),
-                }
-            )),
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("letter-spacing: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "tracking",
+    prop: SingleProp("letter-spacing"),
+    ..Arbitrary::default()
+});

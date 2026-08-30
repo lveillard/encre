@@ -1,0 +1,7 @@
+preflight = "none"
+
+[[custom_plugins]]
+
+[custom_plugins.ListValues]
+prop = "content"
+values = { emoji-rocket = '"🚀"', emoji-tada = '"🎉"' }

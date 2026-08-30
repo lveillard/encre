@@ -2,29 +2,15 @@
 #![doc(alias = "transition")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
+    namespace: "delay",
+    prop: SingleProp("transition-delay"),
+    template: Some(SingleProp("{}ms")),
+    ..Number::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => value.parse::<usize>().is_ok(),
-            Modifier::Arbitrary { value, .. } => is_matching_time(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("transition-delay: {value}ms;"));
-            }
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("transition-delay: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "delay",
+    prop: SingleProp("transition-delay"),
+    ..Arbitrary::default()
+});

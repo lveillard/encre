@@ -130,7 +130,7 @@ mod tests {
         assert_eq!(
             generate(["grayscale"], &base_config()),
             ".grayscale {
-  --en-grayscale: grayscale(100%);
+  --en-grayscale: grayscale(1);
   filter: var(--en-blur) var(--en-brightness) var(--en-contrast) var(--en-grayscale) var(--en-hue-rotate) var(--en-invert) var(--en-saturate) var(--en-sepia) var(--en-drop-shadow);
 }"
         );
@@ -167,7 +167,7 @@ mod tests {
         assert_eq!(
             generate(["invert"], &base_config()),
             ".invert {
-  --en-invert: invert(100%);
+  --en-invert: invert(1);
   filter: var(--en-blur) var(--en-brightness) var(--en-contrast) var(--en-grayscale) var(--en-hue-rotate) var(--en-invert) var(--en-saturate) var(--en-sepia) var(--en-drop-shadow);
 }"
         );
@@ -197,7 +197,7 @@ mod tests {
         assert_eq!(
             generate(["sepia"], &base_config()),
             ".sepia {
-  --en-sepia: sepia(100%);
+  --en-sepia: sepia(1);
   filter: var(--en-blur) var(--en-brightness) var(--en-contrast) var(--en-grayscale) var(--en-hue-rotate) var(--en-invert) var(--en-saturate) var(--en-sepia) var(--en-drop-shadow);
 }"
         );
@@ -289,7 +289,7 @@ mod tests {
         assert_eq!(
             generate(["backdrop-grayscale"], &base_config()),
             ".backdrop-grayscale {
-  --en-backdrop-grayscale: grayscale(100%);
+  --en-backdrop-grayscale: grayscale(1);
   -webkit-backdrop-filter: var(--en-backdrop-blur) var(--en-backdrop-brightness) var(--en-backdrop-contrast) var(--en-backdrop-grayscale) var(--en-backdrop-hue-rotate) var(--en-backdrop-invert) var(--en-backdrop-opacity) var(--en-backdrop-saturate) var(--en-backdrop-sepia);
   backdrop-filter: var(--en-backdrop-blur) var(--en-backdrop-brightness) var(--en-backdrop-contrast) var(--en-backdrop-grayscale) var(--en-backdrop-hue-rotate) var(--en-backdrop-invert) var(--en-backdrop-opacity) var(--en-backdrop-saturate) var(--en-backdrop-sepia);
 }"
@@ -330,7 +330,7 @@ mod tests {
         assert_eq!(
             generate(["backdrop-invert"], &base_config()),
             ".backdrop-invert {
-  --en-backdrop-invert: invert(100%);
+  --en-backdrop-invert: invert(1);
   -webkit-backdrop-filter: var(--en-backdrop-blur) var(--en-backdrop-brightness) var(--en-backdrop-contrast) var(--en-backdrop-grayscale) var(--en-backdrop-hue-rotate) var(--en-backdrop-invert) var(--en-backdrop-opacity) var(--en-backdrop-saturate) var(--en-backdrop-sepia);
   backdrop-filter: var(--en-backdrop-blur) var(--en-backdrop-brightness) var(--en-backdrop-contrast) var(--en-backdrop-grayscale) var(--en-backdrop-hue-rotate) var(--en-backdrop-invert) var(--en-backdrop-opacity) var(--en-backdrop-saturate) var(--en-backdrop-sepia);
 }"
@@ -363,7 +363,7 @@ mod tests {
         assert_eq!(
             generate(["backdrop-sepia"], &base_config()),
             ".backdrop-sepia {
-  --en-backdrop-sepia: sepia(100%);
+  --en-backdrop-sepia: sepia(1);
   -webkit-backdrop-filter: var(--en-backdrop-blur) var(--en-backdrop-brightness) var(--en-backdrop-contrast) var(--en-backdrop-grayscale) var(--en-backdrop-hue-rotate) var(--en-backdrop-invert) var(--en-backdrop-opacity) var(--en-backdrop-saturate) var(--en-backdrop-sepia);
   backdrop-filter: var(--en-backdrop-blur) var(--en-backdrop-brightness) var(--en-backdrop-contrast) var(--en-backdrop-grayscale) var(--en-backdrop-hue-rotate) var(--en-backdrop-invert) var(--en-backdrop-opacity) var(--en-backdrop-saturate) var(--en-backdrop-sepia);
 }"

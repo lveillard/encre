@@ -3,29 +3,19 @@
 use super::CSS_BACKDROP_FILTER;
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
+    namespace: "backdrop-hue-rotate",
+    prop: SingleProp("--en-backdrop-hue-rotate"),
+    has_negative: Some(true),
+    extra_rule_css: Some(&CSS_BACKDROP_FILTER),
+    template: Some(SingleProp("hue-rotate({}deg)")),
+    ..Number::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => value.parse::<usize>().is_ok(),
-            Modifier::Arbitrary { value, .. } => is_matching_angle(value),
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { is_negative, value } => context.buffer.line(format_args!(
-                "--en-backdrop-hue-rotate: hue-rotate({}{}deg);",
-                format_negative(is_negative),
-                value
-            )),
-            Modifier::Arbitrary { value, .. } => context.buffer.line(format_args!(
-                "--en-backdrop-hue-rotate: hue-rotate({value});",
-            )),
-        }
-
-        context.buffer.lines(CSS_BACKDROP_FILTER);
-    }
-}
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "backdrop-hue-rotate",
+    prop: SingleProp("--en-backdrop-hue-rotate"),
+    extra_rule_css: Some(&CSS_BACKDROP_FILTER),
+    template: Some(SingleProp("hue-rotate({})")),
+    ..Arbitrary::default()
+});

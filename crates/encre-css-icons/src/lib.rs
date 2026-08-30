@@ -116,12 +116,7 @@
 //! [collections.md](https://github.com/iconify/icon-sets/blob/master/collections.md)
 //! for a list of collections and their licenses.
 
-use encre_css::{
-    generator::{ContextCanHandle, ContextHandle},
-    plugins::Plugin,
-    selector::Modifier,
-    Config,
-};
+use encre_css::{prelude::build_plugin::*, selector::Modifier, Config};
 
 #[cfg(all(
     feature = "fs-cache",
@@ -312,29 +307,21 @@ fn get_icon(
     let icon = if let Some(icon) = collection.icons.get(icon_name) {
         Cow::Borrowed(icon)
     } else if let Some(alias) = collection.aliases.get(icon_name) {
-        if let Some(icon) = collection.icons.get(&alias.parent) {
-            // Merge optional properties following the logic described in
-            // https://docs.iconify.design/types/iconify-json.html
-            let mut icon = icon.clone();
-            icon.optional.top = alias.optional.top;
-            icon.optional.left = alias.optional.left;
-            icon.optional.width = alias.optional.width;
-            icon.optional.height = alias.optional.height;
-            icon.optional.rotate = (icon.optional.rotate + alias.optional.rotate) % 4.;
-            icon.optional.h_flip = alias.optional.h_flip != icon.optional.h_flip;
-            icon.optional.v_flip = alias.optional.v_flip != icon.optional.v_flip;
-            Cow::Owned(icon)
-        } else {
-            return None;
-        }
-    } else if let Some(character) = collection.chars.get(icon_name) {
-        if let Some(icon) = collection.icons.get(character) {
-            Cow::Borrowed(icon)
-        } else {
-            return None;
-        }
+        let icon = collection.icons.get(&alias.parent)?;
+        // Merge optional properties following the logic described in
+        // https://docs.iconify.design/types/iconify-json.html
+        let mut icon = icon.clone();
+        icon.optional.top = alias.optional.top;
+        icon.optional.left = alias.optional.left;
+        icon.optional.width = alias.optional.width;
+        icon.optional.height = alias.optional.height;
+        icon.optional.rotate = (icon.optional.rotate + alias.optional.rotate) % 4.;
+        icon.optional.h_flip = alias.optional.h_flip != icon.optional.h_flip;
+        icon.optional.v_flip = alias.optional.v_flip != icon.optional.v_flip;
+        Cow::Owned(icon)
     } else {
-        return None;
+        let character = collection.chars.get(icon_name)?;
+        Cow::Borrowed(collection.icons.get(character)?)
     };
 
     let IconOptional {
@@ -486,7 +473,7 @@ fn fetch_or_cache_collection(config: &Config, collection: &'static str) {
         // File already in cache, use it
         if let Some(content) = File::open(&collection_file)
             .ok()
-            .map(|f| BufReader::new(f))
+            .map(BufReader::new)
             .and_then(|reader| serde_json::from_reader(reader).ok())
         {
             MEM_CACHE.lock().unwrap().insert(collection, content);
@@ -558,29 +545,90 @@ fn fetch_or_cache_collection(config: &Config, collection: &'static str) {
     MEM_CACHE.lock().unwrap().insert(collection, json);
 }
 
-#[derive(Debug)]
-struct Icons;
+const PLUGIN: StaticPlugin = Plugin::Functional(Functional {
+    namespace: "",
+    can_handle: |context| {
+        let Modifier::Builtin { value, .. } = context.modifier else {
+            return false;
+        };
 
-impl Plugin for Icons {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(context.modifier, Modifier::Builtin { value, .. } if COLLECTIONS.iter().any(|c| value.starts_with(c)))
-    }
+        let prefix = if let Some(icons_config) = context.config.extra.get("icons") {
+            if let Some(table) = icons_config.as_table() {
+                if let Some(prefix_value) = table.get("prefix") {
+                    if let Some(prefix) = prefix_value.as_str() {
+                        Cow::Owned(prefix.trim_end_matches('-').to_string())
+                    } else {
+                        println!("Bad type for the `prefix` extra field (in the `icons` field): expected `String`, found `{}`. Using the default prefix instead.", prefix_value.type_str());
+                        Cow::Borrowed("")
+                    }
+                } else {
+                    Cow::Borrowed("")
+                }
+            } else {
+                println!("Bad type for the `icons` extra field: expected `Table`, found `{}`. Using the default prefix instead.", icons_config.type_str());
+                Cow::Borrowed("")
+            }
+        } else {
+            Cow::Borrowed("")
+        };
 
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => {
-                // Unwrapping won't panic because it's asserted by the `can_handle` method
-                let (collection, rest) = COLLECTIONS
-                    .iter()
-                    .find_map(|c| value.strip_prefix(c).map(|r| (c, r)))
-                    .unwrap();
+        let Some(mut value) = value.strip_prefix(&*prefix) else {
+            return false;
+        };
 
-                let icon = rest.strip_prefix('-').unwrap_or(rest);
+        if value.starts_with('-') {
+            value = &value[1..];
+        }
 
-                #[cfg(not(any(target_arch = "wasm32", feature = "embed-icons")))]
-                fetch_or_cache_collection(context.config, collection);
+        COLLECTIONS.iter().any(|c| value.starts_with(c))
+    },
+    handle: |context| {
+        let Modifier::Builtin { value, .. } = context.modifier else {
+            unreachable!("checked by can_handle");
+        };
 
-                #[cfg(target_arch = "wasm32")]
+        let prefix = if let Some(icons_config) = context.config.extra.get("icons") {
+            if let Some(table) = icons_config.as_table() {
+                if let Some(prefix_value) = table.get("prefix") {
+                    if let Some(prefix) = prefix_value.as_str() {
+                        Cow::Owned(prefix.trim_end_matches('-').to_string())
+                    } else {
+                        println!("Bad type for the `prefix` extra field (in the `icons` field): expected `String`, found `{}`. Using the default prefix instead.", prefix_value.type_str());
+                        Cow::Borrowed("")
+                    }
+                } else {
+                    Cow::Borrowed("")
+                }
+            } else {
+                println!("Bad type for the `icons` extra field: expected `Table`, found `{}`. Using the default prefix instead.", icons_config.type_str());
+                Cow::Borrowed("")
+            }
+        } else {
+            Cow::Borrowed("")
+        };
+
+        let Some(mut value) = value.strip_prefix(&*prefix) else {
+            return;
+        };
+
+        if value.starts_with('-') {
+            value = &value[1..];
+        }
+
+        // Unwrapping won't panic because it's asserted by the `can_handle` method
+        let (collection, rest) = COLLECTIONS
+            .iter()
+            .find_map(|c| value.strip_prefix(c).map(|r| (c, r)))
+            .unwrap();
+
+        let icon = rest.strip_prefix('-').unwrap_or(rest);
+
+        #[cfg(not(any(target_arch = "wasm32", feature = "embed-icons")))]
+        fetch_or_cache_collection(context.config, collection);
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            generate_wrapper(context, |context| {
                 context.buffer.lines([
                     format_args!(
                         r#"--en-icon: url("https://api.iconify.design/{collection}/{icon}.svg");"#
@@ -594,116 +642,105 @@ impl Plugin for Icons {
                     format_args!("width: 32px;"),
                     format_args!("height: 32px;"),
                 ]);
+            });
+        }
 
-                #[cfg(feature = "embed-icons")]
-                if let Some(json) = EMBEDDED_ICONS
-                    .get()
-                    .and_then(|i| i.get_file(format!("{collection}.json")))
-                    .and_then(|f| f.contents_utf8())
-                    .and_then(|c| serde_json::from_str(&c).ok())
-                {
-                    MEM_CACHE.lock().unwrap().insert(collection, json);
-                }
+        #[cfg(feature = "embed-icons")]
+        if let Some(json) = EMBEDDED_ICONS
+            .get()
+            .and_then(|i| i.get_file(format!("{collection}.json")))
+            .and_then(|f| f.contents_utf8())
+            .and_then(|c| serde_json::from_str(&c).ok())
+        {
+            MEM_CACHE.lock().unwrap().insert(collection, json);
+        }
 
-                #[cfg(not(target_arch = "wasm32"))]
-                if let Some(coll) = MEM_CACHE.lock().unwrap().get(collection) {
-                    if let Some(((width, height), icon_data_uri)) =
-                        get_icon(context.config, coll, icon)
-                    {
-                        if icon_data_uri.contains("currentColor") {
-                            // From https://codepen.io/noahblon/post/coloring-svgs-in-css-background-images
-                            context.buffer.lines([
-                                format_args!(r#"--en-icon: url("{icon_data_uri}");"#),
-                                format_args!("mask: var(--en-icon) no-repeat;"),
-                                format_args!("mask-size: 100% 100%;"),
-                                format_args!("-webkit-mask: var(--en-icon) no-repeat;"),
-                                format_args!("-webkit-mask-size: 100% 100%;"),
-                                format_args!("background-color: currentColor;"),
-                            ]);
-                        } else {
-                            context.buffer.lines([
-                                format_args!(
-                                    r#"background: url("{icon_data_uri}") no-repeat center;"#
-                                ),
-                                format_args!("background-color: transparent;"),
-                                format_args!("background-size: 100% 100%;"),
-                            ]);
-                        }
-
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Some(coll) = MEM_CACHE.lock().unwrap().get(collection) {
+            if let Some(((width, height), icon_data_uri)) = get_icon(context.config, coll, icon) {
+                generate_wrapper(context, |context| {
+                    if icon_data_uri.contains("currentColor") {
+                        // From https://codepen.io/noahblon/post/coloring-svgs-in-css-background-images
                         context.buffer.lines([
-                            format_args!("display: inline-block;"),
-                            format_args!("width: {width};"),
-                            format_args!("height: {height};"),
+                            format_args!(r#"--en-icon: url("{icon_data_uri}");"#),
+                            format_args!("mask: var(--en-icon) no-repeat;"),
+                            format_args!("mask-size: 100% 100%;"),
+                            format_args!("-webkit-mask: var(--en-icon) no-repeat;"),
+                            format_args!("-webkit-mask-size: 100% 100%;"),
+                            format_args!("background-color: currentColor;"),
+                        ]);
+                    } else {
+                        context.buffer.lines([
+                            format_args!(r#"background: url("{icon_data_uri}") no-repeat center;"#),
+                            format_args!("background-color: transparent;"),
+                            format_args!("background-size: 100% 100%;"),
                         ]);
                     }
-                } else {
-                    eprintln!("encre_css_icons: Warning: the collection `{collection}` is not loaded but referenced. It can happen if you embed icons in the binary and forgot to add the JSON file containing the icons in the directory you specified");
-                }
+
+                    context.buffer.lines([
+                        format_args!("display: inline-block;"),
+                        format_args!("width: {width};"),
+                        format_args!("height: {height};"),
+                    ]);
+                });
             }
-            Modifier::Arbitrary { .. } => unreachable!(),
+        } else {
+            eprintln!("encre_css_icons: Warning: the collection `{collection}` is not loaded but referenced. It can happen if you embed icons in the binary and forgot to add the JSON file containing the icons in the directory you specified");
         }
-    }
-}
+    },
+});
 
 #[cfg(not(feature = "embed-icons"))]
 pub fn register(config: &mut Config) {
-    let prefix = if let Some(icons_config) = config.extra.get("icons") {
-        if let Some(table) = icons_config.as_table() {
-            if let Some(prefix_value) = table.get("prefix") {
-                if let Some(prefix) = prefix_value.as_str() {
-                    Cow::Owned(prefix.trim_end_matches('-').to_string())
-                } else {
-                    eprintln!("encre_css_icons: Bad type for the `prefix` extra field (in the `icons` field): expected `String`, found `{}`. Using the default prefix instead.", prefix_value.type_str());
-                    Cow::Borrowed("")
-                }
-            } else {
-                Cow::Borrowed("")
-            }
-        } else {
-            println!("Bad type for the `icons` extra field: expected `Table`, found `{}`. Using the default prefix instead.", icons_config.type_str());
-            Cow::Borrowed("")
-        }
-    } else {
-        Cow::Borrowed("")
-    };
-
-    config.register_plugin(prefix, &Icons);
+    config.register_plugin(&PLUGIN);
 }
 
 #[cfg(feature = "embed-icons")]
 pub fn register(config: &mut Config, embedded_dir: include_dir::Dir<'static>) {
-    let prefix = if let Some(icons_config) = config.extra.get("icons") {
-        if let Some(table) = icons_config.as_table() {
-            if let Some(prefix_value) = table.get("prefix") {
-                if let Some(prefix) = prefix_value.as_str() {
-                    Cow::Owned(prefix.trim_end_matches('-').to_string())
-                } else {
-                    println!("Bad type for the `prefix` extra field (in the `icons` field): expected `String`, found `{}`. Using the default prefix instead.", prefix_value.type_str());
-                    Cow::Borrowed("")
-                }
-            } else {
-                Cow::Borrowed("")
-            }
-        } else {
-            println!("Bad type for the `icons` extra field: expected `Table`, found `{}`. Using the default prefix instead.", icons_config.type_str());
-            Cow::Borrowed("")
-        }
-    } else {
-        Cow::Borrowed("")
-    };
-
     // When EMBEDDED_ICONS is already set, just do nothing
     let _ = EMBEDDED_ICONS.set(embedded_dir);
-    config.register_plugin(prefix, &Icons);
+    config.register_plugin(&PLUGIN);
 }
 
 #[cfg(test)]
 mod tests {
-    use encre_css::{toml, Config};
+    use encre_css::{toml, Config, Preflight};
+
+    use pretty_assertions::assert_eq;
     use std::fs;
 
     #[test]
-    fn test() {
+    fn simple() {
+        let content = r#"<div class="fa-solid-plus"><>"#;
+        let mut config = Config::default();
+        config.preflight = Preflight::None;
+        super::register(&mut config);
+
+        let generated = encre_css::generate([content], &config);
+        assert!(generated.contains(".fa-solid-plus"));
+    }
+
+    #[test]
+    fn with_prefix() {
+        let content = r#"<div class="i-fa-solid-plus fa-solid-home"><>"#;
+        let mut config = Config::default();
+        config.preflight = Preflight::None;
+        config.extra.add(
+            "icons",
+            toml! {
+                prefix = "i-"
+            },
+        );
+        super::register(&mut config);
+
+        let generated = encre_css::generate([content], &config);
+        dbg!(&generated);
+        assert!(generated.contains(".i-fa-solid-plus"));
+        assert!(!generated.contains(".fa-solid-home"));
+    }
+
+    #[test]
+    fn full_test_fixture() {
         let content = fs::read_to_string("tests/fixtures/icons.html").unwrap();
         let expected = fs::read_to_string("tests/fixtures/icons.css").unwrap();
 

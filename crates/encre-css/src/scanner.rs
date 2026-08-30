@@ -128,7 +128,8 @@ mod tests {
     #[test]
     fn scan_prevent_splitting_arbitrary_values() {
         assert_eq!(
-            Scanner::default().scan(r#"<div class="bg-red-300 content-[&#39;hello:>&#34;&#39;]"></div>"#),
+            Scanner::default()
+                .scan(r#"<div class="bg-red-300 content-[&#39;hello:>&#34;&#39;]"></div>"#),
             BTreeSet::from([
                 "<div",
                 "></div>",
@@ -143,7 +144,12 @@ mod tests {
     fn scan_with_arbitrary_variant() {
         assert_eq!(
             Scanner::default().scan(r#"<div class="[input[type=&#39;text&#39;]]:block"></div>"#),
-            BTreeSet::from(["<div", "></div>", "class=", "[input[type=&#39;text&#39;]]:block",])
+            BTreeSet::from([
+                "<div",
+                "></div>",
+                "class=",
+                "[input[type=&#39;text&#39;]]:block",
+            ])
         );
     }
 }

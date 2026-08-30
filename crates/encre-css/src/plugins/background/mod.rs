@@ -120,6 +120,12 @@ mod tests {
 }"
         );
         assert_eq!(
+            generate(["bg-linear-123/hsl"], &base_config()),
+            r".bg-linear-123\/hsl {
+  background-image: linear-gradient(123deg in hsl, var(--en-gradient-stops));
+}"
+        );
+        assert_eq!(
             generate(["bg-linear-to-b/decreasing"], &base_config()),
             r".bg-linear-to-b\/decreasing {
   background-image: linear-gradient(to bottom in oklch decreasing hue, var(--en-gradient-stops));
@@ -140,7 +146,10 @@ mod tests {
 }"
         );
         assert_eq!(
-            generate(["bg-[url(&#39;/hello_with_underscores.png&#39;)]"], &base_config()),
+            generate(
+                ["bg-[url(&#39;/hello_with_underscores.png&#39;)]"],
+                &base_config()
+            ),
             r".bg-\[url\(\'\/hello_with_underscores\.png\'\)\] {
   background-image: url('/hello_with_underscores.png');
 }"
@@ -181,6 +190,13 @@ mod tests {
   background-image: conic-gradient(from -180deg in oklab, var(--en-gradient-stops));
 }"
         );
+        assert_eq!(
+            generate(["bg-none"], &base_config()),
+            ".bg-none {
+  background-image: none;
+}"
+        );
+        assert!(generate(["bg-none/decreasing"], &base_config()).is_empty(),);
     }
 
     #[test]
@@ -201,6 +217,59 @@ mod tests {
             generate(["bg-[purple]"], &base_config()),
             r".bg-\[purple\] {
   background-color: purple;
+}"
+        );
+        assert_eq!(
+            generate(["bg-[color:var(--primary)]"], &base_config()),
+            r".bg-\[color\:var\(--primary\)\] {
+  background-color: var(--primary);
+}"
+        );
+    }
+
+    #[test]
+    fn gradient_color_stops() {
+        assert_eq!(
+            generate(["from-red-200"], &base_config()),
+            r".from-red-200 {
+  --en-gradient-from: oklch(88.5% .062 18.334);
+  --en-gradient-stops: var(--en-gradient-from), var(--en-gradient-to, transparent);
+}"
+        );
+
+        assert_eq!(
+            generate(["from-[#f00]"], &base_config()),
+            r".from-\[\#f00\] {
+  --en-gradient-from: #f00;
+  --en-gradient-stops: var(--en-gradient-from), var(--en-gradient-to, transparent);
+}"
+        );
+
+        assert_eq!(
+            generate(["via-blue-200"], &base_config()),
+            r".via-blue-200 {
+  --en-gradient-stops: var(--en-gradient-from), oklch(88.2% .059 254.128), var(--en-gradient-to, transparent);
+}"
+        );
+
+        assert_eq!(
+            generate(["via-[rgb(12,12,12)]"], &base_config()),
+            r".via-\[rgb\(12\,12\,12\)\] {
+  --en-gradient-stops: var(--en-gradient-from), rgb(12,12,12), var(--en-gradient-to, transparent);
+}"
+        );
+
+        assert_eq!(
+            generate(["to-green-200"], &base_config()),
+            r".to-green-200 {
+  --en-gradient-to: oklch(92.5% .084 155.995);
+}"
+        );
+
+        assert_eq!(
+            generate(["to-[hwb(61_0%_0%)]"], &base_config()),
+            r".to-\[hwb\(61_0\%_0\%\)\] {
+  --en-gradient-to: hwb(61 0% 0%);
 }"
         );
     }

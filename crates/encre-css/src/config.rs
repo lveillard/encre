@@ -52,7 +52,7 @@ use crate::{
 #[allow(clippy::wildcard_imports)]
 use crate::plugins::*;
 
-use phf::{phf_map, phf_ordered_map};
+use phf::{phf_map as map, phf_ordered_map};
 use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
@@ -320,7 +320,7 @@ use std::{
 /// </table>
 ///
 /// Based on [Tailwind's default color palette](https://tailwindcss.com/docs/customizing-colors).
-pub const BUILTIN_COLORS: phf::Map<&str, &'static str> = phf_map! {
+pub const BUILTIN_COLORS: phf::Map<&str, &'static str> = map! {
     "red-50" => "oklch(97.1% .013 17.38)",
     "red-100" => "oklch(93.6% .032 17.717)",
     "red-200" => "oklch(88.5% .062 18.334)",
@@ -821,268 +821,477 @@ pub const BUILTIN_VARIANTS: phf::OrderedMap<&'static str, Variant> = {
 /// The list of all default plugins.
 ///
 /// Sorted following [Tailwind's order](https://github.com/tailwindlabs/tailwindcss/blob/master/src/corePlugins.js).
-#[rustfmt::skip]
-pub const BUILTIN_PLUGINS: &[(Cow<'static, str>, &'static (dyn Plugin + Send + Sync))] = &[
-    (Cow::Borrowed("container"), &layout::container::PluginDefinition),
-    (Cow::Borrowed(""), &accessibility::screen_reader::PluginDefinition),
-    (Cow::Borrowed("pointer-events"), &interactivity::pointer_events::PluginDefinition),
-    (Cow::Borrowed(""), &layout::visibility::PluginDefinition),
-    (Cow::Borrowed(""), &layout::position::PluginDefinition),
-    (Cow::Borrowed("inset"), &layout::placement::PluginInsetDefinition),
-    (Cow::Borrowed("inset-x"), &layout::placement::PluginInsetXDefinition),
-    (Cow::Borrowed("inset-y"), &layout::placement::PluginInsetYDefinition),
-    (Cow::Borrowed("start"), &layout::placement::PluginStartDefinition),
-    (Cow::Borrowed("end"), &layout::placement::PluginEndDefinition),
-    (Cow::Borrowed("top"), &layout::placement::PluginTopDefinition),
-    (Cow::Borrowed("right"), &layout::placement::PluginRightDefinition),
-    (Cow::Borrowed("bottom"), &layout::placement::PluginBottomDefinition),
-    (Cow::Borrowed("left"), &layout::placement::PluginLeftDefinition),
-    (Cow::Borrowed(""), &layout::isolation::PluginDefinition),
-    (Cow::Borrowed("z"), &layout::z_index::PluginDefinition),
-    (Cow::Borrowed("order"), &flexbox::order::PluginDefinition),
-    (Cow::Borrowed("col"), &grid::grid_column::PluginDefinition),
-    (Cow::Borrowed("row"), &grid::grid_row::PluginDefinition),
-    (Cow::Borrowed("float"), &layout::floats::PluginDefinition),
-    (Cow::Borrowed("clear"), &layout::clear::PluginDefinition),
-    (Cow::Borrowed("m"), &spacing::margin::PluginDefinition),
-    (Cow::Borrowed("mx"), &spacing::margin::PluginXDefinition),
-    (Cow::Borrowed("my"), &spacing::margin::PluginYDefinition),
-    (Cow::Borrowed("ms"), &spacing::margin::PluginStartDefinition),
-    (Cow::Borrowed("me"), &spacing::margin::PluginEndDefinition),
-    (Cow::Borrowed("mt"), &spacing::margin::PluginTopDefinition),
-    (Cow::Borrowed("mr"), &spacing::margin::PluginRightDefinition),
-    (Cow::Borrowed("mb"), &spacing::margin::PluginBottomDefinition),
-    (Cow::Borrowed("ml"), &spacing::margin::PluginLeftDefinition),
-    (Cow::Borrowed("box"), &layout::box_sizing::PluginDefinition),
-    (Cow::Borrowed(""), &layout::display::PluginDefinition),
-    (Cow::Borrowed("aspect"), &layout::aspect_ratio::PluginDefinition),
-    (Cow::Borrowed("h"), &sizing::height::PluginDefinition),
-    (Cow::Borrowed("max-h"), &sizing::max_height::PluginDefinition),
-    (Cow::Borrowed("min-h"), &sizing::min_height::PluginDefinition),
-    (Cow::Borrowed("w"), &sizing::width::PluginDefinition),
-    (Cow::Borrowed("min-w"), &sizing::min_width::PluginDefinition),
-    (Cow::Borrowed("max-w"), &sizing::max_width::PluginDefinition),
-    (Cow::Borrowed("flex"), &flexbox::flex::PluginDefinition),
-    (Cow::Borrowed("shrink"), &flexbox::flex_shrink::PluginDefinition),
-    (Cow::Borrowed("grow"), &flexbox::flex_grow::PluginDefinition),
-    (Cow::Borrowed("basis"), &flexbox::flex_basis::PluginDefinition),
-    (Cow::Borrowed("table"), &table::table_layout::PluginDefinition),
-    (Cow::Borrowed("caption"), &table::caption_side::PluginDefinition),
-    (Cow::Borrowed("border"), &table::border_collapse::PluginDefinition),
-    (Cow::Borrowed("border-spacing"), &table::border_spacing::PluginDefinition),
-    (Cow::Borrowed("border-spacing-x"), &table::border_spacing::PluginXDefinition),
-    (Cow::Borrowed("border-spacing-y"), &table::border_spacing::PluginYDefinition),
-    (Cow::Borrowed("origin"), &transform::transform_origin::PluginDefinition),
-    (Cow::Borrowed("perspective-origin"), &transform::perspective_origin::PluginDefinition),
-    (Cow::Borrowed("perspective"), &transform::perspective::PluginDefinition),
-    (Cow::Borrowed("translate-x"), &transform::translate::PluginXDefinition),
-    (Cow::Borrowed("translate-y"), &transform::translate::PluginYDefinition),
-    (Cow::Borrowed("translate-z"), &transform::translate::PluginZDefinition),
-    (Cow::Borrowed("rotate"), &transform::rotate::PluginDefinition),
-    (Cow::Borrowed("rotate-x"), &transform::rotate::PluginXDefinition),
-    (Cow::Borrowed("rotate-y"), &transform::rotate::PluginYDefinition),
-    (Cow::Borrowed("rotate-z"), &transform::rotate::PluginZDefinition),
-    (Cow::Borrowed("skew-x"), &transform::skew::PluginXDefinition),
-    (Cow::Borrowed("skew-y"), &transform::skew::PluginYDefinition),
-    (Cow::Borrowed("scale"), &transform::scale::PluginDefinition),
-    (Cow::Borrowed("scale-x"), &transform::scale::PluginXDefinition),
-    (Cow::Borrowed("scale-y"), &transform::scale::PluginYDefinition),
-    (Cow::Borrowed("scale-z"), &transform::scale::PluginZDefinition),
-    (Cow::Borrowed("transform"), &transform::transform_type::PluginDefinition),
-    (Cow::Borrowed("animate"), &transition::animation::PluginDefinition),
-    (Cow::Borrowed("cursor"), &interactivity::cursor::PluginDefinition),
-    (Cow::Borrowed("touch"), &interactivity::touch_action::PluginDefinition),
-    (Cow::Borrowed("select"), &interactivity::user_select::PluginDefinition),
-    (Cow::Borrowed("resize"), &interactivity::resize::PluginDefinition),
-    (Cow::Borrowed("snap"), &interactivity::scroll_snap_type::PluginDefinition),
-    (Cow::Borrowed("snap"), &interactivity::scroll_snap_align::PluginDefinition),
-    (Cow::Borrowed("snap"), &interactivity::scroll_snap_stop::PluginDefinition),
-    (Cow::Borrowed("scroll-m"), &interactivity::scroll_margin::PluginDefinition),
-    (Cow::Borrowed("scroll-mx"), &interactivity::scroll_margin::PluginXDefinition),
-    (Cow::Borrowed("scroll-my"), &interactivity::scroll_margin::PluginYDefinition),
-    (Cow::Borrowed("scroll-ms"), &interactivity::scroll_margin::PluginStartDefinition),
-    (Cow::Borrowed("scroll-me"), &interactivity::scroll_margin::PluginEndDefinition),
-    (Cow::Borrowed("scroll-mt"), &interactivity::scroll_margin::PluginTopDefinition),
-    (Cow::Borrowed("scroll-mr"), &interactivity::scroll_margin::PluginRightDefinition),
-    (Cow::Borrowed("scroll-mb"), &interactivity::scroll_margin::PluginBottomDefinition),
-    (Cow::Borrowed("scroll-ml"), &interactivity::scroll_margin::PluginLeftDefinition),
-    (Cow::Borrowed("scroll-p"), &interactivity::scroll_padding::PluginDefinition),
-    (Cow::Borrowed("scroll-px"), &interactivity::scroll_padding::PluginXDefinition),
-    (Cow::Borrowed("scroll-py"), &interactivity::scroll_padding::PluginYDefinition),
-    (Cow::Borrowed("scroll-ps"), &interactivity::scroll_padding::PluginStartDefinition),
-    (Cow::Borrowed("scroll-pe"), &interactivity::scroll_padding::PluginEndDefinition),
-    (Cow::Borrowed("scroll-pt"), &interactivity::scroll_padding::PluginTopDefinition),
-    (Cow::Borrowed("scroll-pr"), &interactivity::scroll_padding::PluginRightDefinition),
-    (Cow::Borrowed("scroll-pb"), &interactivity::scroll_padding::PluginBottomDefinition),
-    (Cow::Borrowed("scroll-pl"), &interactivity::scroll_padding::PluginLeftDefinition),
-    (Cow::Borrowed("list"), &typography::list_style_position::PluginDefinition),
-    (Cow::Borrowed("list"), &typography::list_style_type::PluginDefinition),
-    (Cow::Borrowed("appearance"), &interactivity::appearance::PluginDefinition),
-    (Cow::Borrowed("columns"), &layout::columns::PluginDefinition),
-    (Cow::Borrowed("break-before"), &layout::break_before::PluginDefinition),
-    (Cow::Borrowed("break-inside"), &layout::break_inside::PluginDefinition),
-    (Cow::Borrowed("break-after"), &layout::break_after::PluginDefinition),
-    (Cow::Borrowed("auto-cols"), &grid::grid_auto_columns::PluginDefinition),
-    (Cow::Borrowed("grid-flow"), &grid::grid_auto_flow::PluginDefinition),
-    (Cow::Borrowed("auto-rows"), &grid::grid_auto_rows::PluginDefinition),
-    (Cow::Borrowed("grid-cols"), &grid::grid_template_columns::PluginDefinition),
-    (Cow::Borrowed("grid-rows"), &grid::grid_template_rows::PluginDefinition),
-    (Cow::Borrowed("flex"), &flexbox::flex_direction::PluginDefinition),
-    (Cow::Borrowed("flex"), &flexbox::flex_wrap::PluginDefinition),
-    (Cow::Borrowed("place-content"), &flexbox::place_content::PluginDefinition),
-    (Cow::Borrowed("place-items"), &flexbox::place_items::PluginDefinition),
-    (Cow::Borrowed("content"), &flexbox::align_content::PluginDefinition),
-    (Cow::Borrowed("items"), &flexbox::align_items::PluginDefinition),
-    (Cow::Borrowed("justify"), &flexbox::justify_content::PluginDefinition),
-    (Cow::Borrowed("justify-items"), &flexbox::justify_items::PluginDefinition),
-    (Cow::Borrowed("gap"), &grid::gap::PluginDefinition),
-    (Cow::Borrowed("gap-x"), &grid::gap::PluginXDefinition),
-    (Cow::Borrowed("gap-y"), &grid::gap::PluginYDefinition),
-    (Cow::Borrowed("space-x"), &spacing::space_between::PluginXDefinition),
-    (Cow::Borrowed("space-y"), &spacing::space_between::PluginYDefinition),
-    (Cow::Borrowed("divide-x"), &border::divide_width::PluginXDefinition),
-    (Cow::Borrowed("divide-y"), &border::divide_width::PluginYDefinition),
-    (Cow::Borrowed("divide"), &border::divide_style::PluginDefinition),
-    (Cow::Borrowed("divide"), &border::divide_color::PluginDefinition),
-    (Cow::Borrowed("place-self"), &flexbox::place_self::PluginDefinition),
-    (Cow::Borrowed("self"), &flexbox::align_self::PluginDefinition),
-    (Cow::Borrowed("justify-self"), &flexbox::justify_self::PluginDefinition),
-    (Cow::Borrowed("overflow"), &layout::overflow::PluginDefinition),
-    (Cow::Borrowed("overscroll"), &layout::overscroll_behavior::PluginDefinition),
-    (Cow::Borrowed("scroll"), &interactivity::scroll_behavior::PluginDefinition),
-    (Cow::Borrowed(""), &typography::text_overflow::PluginDefinition),
-    (Cow::Borrowed("whitespace"), &typography::whitespace::PluginDefinition),
-    (Cow::Borrowed("text"), &typography::text_wrap::PluginDefinition),
-    (Cow::Borrowed("break"), &typography::word_break::PluginDefinition),
-    (Cow::Borrowed("rounded"), &border::border_radius::PluginDefinition),
-    (Cow::Borrowed("rounded-s"), &border::border_radius::PluginStartDefinition),
-    (Cow::Borrowed("rounded-e"), &border::border_radius::PluginEndDefinition),
-    (Cow::Borrowed("rounded-t"), &border::border_radius::PluginTopDefinition),
-    (Cow::Borrowed("rounded-r"), &border::border_radius::PluginRightDefinition),
-    (Cow::Borrowed("rounded-b"), &border::border_radius::PluginBottomDefinition),
-    (Cow::Borrowed("rounded-l"), &border::border_radius::PluginLeftDefinition),
-    (Cow::Borrowed("rounded-ss"), &border::border_radius::PluginStartStartDefinition),
-    (Cow::Borrowed("rounded-se"), &border::border_radius::PluginStartEndDefinition),
-    (Cow::Borrowed("rounded-ee"), &border::border_radius::PluginEndEndDefinition),
-    (Cow::Borrowed("rounded-es"), &border::border_radius::PluginEndStartDefinition),
-    (Cow::Borrowed("rounded-tr"), &border::border_radius::PluginTopRightDefinition),
-    (Cow::Borrowed("rounded-tl"), &border::border_radius::PluginTopLeftDefinition),
-    (Cow::Borrowed("rounded-br"), &border::border_radius::PluginBottomRightDefinition),
-    (Cow::Borrowed("rounded-bl"), &border::border_radius::PluginBottomLeftDefinition),
-    (Cow::Borrowed("border"), &border::border_width::PluginDefinition),
-    (Cow::Borrowed("border-x"), &border::border_width::PluginXDefinition),
-    (Cow::Borrowed("border-y"), &border::border_width::PluginYDefinition),
-    (Cow::Borrowed("border-s"), &border::border_width::PluginStartDefinition),
-    (Cow::Borrowed("border-e"), &border::border_width::PluginEndDefinition),
-    (Cow::Borrowed("border-t"), &border::border_width::PluginTopDefinition),
-    (Cow::Borrowed("border-r"), &border::border_width::PluginRightDefinition),
-    (Cow::Borrowed("border-b"), &border::border_width::PluginBottomDefinition),
-    (Cow::Borrowed("border-l"), &border::border_width::PluginLeftDefinition),
-    (Cow::Borrowed("border"), &border::border_style::PluginDefinition),
-    (Cow::Borrowed("border"), &border::border_color::PluginDefinition),
-    (Cow::Borrowed("border-x"), &border::border_color::PluginXDefinition),
-    (Cow::Borrowed("border-y"), &border::border_color::PluginYDefinition),
-    (Cow::Borrowed("border-s"), &border::border_color::PluginStartDefinition),
-    (Cow::Borrowed("border-e"), &border::border_color::PluginEndDefinition),
-    (Cow::Borrowed("border-t"), &border::border_color::PluginTopDefinition),
-    (Cow::Borrowed("border-r"), &border::border_color::PluginRightDefinition),
-    (Cow::Borrowed("border-b"), &border::border_color::PluginBottomDefinition),
-    (Cow::Borrowed("border-l"), &border::border_color::PluginLeftDefinition),
-    (Cow::Borrowed("bg"), &background::background_color::PluginDefinition),
-    (Cow::Borrowed("bg"), &background::background_image::PluginDefinition),
-    (Cow::Borrowed("bg-linear"), &background::background_image::PluginLinearDefinition),
-    (Cow::Borrowed("bg-radial"), &background::background_image::PluginRadialDefinition),
-    (Cow::Borrowed("bg-conic"), &background::background_image::PluginConicDefinition),
-    (Cow::Borrowed("from"), &background::gradient_color_stops::PluginFromDefinition),
-    (Cow::Borrowed("via"), &background::gradient_color_stops::PluginViaDefinition),
-    (Cow::Borrowed("to"), &background::gradient_color_stops::PluginToDefinition),
-    (Cow::Borrowed("box-decoration"), &layout::box_decoration_break::PluginDefinition),
-    (Cow::Borrowed("bg"), &background::background_size::PluginDefinition),
-    (Cow::Borrowed("bg"), &background::background_attachment::PluginDefinition),
-    (Cow::Borrowed("bg-clip"), &background::background_clip::PluginDefinition),
-    (Cow::Borrowed("bg"), &background::background_position::PluginDefinition),
-    (Cow::Borrowed("bg"), &background::background_repeat::PluginDefinition),
-    (Cow::Borrowed("bg-origin"), &background::background_origin::PluginDefinition),
-    (Cow::Borrowed("fill"), &svg::fill::PluginDefinition),
-    (Cow::Borrowed("stroke"), &svg::stroke::PluginDefinition),
-    (Cow::Borrowed("stroke"), &svg::stroke_width::PluginDefinition),
-    (Cow::Borrowed("object"), &layout::object_fit::PluginDefinition),
-    (Cow::Borrowed("object"), &layout::object_position::PluginDefinition),
-    (Cow::Borrowed("p"), &spacing::padding::PluginDefinition),
-    (Cow::Borrowed("px"), &spacing::padding::PluginXDefinition),
-    (Cow::Borrowed("py"), &spacing::padding::PluginYDefinition),
-    (Cow::Borrowed("ps"), &spacing::padding::PluginStartDefinition),
-    (Cow::Borrowed("pe"), &spacing::padding::PluginEndDefinition),
-    (Cow::Borrowed("pt"), &spacing::padding::PluginTopDefinition),
-    (Cow::Borrowed("pr"), &spacing::padding::PluginRightDefinition),
-    (Cow::Borrowed("pb"), &spacing::padding::PluginBottomDefinition),
-    (Cow::Borrowed("pl"), &spacing::padding::PluginLeftDefinition),
-    (Cow::Borrowed("text"), &typography::text_align::PluginDefinition),
-    (Cow::Borrowed("indent"), &typography::text_indent::PluginDefinition),
-    (Cow::Borrowed("align"), &typography::vertical_align::PluginDefinition),
-    (Cow::Borrowed("font"), &typography::font_family::PluginDefinition),
-    (Cow::Borrowed("text"), &typography::font_size::PluginDefinition),
-    (Cow::Borrowed("font"), &typography::font_weight::PluginDefinition),
-    (Cow::Borrowed(""), &typography::text_transform::PluginDefinition),
-    (Cow::Borrowed(""), &typography::font_style::PluginDefinition),
-    (Cow::Borrowed(""), &typography::font_variant_numeric::PluginDefinition),
-    (Cow::Borrowed("tracking"), &typography::letter_spacing::PluginDefinition),
-    (Cow::Borrowed("leading"), &typography::line_height::PluginDefinition),
-    (Cow::Borrowed("text"), &typography::text_color::PluginDefinition),
-    (Cow::Borrowed(""), &typography::text_decoration::PluginDefinition),
-    (Cow::Borrowed("decoration"), &typography::text_decoration_color::PluginDefinition),
-    (Cow::Borrowed("decoration"), &typography::text_decoration_style::PluginDefinition),
-    (Cow::Borrowed("decoration"), &typography::text_decoration_thickness::PluginDefinition),
-    (Cow::Borrowed("underline-offset"), &typography::text_underline_offset::PluginDefinition),
-    (Cow::Borrowed(""), &typography::font_smoothing::PluginDefinition),
-    (Cow::Borrowed("caret"), &interactivity::caret_color::PluginDefinition),
-    (Cow::Borrowed("accent"), &interactivity::accent_color::PluginDefinition),
-    (Cow::Borrowed("opacity"), &effect::opacity::PluginDefinition),
-    (Cow::Borrowed("bg-blend"), &effect::background_blend_mode::PluginDefinition),
-    (Cow::Borrowed("mix-blend"), &effect::mix_blend_mode::PluginDefinition),
-    (Cow::Borrowed("text-shadow"), &effect::text_shadow::PluginDefinition),
-    (Cow::Borrowed("text-shadow"), &effect::text_shadow_color::PluginDefinition),
-    (Cow::Borrowed("shadow"), &effect::box_shadow::PluginDefinition),
-    (Cow::Borrowed("shadow"), &effect::box_shadow_color::PluginDefinition),
-    (Cow::Borrowed("inset-shadow"), &effect::box_shadow::PluginInsetDefinition),
-    (Cow::Borrowed("inset-shadow"), &effect::box_shadow_color::PluginInsetDefinition),
-    (Cow::Borrowed("outline"), &border::outline_style::PluginDefinition),
-    (Cow::Borrowed("outline"), &border::outline_width::PluginDefinition),
-    (Cow::Borrowed("outline-offset"), &border::outline_offset::PluginDefinition),
-    (Cow::Borrowed("outline"), &border::outline_color::PluginDefinition),
-    (Cow::Borrowed("ring"), &border::ring_width::PluginDefinition),
-    (Cow::Borrowed("ring"), &border::ring_color::PluginDefinition),
-    (Cow::Borrowed("inset-ring"), &border::ring_width::PluginInsetDefinition),
-    (Cow::Borrowed("inset-ring"), &border::ring_color::PluginInsetDefinition),
-    (Cow::Borrowed("ring-offset"), &border::ring_offset_width::PluginDefinition),
-    (Cow::Borrowed("ring-offset"), &border::ring_offset_color::PluginDefinition),
-    (Cow::Borrowed("blur"), &filter::blur::PluginDefinition),
-    (Cow::Borrowed("brightness"), &filter::brightness::PluginDefinition),
-    (Cow::Borrowed("contrast"), &filter::contrast::PluginDefinition),
-    (Cow::Borrowed("drop-shadow"), &filter::drop_shadow::PluginDefinition),
-    (Cow::Borrowed("grayscale"), &filter::grayscale::PluginDefinition),
-    (Cow::Borrowed("hue-rotate"), &filter::hue_rotate::PluginDefinition),
-    (Cow::Borrowed("invert"), &filter::invert::PluginDefinition),
-    (Cow::Borrowed("saturate"), &filter::saturate::PluginDefinition),
-    (Cow::Borrowed("sepia"), &filter::sepia::PluginDefinition),
-    (Cow::Borrowed("filter"), &filter::filter_type::PluginDefinition),
-    (Cow::Borrowed("backdrop-blur"), &filter::backdrop_blur::PluginDefinition),
-    (Cow::Borrowed("backdrop-brightness"), &filter::backdrop_brightness::PluginDefinition),
-    (Cow::Borrowed("backdrop-contrast"), &filter::backdrop_contrast::PluginDefinition),
-    (Cow::Borrowed("backdrop-grayscale"), &filter::backdrop_grayscale::PluginDefinition),
-    (Cow::Borrowed("backdrop-hue-rotate"), &filter::backdrop_hue_rotate::PluginDefinition),
-    (Cow::Borrowed("backdrop-invert"), &filter::backdrop_invert::PluginDefinition),
-    (Cow::Borrowed("backdrop-saturate"), &filter::backdrop_saturate::PluginDefinition),
-    (Cow::Borrowed("backdrop-sepia"), &filter::backdrop_sepia::PluginDefinition),
-    (Cow::Borrowed("backdrop-filter"), &filter::backdrop_filter::PluginDefinition),
-    (Cow::Borrowed("transition"), &transition::transition_property::PluginDefinition),
-    (Cow::Borrowed("delay"), &transition::transition_delay::PluginDefinition),
-    (Cow::Borrowed("duration"), &transition::transition_duration::PluginDefinition),
-    (Cow::Borrowed("ease"), &transition::transition_timing_function::PluginDefinition),
-    (Cow::Borrowed("will-change"), &interactivity::will_change::PluginDefinition),
-    (Cow::Borrowed("content"), &typography::content::PluginDefinition),
-    (Cow::Borrowed("line-clamp"), &typography::line_clamp::PluginDefinition),
-    (Cow::Borrowed("@container"), &layout::at_container::PluginDefinition),
+pub const BUILTIN_PLUGINS: &[&StaticPlugin] = &[
+    &layout::container::PLUGIN,
+    &accessibility::screen_reader::PLUGIN,
+    &interactivity::pointer_events::PLUGIN,
+    &layout::visibility::PLUGIN,
+    &layout::position::PLUGIN,
+    &layout::placement::PLUGIN.0,
+    &layout::placement::PLUGIN.1,
+    &layout::placement::PLUGIN_X.0,
+    &layout::placement::PLUGIN_X.1,
+    &layout::placement::PLUGIN_Y.0,
+    &layout::placement::PLUGIN_Y.1,
+    &layout::placement::PLUGIN_START.0,
+    &layout::placement::PLUGIN_START.1,
+    &layout::placement::PLUGIN_END.0,
+    &layout::placement::PLUGIN_END.1,
+    &layout::placement::PLUGIN_TOP.0,
+    &layout::placement::PLUGIN_TOP.1,
+    &layout::placement::PLUGIN_RIGHT.0,
+    &layout::placement::PLUGIN_RIGHT.1,
+    &layout::placement::PLUGIN_BOTTOM.0,
+    &layout::placement::PLUGIN_BOTTOM.1,
+    &layout::placement::PLUGIN_LEFT.0,
+    &layout::placement::PLUGIN_LEFT.1,
+    &layout::isolation::PLUGIN,
+    &layout::z_index::PLUGIN,
+    &flexbox::order::PLUGIN_LIST,
+    &flexbox::order::PLUGIN_NUM,
+    &grid::grid_column::PLUGIN,
+    &grid::grid_column::PLUGIN_ARBITRARY,
+    &grid::grid_column::PLUGIN_SPAN_1,
+    &grid::grid_column::PLUGIN_SPAN_2,
+    &grid::grid_column::PLUGIN_START_1,
+    &grid::grid_column::PLUGIN_START_2,
+    &grid::grid_column::PLUGIN_END_1,
+    &grid::grid_column::PLUGIN_END_2,
+    &grid::grid_row::PLUGIN,
+    &grid::grid_row::PLUGIN_ARBITRARY,
+    &grid::grid_row::PLUGIN_SPAN_1,
+    &grid::grid_row::PLUGIN_SPAN_2,
+    &grid::grid_row::PLUGIN_START_1,
+    &grid::grid_row::PLUGIN_START_2,
+    &grid::grid_row::PLUGIN_END_1,
+    &grid::grid_row::PLUGIN_END_2,
+    &layout::floats::PLUGIN,
+    &layout::clear::PLUGIN,
+    &spacing::margin::PLUGIN.0,
+    &spacing::margin::PLUGIN.1,
+    &spacing::margin::PLUGIN_X.0,
+    &spacing::margin::PLUGIN_X.1,
+    &spacing::margin::PLUGIN_Y.0,
+    &spacing::margin::PLUGIN_Y.1,
+    &spacing::margin::PLUGIN_START.0,
+    &spacing::margin::PLUGIN_START.1,
+    &spacing::margin::PLUGIN_END.0,
+    &spacing::margin::PLUGIN_END.1,
+    &spacing::margin::PLUGIN_TOP.0,
+    &spacing::margin::PLUGIN_TOP.1,
+    &spacing::margin::PLUGIN_RIGHT.0,
+    &spacing::margin::PLUGIN_RIGHT.1,
+    &spacing::margin::PLUGIN_BOTTOM.0,
+    &spacing::margin::PLUGIN_BOTTOM.1,
+    &spacing::margin::PLUGIN_LEFT.0,
+    &spacing::margin::PLUGIN_LEFT.1,
+    &layout::box_sizing::PLUGIN,
+    &layout::display::PLUGIN,
+    &layout::aspect_ratio::PLUGIN,
+    &layout::aspect_ratio::PLUGIN_ARBITRARY,
+    &sizing::height::PLUGIN_SPACING,
+    &sizing::height::PLUGIN_LIST,
+    &sizing::height::PLUGIN_ARBITRARY,
+    &sizing::max_height::PLUGIN_SPACING,
+    &sizing::max_height::PLUGIN_LIST,
+    &sizing::max_height::PLUGIN_ARBITRARY,
+    &sizing::min_height::PLUGIN_SPACING,
+    &sizing::min_height::PLUGIN_LIST,
+    &sizing::min_height::PLUGIN_ARBITRARY,
+    &sizing::width::PLUGIN_SPACING,
+    &sizing::width::PLUGIN_LIST,
+    &sizing::width::PLUGIN_ARBITRARY,
+    &sizing::min_width::PLUGIN_SPACING,
+    &sizing::min_width::PLUGIN_LIST,
+    &sizing::min_width::PLUGIN_ARBITRARY,
+    &sizing::max_width::PLUGIN_SPACING,
+    &sizing::max_width::PLUGIN_LIST_1,
+    &sizing::max_width::PLUGIN_LIST_2,
+    &sizing::max_width::PLUGIN_ARBITRARY,
+    &flexbox::flex::PLUGIN,
+    &flexbox::flex::PLUGIN_ARBITRARY,
+    &flexbox::flex_shrink::PLUGIN,
+    &flexbox::flex_grow::PLUGIN,
+    &flexbox::flex_basis::PLUGIN,
+    &flexbox::flex_basis::PLUGIN_ARBITRARY,
+    &table::table_layout::PLUGIN,
+    &table::caption_side::PLUGIN,
+    &table::border_collapse::PLUGIN,
+    &table::border_spacing::PLUGIN.0,
+    &table::border_spacing::PLUGIN.1,
+    &table::border_spacing::PLUGIN_X.0,
+    &table::border_spacing::PLUGIN_X.1,
+    &table::border_spacing::PLUGIN_Y.0,
+    &table::border_spacing::PLUGIN_Y.1,
+    &transform::transform_origin::PLUGIN,
+    &transform::transform_origin::PLUGIN_ARBITRARY,
+    &transform::perspective_origin::PLUGIN,
+    &transform::perspective_origin::PLUGIN_ARBITRARY,
+    &transform::perspective::PLUGIN,
+    &transform::perspective::PLUGIN_ARBITRARY,
+    &transform::translate::PLUGIN_X.0,
+    &transform::translate::PLUGIN_X.1,
+    &transform::translate::PLUGIN_Y.0,
+    &transform::translate::PLUGIN_Y.1,
+    &transform::translate::PLUGIN_Z.0,
+    &transform::translate::PLUGIN_Z.1,
+    &transform::rotate::PLUGIN.0,
+    &transform::rotate::PLUGIN.1,
+    &transform::rotate::PLUGIN_X.0,
+    &transform::rotate::PLUGIN_X.1,
+    &transform::rotate::PLUGIN_Y.0,
+    &transform::rotate::PLUGIN_Y.1,
+    &transform::rotate::PLUGIN_Z.0,
+    &transform::rotate::PLUGIN_Z.1,
+    &transform::skew::PLUGIN_X.0,
+    &transform::skew::PLUGIN_X.1,
+    &transform::skew::PLUGIN_Y.0,
+    &transform::skew::PLUGIN_Y.1,
+    &transform::scale::PLUGIN.0,
+    &transform::scale::PLUGIN.1,
+    &transform::scale::PLUGIN_X.0,
+    &transform::scale::PLUGIN_X.1,
+    &transform::scale::PLUGIN_Y.0,
+    &transform::scale::PLUGIN_Y.1,
+    &transform::scale::PLUGIN_Z.0,
+    &transform::scale::PLUGIN_Z.1,
+    &transform::transform_type::PLUGIN,
+    &transition::animation::PLUGIN,
+    &transition::animation::PLUGIN_ARBITRARY,
+    &interactivity::cursor::PLUGIN,
+    &interactivity::cursor::PLUGIN_ARBITRARY,
+    &interactivity::touch_action::PLUGIN,
+    &interactivity::user_select::PLUGIN,
+    &interactivity::resize::PLUGIN,
+    &interactivity::scroll_snap_type::PLUGIN,
+    &interactivity::scroll_snap_align::PLUGIN,
+    &interactivity::scroll_snap_stop::PLUGIN,
+    &interactivity::scroll_margin::PLUGIN.0,
+    &interactivity::scroll_margin::PLUGIN.1,
+    &interactivity::scroll_margin::PLUGIN_X.0,
+    &interactivity::scroll_margin::PLUGIN_X.1,
+    &interactivity::scroll_margin::PLUGIN_Y.0,
+    &interactivity::scroll_margin::PLUGIN_Y.1,
+    &interactivity::scroll_margin::PLUGIN_START.0,
+    &interactivity::scroll_margin::PLUGIN_START.1,
+    &interactivity::scroll_margin::PLUGIN_END.0,
+    &interactivity::scroll_margin::PLUGIN_END.1,
+    &interactivity::scroll_margin::PLUGIN_TOP.0,
+    &interactivity::scroll_margin::PLUGIN_TOP.1,
+    &interactivity::scroll_margin::PLUGIN_RIGHT.0,
+    &interactivity::scroll_margin::PLUGIN_RIGHT.1,
+    &interactivity::scroll_margin::PLUGIN_BOTTOM.0,
+    &interactivity::scroll_margin::PLUGIN_BOTTOM.1,
+    &interactivity::scroll_margin::PLUGIN_LEFT.0,
+    &interactivity::scroll_margin::PLUGIN_LEFT.1,
+    &interactivity::scroll_padding::PLUGIN.0,
+    &interactivity::scroll_padding::PLUGIN.1,
+    &interactivity::scroll_padding::PLUGIN_X.0,
+    &interactivity::scroll_padding::PLUGIN_X.1,
+    &interactivity::scroll_padding::PLUGIN_Y.0,
+    &interactivity::scroll_padding::PLUGIN_Y.1,
+    &interactivity::scroll_padding::PLUGIN_START.0,
+    &interactivity::scroll_padding::PLUGIN_START.1,
+    &interactivity::scroll_padding::PLUGIN_END.0,
+    &interactivity::scroll_padding::PLUGIN_END.1,
+    &interactivity::scroll_padding::PLUGIN_TOP.0,
+    &interactivity::scroll_padding::PLUGIN_TOP.1,
+    &interactivity::scroll_padding::PLUGIN_RIGHT.0,
+    &interactivity::scroll_padding::PLUGIN_RIGHT.1,
+    &interactivity::scroll_padding::PLUGIN_BOTTOM.0,
+    &interactivity::scroll_padding::PLUGIN_BOTTOM.1,
+    &interactivity::scroll_padding::PLUGIN_LEFT.0,
+    &interactivity::scroll_padding::PLUGIN_LEFT.1,
+    &typography::list_style_position::PLUGIN,
+    &typography::list_style_type::PLUGIN,
+    &typography::list_style_type::PLUGIN_ARBITRARY,
+    &interactivity::appearance::PLUGIN,
+    &layout::columns::PLUGIN,
+    &layout::break_before::PLUGIN,
+    &layout::break_inside::PLUGIN,
+    &layout::break_after::PLUGIN,
+    &grid::grid_auto_columns::PLUGIN,
+    &grid::grid_auto_columns::PLUGIN_ARBITRARY,
+    &grid::grid_auto_flow::PLUGIN,
+    &grid::grid_auto_rows::PLUGIN,
+    &grid::grid_auto_rows::PLUGIN_ARBITRARY,
+    &grid::grid_template_columns::PLUGIN_NUMBER,
+    &grid::grid_template_columns::PLUGIN_LIST,
+    &grid::grid_template_columns::PLUGIN_ARBITRARY,
+    &grid::grid_template_rows::PLUGIN_NUMBER,
+    &grid::grid_template_rows::PLUGIN_LIST,
+    &grid::grid_template_rows::PLUGIN_ARBITRARY,
+    &flexbox::flex_direction::PLUGIN,
+    &flexbox::flex_wrap::PLUGIN,
+    &flexbox::place_content::PLUGIN,
+    &flexbox::place_items::PLUGIN,
+    &flexbox::align_content::PLUGIN,
+    &flexbox::align_items::PLUGIN,
+    &flexbox::justify_content::PLUGIN,
+    &flexbox::justify_items::PLUGIN,
+    &grid::gap::PLUGIN.0,
+    &grid::gap::PLUGIN.1,
+    &grid::gap::PLUGIN_X.0,
+    &grid::gap::PLUGIN_X.1,
+    &grid::gap::PLUGIN_Y.0,
+    &grid::gap::PLUGIN_Y.1,
+    &spacing::space_between::PLUGIN_X_1,
+    &spacing::space_between::PLUGIN_X_2,
+    &spacing::space_between::PLUGIN_X_3,
+    &spacing::space_between::PLUGIN_Y_1,
+    &spacing::space_between::PLUGIN_Y_2,
+    &spacing::space_between::PLUGIN_Y_3,
+    &border::divide_width::PLUGIN_X_1,
+    &border::divide_width::PLUGIN_X_2,
+    &border::divide_width::PLUGIN_X_3,
+    &border::divide_width::PLUGIN_Y_1,
+    &border::divide_width::PLUGIN_Y_2,
+    &border::divide_width::PLUGIN_Y_3,
+    &border::divide_style::PLUGIN,
+    &border::divide_color::PLUGIN,
+    &border::divide_color::PLUGIN_ARBITRARY,
+    &flexbox::place_self::PLUGIN,
+    &flexbox::align_self::PLUGIN,
+    &flexbox::justify_self::PLUGIN,
+    &layout::overflow::PLUGIN,
+    &layout::overscroll_behavior::PLUGIN,
+    &interactivity::scroll_behavior::PLUGIN,
+    &typography::text_overflow::PLUGIN,
+    &typography::whitespace::PLUGIN,
+    &typography::text_wrap::PLUGIN,
+    &typography::word_break::PLUGIN,
+    &border::border_radius::PLUGIN.0,
+    &border::border_radius::PLUGIN.1,
+    &border::border_radius::PLUGIN_START.0,
+    &border::border_radius::PLUGIN_START.1,
+    &border::border_radius::PLUGIN_END.0,
+    &border::border_radius::PLUGIN_END.1,
+    &border::border_radius::PLUGIN_TOP.0,
+    &border::border_radius::PLUGIN_TOP.1,
+    &border::border_radius::PLUGIN_RIGHT.0,
+    &border::border_radius::PLUGIN_RIGHT.1,
+    &border::border_radius::PLUGIN_BOTTOM.0,
+    &border::border_radius::PLUGIN_BOTTOM.1,
+    &border::border_radius::PLUGIN_LEFT.0,
+    &border::border_radius::PLUGIN_LEFT.1,
+    &border::border_radius::PLUGIN_START_START.0,
+    &border::border_radius::PLUGIN_START_START.1,
+    &border::border_radius::PLUGIN_START_END.0,
+    &border::border_radius::PLUGIN_START_END.1,
+    &border::border_radius::PLUGIN_END_END.0,
+    &border::border_radius::PLUGIN_END_END.1,
+    &border::border_radius::PLUGIN_END_START.0,
+    &border::border_radius::PLUGIN_END_START.1,
+    &border::border_radius::PLUGIN_TOP_RIGHT.0,
+    &border::border_radius::PLUGIN_TOP_RIGHT.1,
+    &border::border_radius::PLUGIN_TOP_LEFT.0,
+    &border::border_radius::PLUGIN_TOP_LEFT.1,
+    &border::border_radius::PLUGIN_BOTTOM_RIGHT.0,
+    &border::border_radius::PLUGIN_BOTTOM_RIGHT.1,
+    &border::border_radius::PLUGIN_BOTTOM_LEFT.0,
+    &border::border_radius::PLUGIN_BOTTOM_LEFT.1,
+    &border::border_width::PLUGIN.0,
+    &border::border_width::PLUGIN.1,
+    &border::border_width::PLUGIN_X.0,
+    &border::border_width::PLUGIN_X.1,
+    &border::border_width::PLUGIN_Y.0,
+    &border::border_width::PLUGIN_Y.1,
+    &border::border_width::PLUGIN_START.0,
+    &border::border_width::PLUGIN_START.1,
+    &border::border_width::PLUGIN_END.0,
+    &border::border_width::PLUGIN_END.1,
+    &border::border_width::PLUGIN_TOP.0,
+    &border::border_width::PLUGIN_TOP.1,
+    &border::border_width::PLUGIN_RIGHT.0,
+    &border::border_width::PLUGIN_RIGHT.1,
+    &border::border_width::PLUGIN_BOTTOM.0,
+    &border::border_width::PLUGIN_BOTTOM.1,
+    &border::border_width::PLUGIN_LEFT.0,
+    &border::border_width::PLUGIN_LEFT.1,
+    &border::border_style::PLUGIN,
+    &border::border_style::PLUGIN_ARBITRARY,
+    &border::border_color::PLUGIN.0,
+    &border::border_color::PLUGIN.1,
+    &border::border_color::PLUGIN_X.0,
+    &border::border_color::PLUGIN_X.1,
+    &border::border_color::PLUGIN_Y.0,
+    &border::border_color::PLUGIN_Y.1,
+    &border::border_color::PLUGIN_START.0,
+    &border::border_color::PLUGIN_START.1,
+    &border::border_color::PLUGIN_END.0,
+    &border::border_color::PLUGIN_END.1,
+    &border::border_color::PLUGIN_TOP.0,
+    &border::border_color::PLUGIN_TOP.1,
+    &border::border_color::PLUGIN_RIGHT.0,
+    &border::border_color::PLUGIN_RIGHT.1,
+    &border::border_color::PLUGIN_BOTTOM.0,
+    &border::border_color::PLUGIN_BOTTOM.1,
+    &border::border_color::PLUGIN_LEFT.0,
+    &border::border_color::PLUGIN_LEFT.1,
+    &background::background_color::PLUGIN,
+    &background::background_color::PLUGIN_ARBITRARY,
+    &background::background_image::PLUGIN,
+    &background::background_image::PLUGIN_ARBITRARY,
+    &background::background_image::PLUGIN_LINEAR_1,
+    &background::background_image::PLUGIN_LINEAR_2,
+    &background::background_image::PLUGIN_LINEAR_3,
+    &background::background_image::PLUGIN_RADIAL_1,
+    &background::background_image::PLUGIN_RADIAL_2,
+    &background::background_image::PLUGIN_CONIC_1,
+    &background::background_image::PLUGIN_CONIC_2,
+    &background::background_image::PLUGIN_CONIC_3,
+    &background::gradient_color_stops::PLUGIN_FROM_1,
+    &background::gradient_color_stops::PLUGIN_FROM_2,
+    &background::gradient_color_stops::PLUGIN_VIA_1,
+    &background::gradient_color_stops::PLUGIN_VIA_2,
+    &background::gradient_color_stops::PLUGIN_TO_1,
+    &background::gradient_color_stops::PLUGIN_TO_2,
+    &layout::box_decoration_break::PLUGIN,
+    &background::background_size::PLUGIN,
+    &background::background_size::PLUGIN_ARBITRARY,
+    &background::background_attachment::PLUGIN,
+    &background::background_clip::PLUGIN,
+    &background::background_position::PLUGIN,
+    &background::background_position::PLUGIN_ARBITRARY,
+    &background::background_repeat::PLUGIN,
+    &background::background_origin::PLUGIN,
+    &svg::fill::PLUGIN,
+    &svg::fill::PLUGIN_ARBITRARY,
+    &svg::stroke::PLUGIN,
+    &svg::stroke::PLUGIN_ARBITRARY,
+    &svg::stroke_width::PLUGIN,
+    &svg::stroke_width::PLUGIN_ARBITRARY,
+    &layout::object_fit::PLUGIN,
+    &layout::object_position::PLUGIN,
+    &layout::object_position::PLUGIN_ARBITRARY,
+    &spacing::padding::PLUGIN.0,
+    &spacing::padding::PLUGIN.1,
+    &spacing::padding::PLUGIN_X.0,
+    &spacing::padding::PLUGIN_X.1,
+    &spacing::padding::PLUGIN_Y.0,
+    &spacing::padding::PLUGIN_Y.1,
+    &spacing::padding::PLUGIN_START.0,
+    &spacing::padding::PLUGIN_START.1,
+    &spacing::padding::PLUGIN_END.0,
+    &spacing::padding::PLUGIN_END.1,
+    &spacing::padding::PLUGIN_TOP.0,
+    &spacing::padding::PLUGIN_TOP.1,
+    &spacing::padding::PLUGIN_RIGHT.0,
+    &spacing::padding::PLUGIN_RIGHT.1,
+    &spacing::padding::PLUGIN_BOTTOM.0,
+    &spacing::padding::PLUGIN_BOTTOM.1,
+    &spacing::padding::PLUGIN_LEFT.0,
+    &spacing::padding::PLUGIN_LEFT.1,
+    &typography::text_align::PLUGIN,
+    &typography::text_indent::PLUGIN,
+    &typography::text_indent::PLUGIN_ARBITRARY,
+    &typography::vertical_align::PLUGIN,
+    &typography::font_family::PLUGIN,
+    &typography::font_family::PLUGIN_ARBITRARY,
+    &typography::font_size::PLUGIN,
+    &typography::font_size::PLUGIN_ARBITRARY,
+    &typography::font_weight::PLUGIN,
+    &typography::font_weight::PLUGIN_ARBITRARY,
+    &typography::text_transform::PLUGIN,
+    &typography::font_style::PLUGIN,
+    &typography::font_variant_numeric::PLUGIN,
+    &typography::letter_spacing::PLUGIN,
+    &typography::letter_spacing::PLUGIN_ARBITRARY,
+    &typography::line_height::PLUGIN_LIST,
+    &typography::line_height::PLUGIN_SPACING,
+    &typography::line_height::PLUGIN_ARBITRARY,
+    &typography::text_color::PLUGIN,
+    &typography::text_color::PLUGIN_ARBITRARY,
+    &typography::text_decoration::PLUGIN,
+    &typography::text_decoration_color::PLUGIN,
+    &typography::text_decoration_color::PLUGIN_ARBITRARY,
+    &typography::text_decoration_style::PLUGIN,
+    &typography::text_decoration_thickness::PLUGIN_LIST,
+    &typography::text_decoration_thickness::PLUGIN_NUMBER,
+    &typography::text_decoration_thickness::PLUGIN_ARBITRARY,
+    &typography::text_underline_offset::PLUGIN_LIST,
+    &typography::text_underline_offset::PLUGIN_NUMBER,
+    &typography::text_underline_offset::PLUGIN_ARBITRARY,
+    &typography::font_smoothing::PLUGIN,
+    &interactivity::caret_color::PLUGIN,
+    &interactivity::caret_color::PLUGIN_ARBITRARY,
+    &interactivity::accent_color::PLUGIN,
+    &interactivity::accent_color::PLUGIN_ARBITRARY,
+    &effect::opacity::PLUGIN,
+    &effect::background_blend_mode::PLUGIN,
+    &effect::mix_blend_mode::PLUGIN,
+    &effect::text_shadow::PLUGIN,
+    &effect::text_shadow::PLUGIN_ARBITRARY,
+    &effect::text_shadow_color::PLUGIN,
+    &effect::text_shadow_color::PLUGIN_ARBITRARY,
+    &effect::box_shadow::PLUGIN,
+    &effect::box_shadow::PLUGIN_ARBITRARY,
+    &effect::box_shadow_color::PLUGIN,
+    &effect::box_shadow_color::PLUGIN_ARBITRARY,
+    &effect::box_shadow::PLUGIN_INSET_1,
+    &effect::box_shadow::PLUGIN_INSET_2,
+    &effect::box_shadow_color::PLUGIN_INSET_1,
+    &effect::box_shadow_color::PLUGIN_INSET_2,
+    &border::outline_style::PLUGIN_LIST_1,
+    &border::outline_style::PLUGIN_LIST_2,
+    &border::outline_width::PLUGIN,
+    &border::outline_width::PLUGIN_ARBITRARY,
+    &border::outline_offset::PLUGIN,
+    &border::outline_offset::PLUGIN_ARBITRARY,
+    &border::outline_color::PLUGIN,
+    &border::outline_color::PLUGIN_ARBITRARY,
+    &border::ring_width::PLUGIN,
+    &border::ring_width::PLUGIN_ARBITRARY,
+    &border::ring_color::PLUGIN,
+    &border::ring_color::PLUGIN_ARBITRARY,
+    &border::ring_width::PLUGIN_INSET_1,
+    &border::ring_width::PLUGIN_INSET_2,
+    &border::ring_color::PLUGIN_INSET_1,
+    &border::ring_color::PLUGIN_INSET_2,
+    &border::ring_offset_width::PLUGIN,
+    &border::ring_offset_width::PLUGIN_ARBITRARY,
+    &border::ring_offset_color::PLUGIN,
+    &border::ring_offset_color::PLUGIN_ARBITRARY,
+    &filter::blur::PLUGIN,
+    &filter::blur::PLUGIN_ARBITRARY,
+    &filter::brightness::PLUGIN,
+    &filter::contrast::PLUGIN,
+    &filter::drop_shadow::PLUGIN,
+    &filter::drop_shadow::PLUGIN_ARBITRARY,
+    &filter::grayscale::PLUGIN,
+    &filter::hue_rotate::PLUGIN,
+    &filter::hue_rotate::PLUGIN_ARBITRARY,
+    &filter::invert::PLUGIN,
+    &filter::saturate::PLUGIN,
+    &filter::sepia::PLUGIN,
+    &filter::filter_type::PLUGIN,
+    &filter::backdrop_blur::PLUGIN,
+    &filter::backdrop_blur::PLUGIN_ARBITRARY,
+    &filter::backdrop_brightness::PLUGIN,
+    &filter::backdrop_contrast::PLUGIN,
+    &filter::backdrop_grayscale::PLUGIN,
+    &filter::backdrop_hue_rotate::PLUGIN,
+    &filter::backdrop_hue_rotate::PLUGIN_ARBITRARY,
+    &filter::backdrop_invert::PLUGIN,
+    &filter::backdrop_saturate::PLUGIN,
+    &filter::backdrop_sepia::PLUGIN,
+    &filter::backdrop_filter::PLUGIN,
+    &transition::transition_property::PLUGIN,
+    &transition::transition_property::PLUGIN_ARBITRARY,
+    &transition::transition_delay::PLUGIN,
+    &transition::transition_delay::PLUGIN_ARBITRARY,
+    &transition::transition_duration::PLUGIN,
+    &transition::transition_duration::PLUGIN_ARBITRARY,
+    &transition::transition_timing_function::PLUGIN,
+    &transition::transition_timing_function::PLUGIN_ARBITRARY,
+    &interactivity::will_change::PLUGIN,
+    &interactivity::will_change::PLUGIN_ARBITRARY,
+    &typography::content::PLUGIN,
+    &typography::content::PLUGIN_ARBITRARY,
+    &typography::line_clamp::PLUGIN_NUMBER,
+    &typography::line_clamp::PLUGIN_LIST,
+    &layout::at_container::PLUGIN,
+    &layout::at_container::PLUGIN_ARBITRARY,
 ];
 
 /// Configuration for the [`Theme::dark_mode`] field.
@@ -1710,17 +1919,15 @@ pub struct Config {
     #[serde(default)]
     pub extra: Extra,
 
+    /// A list of custom plugins.
+    #[serde(default)]
+    pub(crate) custom_plugins: Vec<CustomPlugin>,
+
     /// A custom scanner used to scan content.
     ///
     /// This field is skipped when deserializing from a [TOML](https://toml.io) file.
     #[serde(skip)]
     pub scanner: Scanner,
-
-    /// A list of custom plugins.
-    ///
-    /// This field is skipped when deserializing from a [TOML](https://toml.io) file.
-    #[serde(skip)]
-    pub(crate) custom_plugins: Vec<(Cow<'static, str>, &'static (dyn Plugin + Send + Sync))>,
 
     /// A list of custom variants.
     ///
@@ -1902,32 +2109,28 @@ impl Config {
     /// Note that if you are not the maintainer of a crate providing plugins, you can ignore this
     /// function, see [`crate::plugins`].
     ///
+    /// This function requires that the plugin uses `&[]`s, `&'static str`s and other static
+    /// structures. If you only need to use heap-allocated structures, prefer using the
+    /// [`Config::register_dynamic_plugin`] method.
+    ///
+    /// See [`crate::plugins::Plugin`] to learn how to write plugins.
+    ///
     /// # Example
     ///
     /// ```
     /// use encre_css::{Config, prelude::build_plugin::*};
     ///
-    /// #[derive(Debug)]
-    /// struct Prose;
-    ///
-    /// impl Plugin for Prose {
-    ///     fn can_handle(&self, context: ContextCanHandle) -> bool {
-    ///         matches!(context.modifier, Modifier::Builtin { value: "" | "invert", .. })
-    ///     }
-    ///
-    ///     fn handle(&self, context: &mut ContextHandle) {
-    ///         if let Modifier::Builtin { value, .. } = context.modifier {
-    ///             match *value {
-    ///                 "" => context.buffer.line("color: #333;"),
-    ///                 "invert" => context.buffer.line("color: #eee;"),
-    ///                 _ => unreachable!(),
-    ///             }
-    ///         }
-    ///     }
-    /// }
+    /// const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    ///     prop: SingleProp("color"),
+    ///     values: map! {
+    ///         "prose" => "#333",
+    ///         "prose-invert" => "#eee",
+    ///     },
+    ///     ..ListValues::default()
+    /// });
     ///
     /// let mut config = Config::default();
-    /// config.register_plugin("prose", &Prose);
+    /// config.register_plugin(&PLUGIN);
     ///
     /// let generated = encre_css::generate(
     ///     ["prose", "prose-invert"],
@@ -1942,12 +2145,53 @@ impl Config {
     ///   color: #eee;
     /// }"));
     /// ```
-    pub fn register_plugin<T: Into<Cow<'static, str>>>(
-        &mut self,
-        namespace: T,
-        plugin: &'static (dyn Plugin + Send + Sync),
-    ) {
-        self.custom_plugins.push((namespace.into(), plugin));
+    pub fn register_plugin(&mut self, plugin: &'static StaticPlugin) {
+        self.custom_plugins.push(CustomPlugin::Static(plugin));
+    }
+
+    /// Register a custom plugin which will be used during CSS generation.
+    ///
+    /// Note that if you are not the maintainer of a crate providing plugins, you can ignore this
+    /// function, see [`crate::plugins`].
+    ///
+    /// This function requires that the plugin uses `Vec`s, `String`s and other heap-allocated
+    /// structures. If you only need to use static structures, prefer using the
+    /// [`Config::register_plugin`] method.
+    ///
+    /// See [`crate::plugins::Plugin`] to learn how to write plugins.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use encre_css::{Config, prelude::build_plugin::*};
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    ///     prop: SingleProp("color"),
+    ///     values: map! {
+    ///         "prose" => "#333",
+    ///         "prose-invert" => "#eee",
+    ///     },
+    ///     ..ListValues::default()
+    /// });
+    ///
+    /// let mut config = Config::default();
+    /// config.register_plugin(&PLUGIN);
+    ///
+    /// let generated = encre_css::generate(
+    ///     ["prose", "prose-invert"],
+    ///     &config,
+    /// );
+    ///
+    /// assert!(generated.ends_with(".prose {
+    ///   color: #333;
+    /// }
+    ///
+    /// .prose-invert {
+    ///   color: #eee;
+    /// }"));
+    /// ```
+    pub fn register_dynamic_plugin(&mut self, plugin: DynamicPlugin) {
+        self.custom_plugins.push(CustomPlugin::Dynamic(plugin));
     }
 
     /// Register a custom variant which will be used during CSS generation.
@@ -2079,6 +2323,8 @@ impl fmt::Debug for Config {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use super::*;
     use crate::{generate, utils::testing::base_config};
 
@@ -2228,42 +2474,20 @@ mod tests {
     }
 
     #[test]
-    fn gen_css_with_custom_plugin_and_extra_fields() {
+    fn gen_css_with_custom_plugin() {
         use crate::prelude::build_plugin::*;
-        use std::collections::HashMap;
 
-        #[derive(Debug)]
-        struct EmojiPlugin;
-
-        impl Plugin for EmojiPlugin {
-            fn can_handle(&self, context: ContextCanHandle) -> bool {
-                matches!(context.modifier, Modifier::Builtin { value, .. } if context.config.extra.get("emojis").map_or(false, |val| val.as_table().map_or(false, |table| table.contains_key(*value))))
-            }
-
-            fn handle(&self, context: &mut ContextHandle) {
-                if let Modifier::Builtin { value, .. } = context.modifier {
-                    context.buffer.line(format_args!(
-                        r#"content: {};"#,
-                        context
-                            .config
-                            .extra
-                            .get("emojis")
-                            .unwrap()
-                            .as_table()
-                            .unwrap()
-                            .get(*value)
-                            .unwrap()
-                    ));
-                }
-            }
-        }
+        const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+            prop: SingleProp("content"),
+            values: map! {
+                "emoji-tada" => "\"\u{1f389}\"",
+                "emoji-rocket" => "\"\u{1f680}\"",
+            },
+            ..ListValues::default()
+        });
 
         let mut config = base_config();
-        config.register_plugin("emoji", &EmojiPlugin);
-        config.extra.add(
-            "emojis",
-            HashMap::from_iter([("tada", "\u{1f389}"), ("rocket", "\u{1f680}")]),
-        );
+        config.register_plugin(&PLUGIN);
 
         let generated = generate(["emoji-tada"], &config);
 
@@ -2278,37 +2502,19 @@ mod tests {
     }
 
     #[test]
-    fn gen_css_with_custom_plugin_extra_fields_and_parsed_config() {
+    fn gen_css_with_dynamic_plugin() {
         use crate::prelude::build_plugin::*;
 
-        #[derive(Debug)]
-        struct EmojiPlugin;
-
-        impl Plugin for EmojiPlugin {
-            fn can_handle(&self, context: ContextCanHandle) -> bool {
-                matches!(context.modifier, Modifier::Builtin { value, .. } if context.config.extra.get("emojis").map_or(false, |val| val.as_table().map_or(false, |table| table.contains_key(*value))))
-            }
-
-            fn handle(&self, context: &mut ContextHandle) {
-                if let Modifier::Builtin { value, .. } = context.modifier {
-                    context.buffer.line(format_args!(
-                        r#"content: {};"#,
-                        context
-                            .config
-                            .extra
-                            .get("emojis")
-                            .unwrap()
-                            .as_table()
-                            .unwrap()
-                            .get(*value)
-                            .unwrap()
-                    ));
-                }
-            }
-        }
-
-        let mut config = Config::from_file("tests/fixtures/extra-fields-config.toml").unwrap();
-        config.register_plugin("emoji", &EmojiPlugin);
+        let mut config = Config::default();
+        config.preflight = Preflight::None;
+        config.register_dynamic_plugin(Plugin::ListValues(ListValues {
+            prop: DynamicPropertyName::SingleProp(String::from("content")),
+            values: HashMap::from([
+                (String::from("emoji-tada"), String::from("\"\u{1f389}\"")),
+                (String::from("emoji-rocket"), String::from("\"\u{1f680}\"")),
+            ]),
+            ..ListValues::default_dynamic()
+        }));
 
         let generated = generate(["emoji-tada"], &config);
 
@@ -2317,6 +2523,76 @@ mod tests {
             String::from(
                 ".emoji-tada {
   content: \"\u{1f389}\";
+}"
+            )
+        );
+    }
+
+    #[test]
+    fn gen_css_with_custom_parsed_plugin() {
+        let config = match Config::from_file("tests/fixtures/custom-plugin-config.toml") {
+            Ok(c) => c,
+            Err(e) => panic!("{e}"),
+        };
+
+        let generated = generate(["emoji-tada"], &config);
+
+        assert_eq!(
+            generated,
+            String::from(
+                ".emoji-tada {
+  content: \"\u{1f389}\";
+}"
+            )
+        );
+    }
+
+    #[test]
+    fn gen_css_with_custom_parsed_plugin_and_multiple_props() {
+        let config = match Config::from_file("tests/fixtures/custom-plugin-config-multiple.toml") {
+            Ok(c) => c,
+            Err(e) => panic!("{e}"),
+        };
+
+        let generated = generate(["shape-roof-1"], &config);
+
+        assert_eq!(
+            generated,
+            String::from(
+                ".shape-roof-1 {
+  border-inline: 1px;
+  border-top: 1px;
+}"
+            )
+        );
+    }
+
+    #[test]
+    fn gen_css_with_custom_parsed_plugin_stroke() {
+        let config = match Config::from_file("tests/fixtures/custom-plugin-stroke.toml") {
+            Ok(c) => c,
+            Err(e) => panic!("{e}"),
+        };
+
+        let generated = generate(["custom-stroke-1", "custom-stroke-[12px]", "custom-stroke-[12%,1px]", "custom-stroke-[length:12px]"], &config);
+
+        assert_eq!(
+            generated,
+            String::from(
+                r".custom-stroke-1 {
+  stroke-width: 1px;
+}
+
+.custom-stroke-\[12\%\,1px\] {
+  stroke-width: 12%,1px;
+}
+
+.custom-stroke-\[12px\] {
+  stroke-width: 12px;
+}
+
+.custom-stroke-\[length\:12px\] {
+  stroke-width: 12px;
 }"
             )
         );

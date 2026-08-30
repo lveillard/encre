@@ -2,23 +2,15 @@
 #![doc(alias = "typography")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
-
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(
-            context.modifier,
-            Modifier::Builtin {
-                value: "normal" | "nowrap" | "pre" | "pre-line" | "pre-wrap" | "break-spaces",
-                ..
-            }
-        )
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        if let Modifier::Builtin { value, .. } = context.modifier {
-            context.buffer.line(format_args!("white-space: {value};"));
-        }
-    }
-}
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("white-space"),
+    values: map! {
+        "whitespace-normal" => "normal",
+        "whitespace-nowrap" => "nowrap",
+        "whitespace-pre" => "pre",
+        "whitespace-pre-line" => "pre-line",
+        "whitespace-pre-wrap" => "pre-wrap",
+        "whitespace-break-spaces" => "break-spaces",
+    },
+    ..ListValues::default()
+});

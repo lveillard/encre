@@ -114,10 +114,10 @@
 //!
 //! There is already a lot of utility-first frameworks like [Tailwind
 //! CSS](https://tailwindcss.com), [Windi CSS](https://windicss.org), [Twind](https://twind.dev)
-//! and [Uno CSS](https://uno.antfu.me), but `encre-css` is unique because it is written in Rust and
-//! uses a new architecture, making it **the fastest utility-first framework** (according to the
-//! benchmark [here](https://gitlab.com/encre-org/encre-css-bench) based on
-//! [Uno CSS' benchmark](https://github.com/unocss/unocss/tree/main/bench)). It is also very
+//! and [Uno CSS](https://uno.antfu.me), but `encre-css` is unique because it's written in Rust and
+//! uses a new fully-declarative architecture, making it **the fastest utility-first framework**
+//! (according to the benchmark [here](https://gitlab.com/encre-org/encre-css-bench) based on
+//! [Uno CSS' benchmark](https://github.com/unocss/unocss/tree/main/bench)). It's also very
 //! [customizable](crate::plugins).
 //!
 //! ## Getting started
@@ -206,7 +206,12 @@
     clippy::unimplemented,
     clippy::todo
 )]
-#![allow(clippy::module_name_repetitions, clippy::must_use_candidate)]
+#![allow(
+    clippy::module_name_repetitions,
+    clippy::must_use_candidate,
+    clippy::enum_glob_use,
+    clippy::wildcard_imports
+)]
 
 pub mod config;
 pub mod error;
@@ -245,12 +250,20 @@ pub mod prelude {
     /// ```
     pub mod build_plugin {
         pub use crate::{
-            generator::{generate_at_rules, generate_class, generate_wrapper},
-            generator::{ContextCanHandle, ContextHandle},
-            plugins::Plugin,
-            selector::Modifier,
-            utils::{buffer::Buffer, color, format_negative, shadow, spacing, value_matchers::*},
+            generator::{
+                ContextCanHandle, ContextHandle, generate_at_rules, generate_class,
+                generate_wrapper,
+            },
+            plugins::{
+                Arbitrary, ArbitraryDisambiguate, Color, DynamicPlugin, DynamicPropertyName,
+                ExtraSlash, Functional, ListProperties, ListValues, Number, Plugin,
+                ArbitraryDisambiguateSeparation, PropertyName,
+                PropertyName::*, Spacing, StaticPlugin, StaticPropertyName,
+            },
+            selector::{CssType, Modifier},
+            utils::{buffer::Buffer, color, shadow, spacing, value_matchers::*},
         };
+        pub use phf::{self, phf_map as map};
         pub use std::fmt::{self, Write};
     }
 }

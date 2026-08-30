@@ -21,9 +21,9 @@ pub mod text_indent;
 pub mod text_overflow;
 pub mod text_transform;
 pub mod text_underline_offset;
+pub mod text_wrap;
 pub mod vertical_align;
 pub mod whitespace;
-pub mod text_wrap;
 pub mod word_break;
 
 #[cfg(test)]
@@ -42,7 +42,10 @@ mod tests {
 }"
         );
         assert_eq!(
-            generate(["before:content-[&#39;1234_some_words&#39;]"], &base_config()),
+            generate(
+                ["before:content-[&#39;1234_some_words&#39;]"],
+                &base_config()
+            ),
             r".before\:content-\[\'1234_some_words\'\]::before {
   --en-content: '1234 some words';
   content: var(--en-content);
@@ -56,7 +59,10 @@ mod tests {
 }"
         );
         assert_eq!(
-            generate(["before:content-[&#39;&#91;inside&#93;&#39;]"], &base_config()),
+            generate(
+                ["before:content-[&#39;&#91;inside&#93;&#39;]"],
+                &base_config()
+            ),
             r".before\:content-\[\'\[inside\]\'\]::before {
   --en-content: '[inside]';
   content: var(--en-content);
@@ -73,7 +79,10 @@ mod tests {
 }"#
         );
         assert_eq!(
-            generate(["font-[&#39;Open_Sans&#39;,Roboto,sans-serif]"], &base_config()),
+            generate(
+                ["font-[&#39;Open_Sans&#39;,Roboto,sans-serif]"],
+                &base_config()
+            ),
             r".font-\[\'Open_Sans\'\,Roboto\,sans-serif\] {
   font-family: 'Open Sans',Roboto,sans-serif;
 }"
@@ -427,10 +436,10 @@ mod tests {
         assert_eq!(
             generate(["line-clamp-12"], &base_config()),
             ".line-clamp-12 {
+  -webkit-line-clamp: 12;
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 12;
 }"
         );
     }

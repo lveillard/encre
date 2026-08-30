@@ -2,29 +2,19 @@
 #![doc(alias = "flexbox")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("order"),
+    values: map! {
+        "order-first" => "-9999",
+        "order-last" => "9999",
+        "order-none" => "0",
+    },
+    ..ListValues::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        matches!(context.modifier, Modifier::Builtin { value, .. } if ["first", "last", "none"].contains(&&**value)
-                    || value.parse::<usize>().is_ok_and(|v| v != 0))
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin {
-                is_negative, value, ..
-            } => match *value {
-                "first" => context.buffer.line("order: -9999;"),
-                "last" => context.buffer.line("order: 9999;"),
-                "none" => context.buffer.line("order: 0;"),
-                _ => context.buffer.line(format_args!(
-                    "order: {}{value};",
-                    format_negative(is_negative)
-                )),
-            },
-            Modifier::Arbitrary { .. } => unreachable!(),
-        }
-    }
-}
+pub(crate) const PLUGIN_NUM: StaticPlugin = Plugin::Number(Number {
+    namespace: "order",
+    prop: SingleProp("order"),
+    has_negative: Some(true),
+    ..Number::default()
+});

@@ -272,9 +272,11 @@ impl<'a> ShadowList<'a> {
     /// If the given color contains `{}`, it will be replaced by the old color.
     pub fn replace_all_colors(&mut self, new_color: &'a str) {
         self.0.iter_mut().for_each(|shadow| match shadow {
-            Shadow::Shorthand1 { ref mut color, .. }
-            | Shadow::Shorthand2 { ref mut color, .. }
-            | Shadow::Full { ref mut color, .. } => *color = Cow::Owned(new_color.replace("{}", color)),
+            Shadow::Shorthand1 { color, .. }
+            | Shadow::Shorthand2 { color, .. }
+            | Shadow::Full { color, .. } => {
+                *color = Cow::Owned(new_color.replace("{}", color));
+            }
             _ => (),
         });
     }

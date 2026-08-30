@@ -2,41 +2,24 @@
 #![doc(alias = "layout")]
 use crate::prelude::build_plugin::*;
 
-#[derive(Debug)]
-pub(crate) struct PluginDefinition;
+pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
+    prop: SingleProp("object-position"),
+    values: map! {
+        "object-bottom" => "bottom",
+        "object-center" => "center",
+        "object-left" => "left",
+        "object-bottom-left" => "bottom left",
+        "object-top-left" => "top left",
+        "object-right" => "right",
+        "object-bottom-right" => "bottom right",
+        "object-top-right" => "top right",
+        "object-top" => "top",
+    },
+    ..ListValues::default()
+});
 
-impl Plugin for PluginDefinition {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => [
-                "bottom",
-                "center",
-                "left",
-                "bottom-left",
-                "top-left",
-                "right",
-                "bottom-right",
-                "top-right",
-                "top",
-            ]
-            .contains(value),
-            Modifier::Arbitrary { hint, value, .. } => {
-                *hint == "position" || (hint.is_empty() && is_matching_position(value))
-            }
-        }
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => context.buffer.line(format_args!(
-                "object-position: {};",
-                value.replace('-', " ")
-            )),
-            Modifier::Arbitrary { value, .. } => {
-                context
-                    .buffer
-                    .line(format_args!("object-position: {value};"));
-            }
-        }
-    }
-}
+pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    namespace: "object",
+    prop: SingleProp("object-position"),
+    ..Arbitrary::default()
+});

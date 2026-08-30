@@ -2,14 +2,7 @@
 //!
 /// CSS Styles are derived from TailwindCSS' typography plugin (https://github.com/tailwindlabs/tailwindcss-typography/blob/master/src/styles.js),
 /// under the MIT license.
-use encre_css::{
-    generator::{
-        generate_at_rules, generate_class, generate_wrapper, ContextCanHandle, ContextHandle,
-    },
-    plugins::Plugin,
-    selector::{Modifier, Variant},
-    Config,
-};
+use encre_css::{prelude::build_plugin::*, selector::Variant, Config};
 use std::borrow::Cow;
 
 const PROSE_DEFAULT_CSS: &str = r#".prose {
@@ -626,190 +619,200 @@ const PROSE_DEFAULT_CSS: &str = r#".prose {
   margin-bottom: 0;
 }"#;
 
-const PROSE_SLATE_CSS: &str = "--en-prose-body: #334155;
---en-prose-headings: #0f172a;
---en-prose-lead: #475569;
---en-prose-links: #0f172a;
---en-prose-bold: #0f172a;
---en-prose-counters: #64748b;
---en-prose-bullets: #cbd5e1;
---en-prose-hr: #e2e8f0;
---en-prose-quotes: #0f172a;
---en-prose-quote-borders: #e2e8f0;
---en-prose-captions: #64748b;
---en-prose-code: #0f172a;
---en-prose-pre-code: #e2e8f0;
---en-prose-pre-bg: #1e293b;
---en-prose-th-borders: #cbd5e1;
---en-prose-td-borders: #e2e8f0;
---en-prose-kbd-text: #e2e8f0;
---en-prose-kbd-bg: #1e293b;
---en-prose-invert-body: #cbd5e1;
---en-prose-invert-headings: #fff;
---en-prose-invert-lead: #94a3b8;
---en-prose-invert-links: #fff;
---en-prose-invert-bold: #fff;
---en-prose-invert-counters: #94a3b8;
---en-prose-invert-bullets: #475569;
---en-prose-invert-hr: #334155;
---en-prose-invert-quotes: #f1f5f9;
---en-prose-invert-quote-borders: #334155;
---en-prose-invert-captions: #94a3b8;
---en-prose-invert-code: #fff;
---en-prose-invert-pre-code: #cbd5e1;
---en-prose-invert-pre-bg: rgb(0 0 0 / 50%);
---en-prose-invert-th-borders: #475569;
---en-prose-invert-td-borders: #334155;
---en-prose-invert-kbd-text: #cbd5e1;
---en-prose-invert-kbd-bg: rgb(0 0 0 / 50%);";
+const PROSE_SLATE_CSS: &[&str] = &[
+    "--en-prose-body: #334155;",
+    "--en-prose-headings: #0f172a;",
+    "--en-prose-lead: #475569;",
+    "--en-prose-links: #0f172a;",
+    "--en-prose-bold: #0f172a;",
+    "--en-prose-counters: #64748b;",
+    "--en-prose-bullets: #cbd5e1;",
+    "--en-prose-hr: #e2e8f0;",
+    "--en-prose-quotes: #0f172a;",
+    "--en-prose-quote-borders: #e2e8f0;",
+    "--en-prose-captions: #64748b;",
+    "--en-prose-code: #0f172a;",
+    "--en-prose-pre-code: #e2e8f0;",
+    "--en-prose-pre-bg: #1e293b;",
+    "--en-prose-th-borders: #cbd5e1;",
+    "--en-prose-td-borders: #e2e8f0;",
+    "--en-prose-kbd-text: #e2e8f0;",
+    "--en-prose-kbd-bg: #1e293b;",
+    "--en-prose-invert-body: #cbd5e1;",
+    "--en-prose-invert-headings: #fff;",
+    "--en-prose-invert-lead: #94a3b8;",
+    "--en-prose-invert-links: #fff;",
+    "--en-prose-invert-bold: #fff;",
+    "--en-prose-invert-counters: #94a3b8;",
+    "--en-prose-invert-bullets: #475569;",
+    "--en-prose-invert-hr: #334155;",
+    "--en-prose-invert-quotes: #f1f5f9;",
+    "--en-prose-invert-quote-borders: #334155;",
+    "--en-prose-invert-captions: #94a3b8;",
+    "--en-prose-invert-code: #fff;",
+    "--en-prose-invert-pre-code: #cbd5e1;",
+    "--en-prose-invert-pre-bg: rgb(0 0 0 / 50%);",
+    "--en-prose-invert-th-borders: #475569;",
+    "--en-prose-invert-td-borders: #334155;",
+    "--en-prose-invert-kbd-text: #cbd5e1;",
+    "--en-prose-invert-kbd-bg: rgb(0 0 0 / 50%);",
+];
 
-const PROSE_GRAY_CSS: &str = "--en-prose-body: #374151;
---en-prose-headings: #111827;
---en-prose-lead: #4b5563;
---en-prose-links: #111827;
---en-prose-bold: #111827;
---en-prose-counters: #6b7280;
---en-prose-bullets: #d1d5db;
---en-prose-hr: #e5e7eb;
---en-prose-quotes: #111827;
---en-prose-quote-borders: #e5e7eb;
---en-prose-captions: #6b7280;
---en-prose-code: #111827;
---en-prose-pre-code: #e5e7eb;
---en-prose-pre-bg: #1f2937;
---en-prose-th-borders: #d1d5db;
---en-prose-td-borders: #e5e7eb;
---en-prose-kbd-text: #e5e7eb;
---en-prose-kbd-bg: #1f2937;
---en-prose-invert-body: #d1d5db;
---en-prose-invert-headings: #fff;
---en-prose-invert-lead: #9ca3af;
---en-prose-invert-links: #fff;
---en-prose-invert-bold: #fff;
---en-prose-invert-counters: #9ca3af;
---en-prose-invert-bullets: #4b5563;
---en-prose-invert-hr: #374151;
---en-prose-invert-quotes: #f3f4f6;
---en-prose-invert-quote-borders: #374151;
---en-prose-invert-captions: #9ca3af;
---en-prose-invert-code: #fff;
---en-prose-invert-pre-code: #d1d5db;
---en-prose-invert-pre-bg: rgb(0 0 0 / 50%);
---en-prose-invert-th-borders: #4b5563;
---en-prose-invert-td-borders: #374151;
---en-prose-invert-kbd-text: #d1d5db;
---en-prose-invert-kbd-bg: rgb(0 0 0 / 50%);";
+const PROSE_GRAY_CSS: &[&str] = &[
+    "--en-prose-body: #374151;",
+    "--en-prose-headings: #111827;",
+    "--en-prose-lead: #4b5563;",
+    "--en-prose-links: #111827;",
+    "--en-prose-bold: #111827;",
+    "--en-prose-counters: #6b7280;",
+    "--en-prose-bullets: #d1d5db;",
+    "--en-prose-hr: #e5e7eb;",
+    "--en-prose-quotes: #111827;",
+    "--en-prose-quote-borders: #e5e7eb;",
+    "--en-prose-captions: #6b7280;",
+    "--en-prose-code: #111827;",
+    "--en-prose-pre-code: #e5e7eb;",
+    "--en-prose-pre-bg: #1f2937;",
+    "--en-prose-th-borders: #d1d5db;",
+    "--en-prose-td-borders: #e5e7eb;",
+    "--en-prose-kbd-text: #e5e7eb;",
+    "--en-prose-kbd-bg: #1f2937;",
+    "--en-prose-invert-body: #d1d5db;",
+    "--en-prose-invert-headings: #fff;",
+    "--en-prose-invert-lead: #9ca3af;",
+    "--en-prose-invert-links: #fff;",
+    "--en-prose-invert-bold: #fff;",
+    "--en-prose-invert-counters: #9ca3af;",
+    "--en-prose-invert-bullets: #4b5563;",
+    "--en-prose-invert-hr: #374151;",
+    "--en-prose-invert-quotes: #f3f4f6;",
+    "--en-prose-invert-quote-borders: #374151;",
+    "--en-prose-invert-captions: #9ca3af;",
+    "--en-prose-invert-code: #fff;",
+    "--en-prose-invert-pre-code: #d1d5db;",
+    "--en-prose-invert-pre-bg: rgb(0 0 0 / 50%);",
+    "--en-prose-invert-th-borders: #4b5563;",
+    "--en-prose-invert-td-borders: #374151;",
+    "--en-prose-invert-kbd-text: #d1d5db;",
+    "--en-prose-invert-kbd-bg: rgb(0 0 0 / 50%);",
+];
 
-const PROSE_ZINC_CSS: &str = "--en-prose-body: #3f3f46;
---en-prose-headings: #18181b;
---en-prose-lead: #52525b;
---en-prose-links: #18181b;
---en-prose-bold: #18181b;
---en-prose-counters: #71717a;
---en-prose-bullets: #d4d4d8;
---en-prose-hr: #e4e4e7;
---en-prose-quotes: #18181b;
---en-prose-quote-borders: #e4e4e7;
---en-prose-captions: #71717a;
---en-prose-code: #18181b;
---en-prose-pre-code: #e4e4e7;
---en-prose-pre-bg: #27272a;
---en-prose-th-borders: #d4d4d8;
---en-prose-td-borders: #e4e4e7;
---en-prose-kbd-text: #e4e4e7;
---en-prose-kbd-bg: #27272a;
---en-prose-invert-body: #d4d4d8;
---en-prose-invert-headings: #fff;
---en-prose-invert-lead: #a1a1aa;
---en-prose-invert-links: #fff;
---en-prose-invert-bold: #fff;
---en-prose-invert-counters: #a1a1aa;
---en-prose-invert-bullets: #52525b;
---en-prose-invert-hr: #3f3f46;
---en-prose-invert-quotes: #f4f4f5;
---en-prose-invert-quote-borders: #3f3f46;
---en-prose-invert-captions: #a1a1aa;
---en-prose-invert-code: #fff;
---en-prose-invert-pre-code: #d4d4d8;
---en-prose-invert-pre-bg: rgb(0 0 0 / 50%);
---en-prose-invert-th-borders: #52525b;
---en-prose-invert-td-borders: #3f3f46;
---en-prose-invert-kbd-text: #d4d4d8;
---en-prose-invert-kbd-bg: rgb(0 0 0 / 50%);";
+const PROSE_ZINC_CSS: &[&str] = &[
+    "--en-prose-body: #3f3f46;",
+    "--en-prose-headings: #18181b;",
+    "--en-prose-lead: #52525b;",
+    "--en-prose-links: #18181b;",
+    "--en-prose-bold: #18181b;",
+    "--en-prose-counters: #71717a;",
+    "--en-prose-bullets: #d4d4d8;",
+    "--en-prose-hr: #e4e4e7;",
+    "--en-prose-quotes: #18181b;",
+    "--en-prose-quote-borders: #e4e4e7;",
+    "--en-prose-captions: #71717a;",
+    "--en-prose-code: #18181b;",
+    "--en-prose-pre-code: #e4e4e7;",
+    "--en-prose-pre-bg: #27272a;",
+    "--en-prose-th-borders: #d4d4d8;",
+    "--en-prose-td-borders: #e4e4e7;",
+    "--en-prose-kbd-text: #e4e4e7;",
+    "--en-prose-kbd-bg: #27272a;",
+    "--en-prose-invert-body: #d4d4d8;",
+    "--en-prose-invert-headings: #fff;",
+    "--en-prose-invert-lead: #a1a1aa;",
+    "--en-prose-invert-links: #fff;",
+    "--en-prose-invert-bold: #fff;",
+    "--en-prose-invert-counters: #a1a1aa;",
+    "--en-prose-invert-bullets: #52525b;",
+    "--en-prose-invert-hr: #3f3f46;",
+    "--en-prose-invert-quotes: #f4f4f5;",
+    "--en-prose-invert-quote-borders: #3f3f46;",
+    "--en-prose-invert-captions: #a1a1aa;",
+    "--en-prose-invert-code: #fff;",
+    "--en-prose-invert-pre-code: #d4d4d8;",
+    "--en-prose-invert-pre-bg: rgb(0 0 0 / 50%);",
+    "--en-prose-invert-th-borders: #52525b;",
+    "--en-prose-invert-td-borders: #3f3f46;",
+    "--en-prose-invert-kbd-text: #d4d4d8;",
+    "--en-prose-invert-kbd-bg: rgb(0 0 0 / 50%);",
+];
 
-const PROSE_NEUTRAL_CSS: &str = "--en-prose-body: #404040;
---en-prose-headings: #171717;
---en-prose-lead: #525252;
---en-prose-links: #171717;
---en-prose-bold: #171717;
---en-prose-counters: #737373;
---en-prose-bullets: #d4d4d4;
---en-prose-hr: #e5e5e5;
---en-prose-quotes: #171717;
---en-prose-quote-borders: #e5e5e5;
---en-prose-captions: #737373;
---en-prose-code: #171717;
---en-prose-pre-code: #e5e5e5;
---en-prose-pre-bg: #262626;
---en-prose-th-borders: #d4d4d4;
---en-prose-td-borders: #e5e5e5;
---en-prose-kbd-text: #e5e5e5;
---en-prose-kbd-bg: #262626;
---en-prose-invert-body: #d4d4d4;
---en-prose-invert-headings: #fff;
---en-prose-invert-lead: #a3a3a3;
---en-prose-invert-links: #fff;
---en-prose-invert-bold: #fff;
---en-prose-invert-counters: #a3a3a3;
---en-prose-invert-bullets: #525252;
---en-prose-invert-hr: #404040;
---en-prose-invert-quotes: #f5f5f5;
---en-prose-invert-quote-borders: #404040;
---en-prose-invert-captions: #a3a3a3;
---en-prose-invert-code: #fff;
---en-prose-invert-pre-code: #d4d4d4;
---en-prose-invert-pre-bg: rgb(0 0 0 / 50%);
---en-prose-invert-th-borders: #525252;
---en-prose-invert-td-borders: #404040;
---en-prose-invert-kbd-text: #d4d4d4;
---en-prose-invert-kbd-bg: #rgb(0 0 0 / 50%);";
+const PROSE_NEUTRAL_CSS: &[&str] = &[
+    "--en-prose-body: #404040;",
+    "--en-prose-headings: #171717;",
+    "--en-prose-lead: #525252;",
+    "--en-prose-links: #171717;",
+    "--en-prose-bold: #171717;",
+    "--en-prose-counters: #737373;",
+    "--en-prose-bullets: #d4d4d4;",
+    "--en-prose-hr: #e5e5e5;",
+    "--en-prose-quotes: #171717;",
+    "--en-prose-quote-borders: #e5e5e5;",
+    "--en-prose-captions: #737373;",
+    "--en-prose-code: #171717;",
+    "--en-prose-pre-code: #e5e5e5;",
+    "--en-prose-pre-bg: #262626;",
+    "--en-prose-th-borders: #d4d4d4;",
+    "--en-prose-td-borders: #e5e5e5;",
+    "--en-prose-kbd-text: #e5e5e5;",
+    "--en-prose-kbd-bg: #262626;",
+    "--en-prose-invert-body: #d4d4d4;",
+    "--en-prose-invert-headings: #fff;",
+    "--en-prose-invert-lead: #a3a3a3;",
+    "--en-prose-invert-links: #fff;",
+    "--en-prose-invert-bold: #fff;",
+    "--en-prose-invert-counters: #a3a3a3;",
+    "--en-prose-invert-bullets: #525252;",
+    "--en-prose-invert-hr: #404040;",
+    "--en-prose-invert-quotes: #f5f5f5;",
+    "--en-prose-invert-quote-borders: #404040;",
+    "--en-prose-invert-captions: #a3a3a3;",
+    "--en-prose-invert-code: #fff;",
+    "--en-prose-invert-pre-code: #d4d4d4;",
+    "--en-prose-invert-pre-bg: rgb(0 0 0 / 50%);",
+    "--en-prose-invert-th-borders: #525252;",
+    "--en-prose-invert-td-borders: #404040;",
+    "--en-prose-invert-kbd-text: #d4d4d4;",
+    "--en-prose-invert-kbd-bg: #rgb(0 0 0 / 50%);",
+];
 
-const PROSE_STONE_CSS: &str = "--en-prose-body: #44403c;
---en-prose-headings: #1c1917;
---en-prose-lead: #57534e;
---en-prose-links: #1c1917;
---en-prose-bold: #1c1917;
---en-prose-counters: #78716c;
---en-prose-bullets: #d6d3d1;
---en-prose-hr: #e7e5e4;
---en-prose-quotes: #1c1917;
---en-prose-quote-borders: #e7e5e4;
---en-prose-captions: #78716c;
---en-prose-code: #1c1917;
---en-prose-pre-code: #e7e5e4;
---en-prose-pre-bg: #292524;
---en-prose-th-borders: #d6d3d1;
---en-prose-td-borders: #e7e5e4;
---en-prose-kbd-text: #e7e5e4;
---en-prose-kbd-bg: #292524;
---en-prose-invert-body: #d6d3d1;
---en-prose-invert-headings: #fff;
---en-prose-invert-lead: #a8a29e;
---en-prose-invert-links: #fff;
---en-prose-invert-bold: #fff;
---en-prose-invert-counters: #a8a29e;
---en-prose-invert-bullets: #57534e;
---en-prose-invert-hr: #44403c;
---en-prose-invert-quotes: #f5f5f4;
---en-prose-invert-quote-borders: #44403c;
---en-prose-invert-captions: #a8a29e;
---en-prose-invert-code: #fff;
---en-prose-invert-pre-code: #d6d3d1;
---en-prose-invert-pre-bg: rgb(0 0 0 / 50%);
---en-prose-invert-th-borders: #57534e;
---en-prose-invert-td-borders: #44403c;
---en-prose-invert-kbd-text: #d6d3d1;
---en-prose-invert-kbd-bg: rgb(0 0 0 / 50%);";
+const PROSE_STONE_CSS: &[&str] = &[
+    "--en-prose-body: #44403c;",
+    "--en-prose-headings: #1c1917;",
+    "--en-prose-lead: #57534e;",
+    "--en-prose-links: #1c1917;",
+    "--en-prose-bold: #1c1917;",
+    "--en-prose-counters: #78716c;",
+    "--en-prose-bullets: #d6d3d1;",
+    "--en-prose-hr: #e7e5e4;",
+    "--en-prose-quotes: #1c1917;",
+    "--en-prose-quote-borders: #e7e5e4;",
+    "--en-prose-captions: #78716c;",
+    "--en-prose-code: #1c1917;",
+    "--en-prose-pre-code: #e7e5e4;",
+    "--en-prose-pre-bg: #292524;",
+    "--en-prose-th-borders: #d6d3d1;",
+    "--en-prose-td-borders: #e7e5e4;",
+    "--en-prose-kbd-text: #e7e5e4;",
+    "--en-prose-kbd-bg: #292524;",
+    "--en-prose-invert-body: #d6d3d1;",
+    "--en-prose-invert-headings: #fff;",
+    "--en-prose-invert-lead: #a8a29e;",
+    "--en-prose-invert-links: #fff;",
+    "--en-prose-invert-bold: #fff;",
+    "--en-prose-invert-counters: #a8a29e;",
+    "--en-prose-invert-bullets: #57534e;",
+    "--en-prose-invert-hr: #44403c;",
+    "--en-prose-invert-quotes: #f5f5f4;",
+    "--en-prose-invert-quote-borders: #44403c;",
+    "--en-prose-invert-captions: #a8a29e;",
+    "--en-prose-invert-code: #fff;",
+    "--en-prose-invert-pre-code: #d6d3d1;",
+    "--en-prose-invert-pre-bg: rgb(0 0 0 / 50%);",
+    "--en-prose-invert-th-borders: #57534e;",
+    "--en-prose-invert-td-borders: #44403c;",
+    "--en-prose-invert-kbd-text: #d6d3d1;",
+    "--en-prose-invert-kbd-bg: rgb(0 0 0 / 50%);",
+];
 
 const PROSE_SM_CSS: &[(&str, &str)] = &[
     (r#""#, "font-size: 0.875rem;\nline-height: 1.7142857;"),
@@ -1060,121 +1063,53 @@ const PROSE_INVERT_CSS: &str = "--en-prose-body: var(--en-prose-invert-body);
 --en-prose-kbd-text: var(--en-prose-invert-kbd-text);
 --en-prose-kbd-bg: var(--en-prose-invert-kbd-bg);";
 
-#[derive(Debug)]
-pub struct Prose;
+const PLUGIN: StaticPlugin = Plugin::ListProperties(ListProperties {
+    props: map! {
+        "prose" => &[],
+        "prose-invert" => &[],
+        "prose-gray" => PROSE_GRAY_CSS,
+        "prose-slate" => PROSE_SLATE_CSS,
+        "prose-zinc" => PROSE_ZINC_CSS,
+        "prose-neutral" => PROSE_NEUTRAL_CSS,
+        "prose-stone" => PROSE_STONE_CSS,
+    },
+    extra_css: Some(map! {
+        "prose" => PROSE_DEFAULT_CSS,
+        "prose-invert" => PROSE_INVERT_CSS,
+    }),
+    ..ListProperties::default()
+});
 
-impl Plugin for Prose {
-    fn can_handle(&self, context: ContextCanHandle) -> bool {
+const PLUGIN_CUSTOMIZATION: StaticPlugin = Plugin::Functional(Functional {
+    namespace: "prose",
+    can_handle: |context| {
         matches!(context.modifier, Modifier::Builtin { value, .. } if [
                 "", "sm", "base", "lg", "xl", "2xl", "gray", "slate", "zinc", "neutral", "stone",
                 "invert",
             ]
             .contains(value))
-    }
+    },
+    handle: |context| {
+        let css_rules = match context.modifier {
+            Modifier::Builtin { value: "sm", .. } => PROSE_SM_CSS,
+            Modifier::Builtin { value: "base", .. } => PROSE_BASE_CSS,
+            Modifier::Builtin { value: "lg", .. } => PROSE_LG_CSS,
+            Modifier::Builtin { value: "xl", .. } => PROSE_XL_CSS,
+            Modifier::Builtin { value: "2xl", .. } => PROSE_2XL_CSS,
+            _ => return,
+        };
 
-    fn needs_wrapping(&self) -> bool {
-        false
-    }
-
-    fn handle(&self, context: &mut ContextHandle) {
-        match context.modifier {
-            Modifier::Builtin { value, .. } => match *value {
-                "" => {
-                    generate_at_rules(context, |context| {
-                        context.buffer.lines(PROSE_DEFAULT_CSS.lines());
-                    });
-                }
-                "sm" => {
-                    generate_at_rules(context, |context| {
-                        PROSE_SM_CSS.iter().for_each(|rule| {
-                            generate_class(
-                                context,
-                                |context| context.buffer.lines(rule.1.lines()),
-                                rule.0,
-                            )
-                        })
-                    });
-                }
-                "base" => {
-                    generate_at_rules(context, |context| {
-                        PROSE_BASE_CSS.iter().for_each(|rule| {
-                            generate_class(
-                                context,
-                                |context| context.buffer.lines(rule.1.lines()),
-                                rule.0,
-                            )
-                        })
-                    });
-                }
-                "lg" => {
-                    generate_at_rules(context, |context| {
-                        PROSE_LG_CSS.iter().for_each(|rule| {
-                            generate_class(
-                                context,
-                                |context| context.buffer.lines(rule.1.lines()),
-                                rule.0,
-                            )
-                        })
-                    });
-                }
-                "xl" => {
-                    generate_at_rules(context, |context| {
-                        PROSE_XL_CSS.iter().for_each(|rule| {
-                            generate_class(
-                                context,
-                                |context| context.buffer.lines(rule.1.lines()),
-                                rule.0,
-                            )
-                        })
-                    });
-                }
-                "2xl" => {
-                    generate_at_rules(context, |context| {
-                        PROSE_2XL_CSS.iter().for_each(|rule| {
-                            generate_class(
-                                context,
-                                |context| context.buffer.lines(rule.1.lines()),
-                                rule.0,
-                            )
-                        })
-                    });
-                }
-                "gray" => {
-                    generate_wrapper(context, |context| {
-                        context.buffer.lines(PROSE_GRAY_CSS.lines());
-                    });
-                }
-                "slate" => {
-                    generate_wrapper(context, |context| {
-                        context.buffer.lines(PROSE_SLATE_CSS.lines());
-                    });
-                }
-                "zinc" => {
-                    generate_wrapper(context, |context| {
-                        context.buffer.lines(PROSE_ZINC_CSS.lines());
-                    });
-                }
-                "neutral" => {
-                    generate_wrapper(context, |context| {
-                        context.buffer.lines(PROSE_NEUTRAL_CSS.lines());
-                    });
-                }
-                "stone" => {
-                    generate_wrapper(context, |context| {
-                        context.buffer.lines(PROSE_STONE_CSS.lines());
-                    });
-                }
-                "invert" => {
-                    generate_wrapper(context, |context| {
-                        context.buffer.lines(PROSE_INVERT_CSS.lines());
-                    });
-                }
-                _ => unreachable!(),
-            },
-            Modifier::Arbitrary { .. } => unreachable!(),
-        }
-    }
-}
+        generate_at_rules(context, |context| {
+            css_rules.iter().for_each(|rule| {
+                generate_class(
+                    context,
+                    |context| context.buffer.lines(rule.1.lines()),
+                    rule.0,
+                )
+            })
+        });
+    },
+});
 
 pub fn register(config: &mut Config) {
     for (name, selector) in [
@@ -1224,13 +1159,15 @@ pub fn register(config: &mut Config) {
         );
     }
 
-    config.register_plugin("prose", &Prose);
+    config.register_plugin(&PLUGIN);
+    config.register_plugin(&PLUGIN_CUSTOMIZATION);
 }
 
 #[cfg(test)]
 mod tests {
     use encre_css::Config;
 
+    use pretty_assertions::assert_eq;
     use std::fs;
 
     #[test]
