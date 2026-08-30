@@ -1,21 +1,13 @@
 use std::ops::Range;
 
 use crate::{
-    Config,
-    error::{ParseError, ParseErrorKind},
-    generator::ContextCanHandle,
-    plugins::{
-        Arbitrary, Color, CustomPlugin, DynamicPluginArbitraryMatcher, DynamicPropertyName,
-        Functional, ListProperties, ListValues, Number, Plugin, PluginArbitraryMatcher,
-        PluginArbitraryMatcherSeparation, PropertyName, Spacing, StaticPluginArbitraryMatcher,
-        StaticPropertyName,
-    },
-    selector::{
+    Config, error::{ParseError, ParseErrorKind}, generator::ContextCanHandle, plugins::{
+        Arbitrary, Color, CustomPlugin, DynamicPluginArbitraryMatcher, DynamicPropertyName, Functional, ListProperties, ListValues, Number, Plugin, PluginArbitraryMatcher, PluginArbitraryMatcherSeparation, PropertyName, Spacing, StaticPluginArbitraryMatcher, StaticPropertyName,
+    }, selector::{
         Modifier, Selector, Variant,
         parser::{ARBITRARY_END, ARBITRARY_START, LAYER_BUILTIN, LAYER_CUSTOM, to_css_value},
         trie::{Trie, TrieData},
-    },
-    utils::{color, spacing, value_matchers::*},
+    }, utils::{color, spacing, value_matchers::*},
 };
 
 fn is_template_matching_prop_type(
@@ -49,13 +41,11 @@ fn dynamic_is_template_matching_prop_type(
 }
 
 fn is_arbitrary_matching(
-    (matchers, modifier): &(
-        &[StaticPluginArbitraryMatcher],
-        PluginArbitraryMatcherSeparation,
-    ),
+    matchers: &[StaticPluginArbitraryMatcher],
+    matcher_separation: PluginArbitraryMatcherSeparation,
     value: &str,
 ) -> bool {
-    let values: Vec<&str> = match modifier {
+    let values: Vec<&str> = match matcher_separation {
         PluginArbitraryMatcherSeparation::None => std::iter::once(value).collect(),
         PluginArbitraryMatcherSeparation::Comma => value.split(',').collect(),
         PluginArbitraryMatcherSeparation::Space => value.split(' ').collect(),
@@ -94,13 +84,11 @@ fn is_arbitrary_matching(
 }
 
 fn dynamic_is_arbitrary_matching(
-    (matchers, modifier): &(
-        Vec<DynamicPluginArbitraryMatcher>,
-        PluginArbitraryMatcherSeparation,
-    ),
+    matchers: &[DynamicPluginArbitraryMatcher],
+    matcher_separation: PluginArbitraryMatcherSeparation,
     value: &str,
 ) -> bool {
-    let values: Vec<&str> = match modifier {
+    let values: Vec<&str> = match matcher_separation {
         PluginArbitraryMatcherSeparation::None => std::iter::once(value).collect(),
         PluginArbitraryMatcherSeparation::Comma => value.split(',').collect(),
         PluginArbitraryMatcherSeparation::Space => value.split(' ').collect(),
@@ -406,25 +394,27 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
 
         (
             CustomPlugin::Static(Plugin::Arbitrary(Arbitrary {
-                hints, matchers, ..
+                disambiguate, ..
             })),
             Modifier::Arbitrary { hint, value },
         ) => {
-            hint.is_some_and(|h| hints.is_some_and(|hints| hints.contains(&h)))
-                || (hint.is_none()
-                    && matchers.is_none_or(|matchers| is_arbitrary_matching(&matchers, value)))
+            disambiguate.as_ref().is_none_or(|disambiguate| {
+                hint.is_some_and(|h| disambiguate.hints.contains(&h))
+                    || (hint.is_none()
+                        && is_arbitrary_matching(&disambiguate.matchers, disambiguate.matcher_separation, value))
+            })
         }
         (
             CustomPlugin::Dynamic(Plugin::Arbitrary(Arbitrary {
-                hints, matchers, ..
+                disambiguate, ..
             })),
             Modifier::Arbitrary { hint, value },
         ) => {
-            hint.is_some_and(|h| hints.as_ref().is_some_and(|hints| hints.contains(&h)))
-                || (hint.is_none()
-                    && matchers
-                        .as_ref()
-                        .is_none_or(|matchers| dynamic_is_arbitrary_matching(matchers, value)))
+            disambiguate.as_ref().is_none_or(|disambiguate| {
+                hint.is_some_and(|h| disambiguate.hints.contains(&h))
+                    || (hint.is_none()
+                        && dynamic_is_arbitrary_matching(&disambiguate.matchers, disambiguate.matcher_separation, value))
+            })
         }
 
         (

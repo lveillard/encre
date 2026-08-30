@@ -21,10 +21,10 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "bg",
     prop: SingleProp("background-position"),
-    hints: Some(&[ArbitraryHint::Position]),
-    matchers: Some((
-        &[PluginArbitraryMatcher::Position],
-        PluginArbitraryMatcherSeparation::Both,
-    )),
+    disambiguate: Some(ArbitraryDisambiguate {
+        matchers: &[PluginArbitraryMatcher::Position],
+        matcher_separation: PluginArbitraryMatcherSeparation::Both,
+        hints: &[ArbitraryHint::Position],
+    }),
     ..Arbitrary::default()
 });

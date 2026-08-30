@@ -20,11 +20,11 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "ring",
     prop: SingleProp("--en-ring-shadow"),
     extra_rule_css: Some(&[BOX_SHADOW]),
-    hints: Some(&[ArbitraryHint::Length]),
-    matchers: Some((
-        &[PluginArbitraryMatcher::Length],
-        PluginArbitraryMatcherSeparation::None,
-    )),
+    disambiguate: Some(ArbitraryDisambiguate {
+        matchers: &[PluginArbitraryMatcher::Length],
+        matcher_separation: PluginArbitraryMatcherSeparation::None,
+        hints: &[ArbitraryHint::Length],
+    }),
     template: Some(SingleProp(
         "var(--en-ring-inset) 0 0 0 calc({} + var(--en-ring-offset-width)) var(--en-ring-color)",
     )),
@@ -46,11 +46,11 @@ pub(crate) const PLUGIN_INSET_2: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "inset-ring",
     prop: SingleProp("--en-inset-ring-shadow"),
     extra_rule_css: Some(&[INSET_BOX_SHADOW]),
-    hints: Some(&[ArbitraryHint::Length]),
-    matchers: Some((
-        &[PluginArbitraryMatcher::Length],
-        PluginArbitraryMatcherSeparation::None,
-    )),
+    disambiguate: Some(ArbitraryDisambiguate {
+        matchers: &[PluginArbitraryMatcher::Length],
+        matcher_separation: PluginArbitraryMatcherSeparation::None,
+        hints: &[ArbitraryHint::Length],
+    }),
     template: Some(SingleProp(
         "inset 0 0 0 calc({value} + var(--en-ring-offset-width)) var(--en-ring-color)",
     )),

@@ -18,16 +18,10 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
     ..ListValues::default()
 });
 
+// This plugin is the default when encountering a `font-` utility class with an arbitrary
+// value, so it does not need disambiguation
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "font",
     prop: SingleProp("font-weight"),
-    hints: Some(&[ArbitraryHint::Number]),
-    matchers: Some((
-        &[
-            PluginArbitraryMatcher::CustomMultiple(&["normal", "bold", "lighter", "bolder"]),
-            PluginArbitraryMatcher::Number,
-        ],
-        PluginArbitraryMatcherSeparation::None,
-    )),
     ..Arbitrary::default()
 });

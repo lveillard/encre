@@ -12,15 +12,15 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "stroke",
     prop: SingleProp("stroke-width"),
-    hints: Some(&[ArbitraryHint::Length, ArbitraryHint::Percentage]),
-    matchers: Some((
-        &[
+    disambiguate: Some(ArbitraryDisambiguate {
+        matchers: &[
             PluginArbitraryMatcher::Length,
             PluginArbitraryMatcher::Percentage,
             PluginArbitraryMatcher::LineWidth,
             PluginArbitraryMatcher::Number,
         ],
-        PluginArbitraryMatcherSeparation::Comma,
-    )),
+        matcher_separation: PluginArbitraryMatcherSeparation::Comma,
+        hints: &[ArbitraryHint::Length, ArbitraryHint::Percentage],
+    }),
     ..Arbitrary::default()
 });

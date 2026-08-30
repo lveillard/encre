@@ -32,11 +32,11 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "bg",
     prop: SingleProp("background-image"),
-    hints: Some(&[ArbitraryHint::Url, ArbitraryHint::Image]),
-    matchers: Some((
-        &[PluginArbitraryMatcher::Image],
-        PluginArbitraryMatcherSeparation::None,
-    )),
+    disambiguate: Some(ArbitraryDisambiguate {
+        matchers: &[PluginArbitraryMatcher::Image],
+        matcher_separation: PluginArbitraryMatcherSeparation::None,
+        hints: &[ArbitraryHint::Url, ArbitraryHint::Image],
+    }),
     ..Arbitrary::default()
 });
 

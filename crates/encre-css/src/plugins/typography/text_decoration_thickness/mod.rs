@@ -21,14 +21,14 @@ pub(crate) const PLUGIN_LIST: StaticPlugin = Plugin::ListValues(ListValues {
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "decoration",
     prop: SingleProp("text-decoration-thickness"),
-    hints: Some(&[ArbitraryHint::Length, ArbitraryHint::Percentage]),
-    matchers: Some((
-        &[
+    disambiguate: Some(ArbitraryDisambiguate {
+        matchers: &[
             PluginArbitraryMatcher::Length,
             PluginArbitraryMatcher::Percentage,
             PluginArbitraryMatcher::CustomMultiple(&["auto", "from-font"]),
         ],
-        PluginArbitraryMatcherSeparation::None,
-    )),
+        matcher_separation: PluginArbitraryMatcherSeparation::None,
+        hints: &[ArbitraryHint::Length, ArbitraryHint::Percentage],
+    }),
     ..Arbitrary::default()
 });

@@ -16,14 +16,11 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> P {
         Plugin::Arbitrary(Arbitrary {
             namespace,
             prop,
-            hints: Some(&[ArbitraryHint::Length, ArbitraryHint::LineWidth]),
-            matchers: Some((
-                &[
-                    PluginArbitraryMatcher::Length,
-                    PluginArbitraryMatcher::LineWidth,
-                ],
-                PluginArbitraryMatcherSeparation::Space,
-            )),
+            disambiguate: Some(ArbitraryDisambiguate {
+                matchers: &[PluginArbitraryMatcher::Length, PluginArbitraryMatcher::LineWidth],
+                matcher_separation: PluginArbitraryMatcherSeparation::Space,
+                hints: &[ArbitraryHint::Length, ArbitraryHint::LineWidth],
+            }),
             ..Arbitrary::default()
         }),
     )

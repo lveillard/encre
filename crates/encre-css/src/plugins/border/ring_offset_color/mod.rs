@@ -12,11 +12,11 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Color(Color {
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "ring-offset",
     prop: SingleProp("--en-ring-offset-color"),
-    hints: Some(&[ArbitraryHint::Color]),
-    matchers: Some((
-        &[PluginArbitraryMatcher::Color],
-        PluginArbitraryMatcherSeparation::None,
-    )),
+    disambiguate: Some(ArbitraryDisambiguate {
+        matchers: &[PluginArbitraryMatcher::Color],
+        matcher_separation: PluginArbitraryMatcherSeparation::None,
+        hints: &[ArbitraryHint::Color],
+    }),
     extra_rule_css: Some(&[super::ring_offset_width::RING_OFFSET_SHADOW]),
     ..Arbitrary::default()
 });

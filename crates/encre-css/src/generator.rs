@@ -1,11 +1,16 @@
 //! Define the main [`generate`] function used to scan content and to generate CSS styles.
 use crate::{
-    config::{Config, MaxShortcutDepth}, plugins::{
-        Arbitrary, Color, CustomPlugin, DynamicPropertyName, ExtraSlash, Functional, ListProperties, ListValues, Number, Plugin, PropertyName, Spacing, StaticPropertyName,
-    }, preflight::Preflight, selector::{
+    config::{Config, MaxShortcutDepth},
+    plugins::{
+        Arbitrary, Color, CustomPlugin, DynamicPropertyName, ExtraSlash, Functional,
+        ListProperties, ListValues, Number, Plugin, PropertyName, Spacing, StaticPropertyName,
+    },
+    preflight::Preflight,
+    selector::{
         Modifier, Selector, Variant, parse,
         trie::{Trie, build_trie},
-    }, utils::{buffer::Buffer, color, shadow, spacing},
+    },
+    utils::{buffer::Buffer, color, shadow, spacing},
 };
 
 use std::{
@@ -88,7 +93,9 @@ fn push_css_lines_with_templating(
         PropertyName::SingleProp(prop) => {
             let value = if let Some(template) = template {
                 let PropertyName::SingleProp(template) = template else {
-                    unreachable!("this variant is asserted when finding the plugin in find_plugin.rs");
+                    unreachable!(
+                        "this variant is asserted when finding the plugin in find_plugin.rs"
+                    );
                 };
                 Cow::Owned(transform_template(template))
             } else {
@@ -100,7 +107,9 @@ fn push_css_lines_with_templating(
         PropertyName::MultipleProps(props) => {
             if let Some(template) = template {
                 let PropertyName::MultipleProps(template) = template else {
-                    unreachable!("this variant is asserted when finding the plugin in find_plugin.rs");
+                    unreachable!(
+                        "this variant is asserted when finding the plugin in find_plugin.rs"
+                    );
                 };
                 for (i, prop) in props.iter().enumerate() {
                     // The length of plugin.template_multiple is asserted to be the
@@ -137,7 +146,9 @@ fn dynamic_push_css_lines_with_templating(
         DynamicPropertyName::SingleProp(prop) => {
             let value = if let Some(template) = &template {
                 let PropertyName::SingleProp(template) = template else {
-                    unreachable!("this variant is asserted when finding the plugin in find_plugin.rs");
+                    unreachable!(
+                        "this variant is asserted when finding the plugin in find_plugin.rs"
+                    );
                 };
                 Cow::Owned(transform_template(template))
             } else {
@@ -149,7 +160,9 @@ fn dynamic_push_css_lines_with_templating(
         DynamicPropertyName::MultipleProps(props) => {
             if let Some(template) = &template {
                 let PropertyName::MultipleProps(template) = template else {
-                    unreachable!("this variant is asserted when finding the plugin in find_plugin.rs");
+                    unreachable!(
+                        "this variant is asserted when finding the plugin in find_plugin.rs"
+                    );
                 };
                 for (i, prop) in props.iter().enumerate() {
                     // The length of plugin.template_multiple is asserted to be the
@@ -516,13 +529,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                     context,
                     |context| {
                         let value = color::get(context.config, value).unwrap();
-                        push_css_lines_with_templating(
-                            prop,
-                            template,
-                            &value,
-                            None,
-                            context,
-                        );
+                        push_css_lines_with_templating(prop, template, &value, None, context);
 
                         if let Some(extra_rule_css) = extra_rule_css {
                             context.buffer.lines(*extra_rule_css);
@@ -553,11 +560,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                     |context| {
                         let value = color::get(context.config, value).unwrap();
                         dynamic_push_css_lines_with_templating(
-                            prop,
-                            template,
-                            &*value,
-                            None,
-                            context,
+                            prop, template, &*value, None, context,
                         );
 
                         if let Some(extra_rule_css) = extra_rule_css {
@@ -714,13 +717,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                             value
                         };
 
-                        push_css_lines_with_templating(
-                            prop,
-                            template,
-                            value,
-                            None,
-                            context,
-                        );
+                        push_css_lines_with_templating(prop, template, value, None, context);
 
                         if let Some(extra_rule_css) = extra_rule_css {
                             context.buffer.lines(*extra_rule_css);
@@ -761,11 +758,7 @@ fn handle(plugin: &CustomPlugin, context: &mut ContextHandle) {
                         };
 
                         dynamic_push_css_lines_with_templating(
-                            prop,
-                            template,
-                            value,
-                            None,
-                            context,
+                            prop, template, value, None, context,
                         );
 
                         if let Some(extra_rule_css) = extra_rule_css {
@@ -2033,6 +2026,34 @@ mod tests {
 }"
             )
         );
+    }
+
+    #[test]
+    fn disambiguation_works() {
+        let config = base_config();
+        let generated = generate(
+            ["font-[bolder] font-[300] font-[Open_Sans] font-[generic-name:var(--font-family)] font-[number:var(--font-weight)]"],
+            &config,
+        );
+        assert_eq!(generated, String::from(r".font-\[Open_Sans\] {
+  font-family: Open Sans;
+}
+
+.font-\[generic-name\:var\(--font-family\)\] {
+  font-family: var(--font-family);
+}
+
+.font-\[300\] {
+  font-weight: 300;
+}
+
+.font-\[bolder\] {
+  font-weight: bolder;
+}
+
+.font-\[number\:var\(--font-weight\)\] {
+  font-weight: var(--font-weight);
+}"));
     }
 
     #[test]

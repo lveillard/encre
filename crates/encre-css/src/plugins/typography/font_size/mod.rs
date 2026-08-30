@@ -24,20 +24,20 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::ListProperties(ListProperties {
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "text",
     prop: SingleProp("font-size"),
-    hints: Some(&[
-        ArbitraryHint::Length,
-        ArbitraryHint::Percentage,
-        ArbitraryHint::AbsoluteSize,
-        ArbitraryHint::RelativeSize,
-    ]),
-    matchers: Some((
-        &[
+    disambiguate: Some(ArbitraryDisambiguate {
+        matchers: &[
             PluginArbitraryMatcher::Length,
             PluginArbitraryMatcher::Percentage,
             PluginArbitraryMatcher::AbsoluteSize,
             PluginArbitraryMatcher::RelativeSize,
         ],
-        PluginArbitraryMatcherSeparation::None,
-    )),
+        matcher_separation: PluginArbitraryMatcherSeparation::None,
+        hints: &[
+            ArbitraryHint::Length,
+            ArbitraryHint::Percentage,
+            ArbitraryHint::AbsoluteSize,
+            ArbitraryHint::RelativeSize,
+        ],
+    }),
     ..Arbitrary::default()
 });

@@ -23,14 +23,11 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlu
         Plugin::Arbitrary(Arbitrary {
             namespace,
             prop,
-            hints: Some(&[]),
-            matchers: Some((
-                &[
-                    PluginArbitraryMatcher::Length,
-                    PluginArbitraryMatcher::Percentage,
-                ],
-                PluginArbitraryMatcherSeparation::Space,
-            )),
+            disambiguate: Some(ArbitraryDisambiguate {
+                matchers: &[PluginArbitraryMatcher::Length, PluginArbitraryMatcher::Percentage],
+                matcher_separation: PluginArbitraryMatcherSeparation::Space,
+                hints: &[ArbitraryHint::Length, ArbitraryHint::Percentage],
+            }),
             ..Arbitrary::default()
         }),
     )

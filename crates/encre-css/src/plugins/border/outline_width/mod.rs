@@ -13,13 +13,10 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "outline",
     prop: SingleProp("outline-width"),
-    hints: Some(&[ArbitraryHint::Length]),
-    matchers: Some((
-        &[
-            PluginArbitraryMatcher::Length,
-            PluginArbitraryMatcher::LineWidth,
-        ],
-        PluginArbitraryMatcherSeparation::None,
-    )),
+    disambiguate: Some(ArbitraryDisambiguate {
+        matchers: &[PluginArbitraryMatcher::Length, PluginArbitraryMatcher::LineWidth],
+        matcher_separation: PluginArbitraryMatcherSeparation::None,
+        hints: &[ArbitraryHint::Length],
+    }),
     ..Arbitrary::default()
 });

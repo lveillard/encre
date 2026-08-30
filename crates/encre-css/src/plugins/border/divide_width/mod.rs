@@ -27,14 +27,11 @@ pub(crate) const PLUGIN_X_3: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "divide-x",
     prop: MultipleProps(&["border-inline-start-width", "border-inline-end-width"]),
     extra_class: Some(" > :not([hidden]) ~ :not([hidden])"),
-    hints: Some(&[ArbitraryHint::Length]),
-    matchers: Some((
-        &[
-            PluginArbitraryMatcher::Length,
-            PluginArbitraryMatcher::LineWidth,
-        ],
-        PluginArbitraryMatcherSeparation::Space,
-    )),
+    disambiguate: Some(ArbitraryDisambiguate {
+        matchers: &[PluginArbitraryMatcher::Length, PluginArbitraryMatcher::LineWidth],
+        matcher_separation: PluginArbitraryMatcherSeparation::Space,
+        hints: &[ArbitraryHint::Length],
+    }),
     template: Some(MultipleProps(&[
         "calc({} * var(--en-divide-x-reverse))",
         "calc({} * calc(1 - var(--en-divide-x-reverse)))",
@@ -68,14 +65,11 @@ pub(crate) const PLUGIN_Y_3: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "divide-y",
     prop: MultipleProps(&["border-block-start-width", "border-block-end-width"]),
     extra_class: Some(" > :not([hidden]) ~ :not([hidden])"),
-    hints: Some(&[ArbitraryHint::Length]),
-    matchers: Some((
-        &[
-            PluginArbitraryMatcher::Length,
-            PluginArbitraryMatcher::LineWidth,
-        ],
-        PluginArbitraryMatcherSeparation::Space,
-    )),
+    disambiguate: Some(ArbitraryDisambiguate {
+        matchers: &[PluginArbitraryMatcher::Length, PluginArbitraryMatcher::LineWidth],
+        matcher_separation: PluginArbitraryMatcherSeparation::Space,
+        hints: &[ArbitraryHint::Length],
+    }),
     template: Some(MultipleProps(&[
         "calc({} * var(--en-divide-y-reverse))",
         "calc({} * calc(1 - var(--en-divide-y-reverse)))",

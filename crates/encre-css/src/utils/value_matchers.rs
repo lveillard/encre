@@ -195,6 +195,7 @@ const GENERIC_FONT_FAMILIES: &[&str] = &[
     "math",
     "fangsong",
 ];
+const FONT_WEIGHT_KEYWORDS: &[&str] = &["normal", "bold", "lighter", "bolder"];
 
 fn is_matching_base(value: &str) -> bool {
     is_matching_var(value)
@@ -445,8 +446,13 @@ pub fn is_matching_image(value: &str) -> bool {
 /// assert!(!is_matching_font_family_name("12px"));
 /// ```
 pub fn is_matching_font_family_name(value: &str) -> bool {
-    GENERIC_FONT_FAMILIES.contains(&value)
-        || value.chars().next().is_some_and(|ch| !ch.is_ascii_digit())
+    // Quirk: the `font` namespace contains two plugins supporting arbitrary values: `font_family`
+    // and `font_weight`.
+    // To ensure the font weight keywords won't be inferred as font family names, we manually
+    // exclude them here to always use the plugin `font_weight` when they are found.
+    !FONT_WEIGHT_KEYWORDS.contains(&value)
+        && (GENERIC_FONT_FAMILIES.contains(&value)
+            || value.chars().next().is_some_and(|ch| !ch.is_ascii_digit()))
 }
 
 #[cfg(test)]

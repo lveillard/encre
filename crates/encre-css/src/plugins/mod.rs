@@ -277,6 +277,13 @@ pub struct ExtraSlash<Str, MapStr> {
     pub default: Str,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ArbitraryDisambiguate<ArrayMatchers, ArrayHints> {
+    pub matchers: ArrayMatchers,
+    pub matcher_separation: PluginArbitraryMatcherSeparation,
+    pub hints: ArrayHints,
+}
+
 /// Define a plugin using a map between utility classes and raw CSS lines.
 ///
 /// It directly generates the CSS of the map value if the utility class as map key is scanned.
@@ -1228,8 +1235,8 @@ impl<ArrayStr, MapStr> Number<String, ArrayStr, MapStr> {
 /// By default, all values are allowed by the plugin and it's up to the final user to only use
 /// valid CSS values for the property. However, if several [`Arbitrary`] plugins
 /// share the same namespace, it's *required* to disambiguate which plugins should handle the
-/// selector. In this case, [`Arbitrary::matchers`] and [`Arbitrary::hints`] should be used to
-/// only handle the selector if the arbitrary CSS value has a specific CSS type.
+/// selector. In this case, [`Arbitrary::disambiguate`] should be used to
+/// only handle the selector if the arbitrary CSS value has a specific CSS type or a specific manual hint.
 ///
 /// ### Example
 ///
@@ -1268,7 +1275,7 @@ impl<ArrayStr, MapStr> Number<String, ArrayStr, MapStr> {
 /// ```
 ///
 /// [`arbitrary values`]: crate::selector
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Arbitrary<Str, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
     /// The namespace (i.e common prefix) that all classes need to start with in order to be
     /// matched by this plugin.
@@ -1327,9 +1334,8 @@ pub struct Arbitrary<Str, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
     ///
     pub shadow_color_replacement: Option<Str>,
 
-    // TODO: make a structure for matchers + hints (Disambiguate...) and make a default for PluginArbitraryMatcherSeparation
-    pub matchers: Option<(ArrayMatchers, PluginArbitraryMatcherSeparation)>,
-    pub hints: Option<ArrayHints>,
+    /// See [`ArbitraryDisambiguate`].
+    pub disambiguate: Option<ArbitraryDisambiguate<ArrayMatchers, ArrayHints>>,
 
     #[doc = include_str!("./doc_template.md")]
     pub template: Option<PropertyName<Str, ArrayStr>>,
@@ -1374,8 +1380,7 @@ impl<ArrayStr, MapStr, ArrayHints, ArrayMatchers> Arbitrary<&'static str, ArrayS
             namespace: "",
             prop: PropertyName::SingleProp(""),
             shadow_color_replacement: None,
-            matchers: None,
-            hints: None,
+            disambiguate: None,
             template: None,
             extra_rule_css: None,
             extra_css: None,
@@ -1421,8 +1426,7 @@ impl<ArrayStr, MapStr, ArrayHints, ArrayMatchers> Arbitrary<String, ArrayStr, Ma
             namespace: String::new(),
             prop: PropertyName::SingleProp(String::new()),
             shadow_color_replacement: None,
-            matchers: None,
-            hints: None,
+            disambiguate: None,
             template: None,
             extra_rule_css: None,
             extra_css: None,
@@ -1666,16 +1670,16 @@ impl Functional<String> {
 /// const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
 ///     namespace: "stroke",
 ///     prop: SingleProp("stroke-width"),
-///     hints: Some(&[ArbitraryHint::Length, ArbitraryHint::Percentage]),
-///     matchers: Some((
-///         &[
+///     disambiguate: Some(ArbitraryDisambiguate {
+///         matchers: &[
 ///             PluginArbitraryMatcher::Length,
 ///             PluginArbitraryMatcher::Percentage,
 ///             PluginArbitraryMatcher::LineWidth,
 ///             PluginArbitraryMatcher::Number,
 ///         ],
-///         PluginArbitraryMatcherSeparation::Comma,
-///     )),
+///         matcher_separation: PluginArbitraryMatcherSeparation::Comma,
+///         hints: &[ArbitraryHint::Length, ArbitraryHint::Percentage],
+///     }),
 ///     ..Arbitrary::default()
 /// });
 /// ```

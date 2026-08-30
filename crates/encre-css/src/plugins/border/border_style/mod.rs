@@ -22,10 +22,10 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "border",
     prop: SingleProp("border-style"),
-    hints: Some(&[]),
-    matchers: Some((
-        &[PluginArbitraryMatcher::LineStyle],
-        PluginArbitraryMatcherSeparation::Space,
-    )),
+    disambiguate: Some(ArbitraryDisambiguate {
+        matchers: &[PluginArbitraryMatcher::LineStyle],
+        matcher_separation: PluginArbitraryMatcherSeparation::Space,
+        hints: &[ArbitraryHint::LineStyle],
+    }),
     ..Arbitrary::default()
 });

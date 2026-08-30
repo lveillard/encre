@@ -12,10 +12,10 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::Number(Number {
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "outline-offset",
     prop: SingleProp("outline-offset"),
-    hints: Some(&[ArbitraryHint::Length]),
-    matchers: Some((
-        &[PluginArbitraryMatcher::Length],
-        PluginArbitraryMatcherSeparation::None,
-    )),
+    disambiguate: Some(ArbitraryDisambiguate {
+        matchers: &[PluginArbitraryMatcher::Length],
+        matcher_separation: PluginArbitraryMatcherSeparation::None,
+        hints: &[ArbitraryHint::Length],
+    }),
     ..Arbitrary::default()
 });

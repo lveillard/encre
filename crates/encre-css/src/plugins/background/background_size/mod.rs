@@ -15,16 +15,16 @@ pub(crate) const PLUGIN: StaticPlugin = Plugin::ListValues(ListValues {
 pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "bg",
     prop: SingleProp("background-size"),
-    hints: Some(&[ArbitraryHint::Length, ArbitraryHint::Percentage]),
-    matchers: Some((
-        &[
+    disambiguate: Some(ArbitraryDisambiguate {
+        matchers: &[
             PluginArbitraryMatcher::Length,
             PluginArbitraryMatcher::Percentage,
             PluginArbitraryMatcher::Custom("auto"),
             PluginArbitraryMatcher::Custom("cover"),
             PluginArbitraryMatcher::Custom("contain"),
         ],
-        PluginArbitraryMatcherSeparation::Both,
-    )),
+        matcher_separation: PluginArbitraryMatcherSeparation::Both,
+        hints: &[ArbitraryHint::Length, ArbitraryHint::Percentage],
+    }),
     ..Arbitrary::default()
 });
