@@ -67,3 +67,27 @@ assert!(generated.ends_with(r".custom-stroke-\[color\:var\(--stroke-color\)\] {
   stroke-width: var(--stroke-width);
 }"));
 ```
+
+### Example in TOML
+
+```toml
+[[custom_plugins]]
+
+[custom_plugins.Arbitrary]
+namespace = "custom-stroke"
+prop = "stroke"
+
+[custom_plugins.Arbitrary.disambiguate]
+matched = ["Color"]
+separation = "None"
+
+[[custom_plugins]]
+
+[custom_plugins.Arbitrary]
+namespace = "custom-stroke"
+prop = "stroke-width"
+
+[custom_plugins.Arbitrary.disambiguate]
+matched = ["Length", "Percentage", "LineWidth", "Number"]
+separation = "None"
+```

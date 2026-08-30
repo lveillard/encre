@@ -39,3 +39,22 @@ assert!(generated.ends_with(".custom-bg-img {
   background-image: linear-gradient(to top in oklch increasing hue, #00aaff, #00ffaa);
 }"));
 ```
+
+### Example in TOML
+
+```toml
+[[custom_plugins]]
+
+[custom_plugins.ListValues]
+prop = "background-image"
+
+[custom_plugins.ListValues.values]
+custom-bg-img = "linear-gradient(to top in {/}, #00aaff, #00ffaa)"
+
+[custom_plugins.ListValues.extra_slash]
+default = "oklab"
+
+[custom_plugins.ListValues.extra_slash.values]
+increasing = "oklch increasing hue"
+oklab = "oklab"
+```

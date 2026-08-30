@@ -45,3 +45,21 @@ assert!(generated.ends_with(".custom-stroke-42 {
   rotate: 3deg;
 }"));
 ```
+
+### Example in TOML
+
+```toml
+[[custom_plugins]]
+
+[custom_plugins.Number]
+namespace = "custom-stroke"
+prop = "stroke-width"
+template = "{}px"
+
+[[custom_plugins]]
+
+[custom_plugins.Number]
+namespace = "custom-move"
+prop = ["translate", "rotate"]
+template = ["{}px", "{}deg"]
+```

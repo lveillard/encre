@@ -26,3 +26,14 @@ assert!(generated.ends_with(".custom-translate-x-8 {
   transform: translate(var(--translate-x), 12px);
 }"));
 ```
+
+### Example in TOML
+
+```toml
+[[custom_plugins]]
+
+[custom_plugins.Spacing]
+namespace = "custom-translate-x"
+prop = "--translate-x"
+extra_rule_css = ["transform: translate(var(--translate-x), 12px);"]
+```

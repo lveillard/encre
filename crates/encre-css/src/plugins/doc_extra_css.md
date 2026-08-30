@@ -57,3 +57,34 @@ assert!(generated.ends_with("@keyframes anim-spin {
   animation: anim-spin;
 }"));
 ```
+
+### Example in TOML
+
+```toml
+[[custom_plugins]]
+
+[custom_plugins.ListValues]
+prop = "animation"
+
+[custom_plugins.ListValues.values]
+custom-animate-spin = "anim-spin"
+custom-animate-fade-in = "anim-fade-in"
+
+[custom_plugins.ListValues.extra_css]
+custom-animate-spin = """@keyframes anim-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}\n\n"""
+custom-animate-fade-in = """@keyframes anim-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}\n\n"""
+```

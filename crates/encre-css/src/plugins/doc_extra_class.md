@@ -22,3 +22,14 @@ assert!(generated.ends_with(".custom-divide-2 > :not(:last-child) {
   margin-inline: 0.5rem;
 }"));
 ```
+
+### Example in TOML
+
+```toml
+[[custom_plugins]]
+
+[custom_plugins.Spacing]
+namespace = "custom-divide"
+prop = "margin-inline"
+extra_class = " > :not(:last-child)"
+```
