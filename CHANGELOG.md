@@ -2,6 +2,159 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.21.0] - 2026-08-30
+
+This release changes the fundamental architecture of `encre-css`: plugins are
+written declaratively instead of imperatively. In practice, it means that instead
+of implementing the `Plugin` trait for a structure you made, you now make a constant
+with a `Plugin` having a specific `PluginKind`.
+
+If you have not made any custom plugin, this release changes almost nothing for you,
+except that some lines inside a single CSS rule can be swapped compared to the
+previous release, and that it's even faster to generate the CSS. You can also
+start making custom plugins easily by defining them in the TOML configuration
+if you need.
+
+If you are the author of a custom plugin, you can migrate easily using
+`PluginKind::Functional`: instead of defining a custom structure, implementing
+the `Plugin` trait with `can_handle` and `handle` and calling
+`config.register_plugin(<namespace>, PluginStruct)`, you need to copy-and-paste
+into
+
+```
+const PLUGIN: StaticPlugin = Plugin::Functional(Functional {
+    namespace: <namespace>,
+    can_handle: |context| { <can_handle code> },
+    handle: |context| {
+        generate_wrapper(context, |context| {
+            <handle code>
+        })
+    },
+})
+```
+
+The difference is that the CSS rule wrapper is now not generated automatically,
+so you need to explicitly call `generate_wrapper`.
+
+You can then port your plugins to the other declarative kinds to gain speed and
+portability.
+
+### Bug Fixes
+
+- Avoid panicking on malformed shadow arbitrary property
+- Transform properties
+- Limit depth of arbitrary matcher evaluation
+- Avoid generating an empty class rule when a ListCases case has an empty list of lines
+- Remove the need to specify the kind of property name
+- Improve deserialization error messages of CustomPlugin by using a custom deserialize implementation
+
+### Documentation
+
+- Update some of the documentation about plugins
+- Improve the documentation of PluginKind::Functional
+- Further add docs for the PluginKind enum
+- Fix some broken documentation links
+- Add a section on how to define a plugin in TOML
+- Continue documenting the new declarative plugin API
+- Add a `Quirks` section to the `Plugin` documentation
+- Add documentation for Plugin::{extra_css, extra_lines}
+- Improve the documentation of the Plugin structure
+- Improve doc of Plugin and write doc of PropertyName
+- Add documentation for default/default_dynamic of plugin kinds
+- Finish documentation for ListProperties and ListValues
+- Add an example of MultipleProps
+- Continue adding documentation for the new declarative API
+- Add documentation for disambiguation + remove wrong comma support for svg stroke
+- Add TOML-example counterpart to all examples of docs in separate Markdown files
+
+### Features
+
+- [**breaking**] First draft of what a declarative plugin API would look like
+- Improve the declarative API
+- Support extra slash to implement the background-image utility using the declarative API
+- Support extra css per plugin for implementing animation utility
+- Add functional plugin kind to implement container and css property utilities
+- Use a trie data structure to speed up parsing
+- Implement has_auto for PluginKind::Number
+- Support serializing/deserializing plugins
+- Update encre-css-typography to use the declarative API
+- Update encre-css-icons to use the declarative API
+- Change the declarative API usage to instead rely on the struct update syntax
+
+### Miscellaneous Tasks
+
+- Update to Rust 2024
+- Fix most Clippy warnings
+
+### Others
+
+- Merge PluginArbitraryMatcher and ArbitraryHint into a single enum CssType
+
+### Performance
+
+- Avoid parsing the modifier for each plugin
+
+### Refactor
+
+- Fix clippy warnings
+- Fix clippy warnings
+- Continue moving more plugins to the declarative API
+- Add PluginArbitraryMatcher::* to the prelude
+- Rename PluginKind::OnlyArbitrary -> PluginKind::Arbitrary
+- Only specify arbitrary hints/matcher for conflicting plugins
+- Remove static prefix in config::BUILTIN_PLUGINS constant
+- Use tuples to avoid duplication for plugins with repeated builtin/arbitrary modifiers
+- Remove PluginKind::Sizing
+- Rename PluginKind::AnyNumber -> PluginKind::Number
+- Replace PluginKind::ArbitraryShadow by the method Plugin::shadow_color_replacement
+- Move has_* PluginKind options to Plugin methods
+- Improve find plugin code
+- Rename plugins::PluginArbitraryHint -> selector::ArbitraryHint
+- Rename `prefix` to `namespace` for consistency
+- Rename ContextHandle -> Context
+- Rename builtin plugin constants
+- Rename PluginKind::Functional::class -> PluginKind::Functional::namespace
+- Bring back ContextCanHandle/ContextHandle and the can_handle field of PluginKind::Functional and generate_wrapper
+- Avoid recursion for arbitrary matchers
+- Use type parameters for Plugin to avoid repetition
+- Rename PluginKind::list_namespace and PluginKind::ListCases -> PluginKind::ListProperties
+- Deserialize PropertyName as snake_case
+- Make `divide_by` optional for PluginKind::Number
+- Rename `PluginArbitraryMatcherModifier` -> `PluginArbitraryMatcherSeparation`
+- Rename the fields of `Plugin` as its methods
+- Alias the phf_map! to the map! macro
+- Use a dedicated structure for extra_slash plugin field
+- Rename `extra_lines` -> `extra_rule_css`
+- Remove template_multiple field and instead use PropertyName inside the `template` field
+- Move hints/matchers plugin fields to a dedicated structure
+
+### Testing
+
+- Re-enable the parser test suite
+- Improve the test of gradient color stops
+- Update all doctests
+
+## [0.21.2] - 2026-02-20
+
+### Bug Fixes
+
+- Unknown glob error firing unexpectedly
+
+## [0.21.1] - 2026-02-10
+
+### Bug Fixes
+
+- Fix typo when using `encre-css-typography` feature
+
+### Features
+
+- Add features to enable encre-css-icons and encre-css-typography
+
+### Miscellaneous Tasks
+
+- Fix wrong binary name in the message when creating a playground
+- Update dependencies
+
 ## [0.20.1] - 2026-01-14
 
 ### Bug Fixes
