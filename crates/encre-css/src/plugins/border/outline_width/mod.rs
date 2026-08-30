@@ -14,9 +14,8 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "outline",
     prop: SingleProp("outline-width"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[PluginArbitraryMatcher::Length, PluginArbitraryMatcher::LineWidth],
-        matcher_separation: PluginArbitraryMatcherSeparation::None,
-        hints: &[ArbitraryHint::Length],
+        matched: &[CssType::Length, CssType::LineWidth],
+        separation: ArbitraryDisambiguateSeparation::None,
     }),
     ..Arbitrary::default()
 });

@@ -37,10 +37,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    generator::{ContextCanHandle, ContextHandle},
-    selector::ArbitraryHint,
-};
+use crate::{generator::{ContextCanHandle, ContextHandle}, selector::CssType};
 
 pub mod accessibility;
 pub mod background;
@@ -69,8 +66,7 @@ pub type StaticPlugin = Plugin<
     &'static [&'static str],
     phf::Map<&'static str, &'static str>,
     phf::Map<&'static str, &'static [&'static str]>,
-    &'static [ArbitraryHint],
-    &'static [PluginArbitraryMatcher<&'static str, &'static [&'static str]>],
+    &'static [CssType],
 >;
 
 /// An alias to a [`Plugin`] which contain configuration defined using `String`s instead of static
@@ -83,8 +79,7 @@ pub type DynamicPlugin = Plugin<
     Vec<String>,
     HashMap<String, String>,
     HashMap<String, Vec<String>>,
-    Vec<ArbitraryHint>,
-    Vec<PluginArbitraryMatcher<String, Vec<String>>>,
+    Vec<CssType>,
 >;
 
 /// An alias to a [`PropertyName`] which is defined using `&'static str`, adapted for use in const
@@ -94,15 +89,6 @@ pub type StaticPropertyName = PropertyName<&'static str, &'static [&'static str]
 /// An alias to a [`PropertyName`] which is defined using `String`, adapted for use when a name
 /// needs to be dynamic or deserialized.
 pub type DynamicPropertyName = PropertyName<String, Vec<String>>;
-
-/// An alias to a [`PluginArbitraryMatcher`] which is defined using `&'static str`, adapted for use in const
-/// environments.
-pub type StaticPluginArbitraryMatcher =
-    PluginArbitraryMatcher<&'static str, &'static [&'static str]>;
-
-/// An alias to a [`PluginArbitraryMatcher`] which is defined using `String`, adapted for use when a matcher
-/// configuration needs to be dynamic or deserialized.
-pub type DynamicPluginArbitraryMatcher = PluginArbitraryMatcher<String, Vec<String>>;
 
 fn can_handle_nop(_: &ContextCanHandle) -> bool { false }
 fn handle_nop(_: &mut ContextHandle) {}
@@ -121,97 +107,6 @@ impl<'de> Deserialize<'de> for CustomPlugin {
     {
         Ok(Self::Dynamic(DynamicPlugin::deserialize(deserializer)?))
     }
-}
-
-/// When defining a [`PluginArbitraryMatcher`] for an [`Arbitrary`] kind, defines how values
-/// are separated.
-///
-/// A lot of CSS properties allow specifying several values of a single type separated by a
-/// character, e.g `margin` allows [`<length>`](crate::utils::value_matchers::is_matching_length`)
-/// or [`<percentage>`](crate::utils::value_matchers::is_matching_percentage`)
-/// values separated by spaces, to define a specific margin for each side of the CSS layout box.
-///
-/// This enumeration helps matching these values when using a [`PluginArbitraryMatcher`], e.g for
-/// the `margin` example, you would use
-///
-/// ```ignore
-/// Plugin::new(...)
-///     .matchers(&[Length, Percentage], PluginArbitraryMatcherSeparation::Space)
-/// ```
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Serialize, Deserialize)]
-pub enum PluginArbitraryMatcherSeparation {
-    /// No separation, a single value is matched.
-    None,
-
-    /// Separated by commas (`,`).
-    ///
-    /// Example: `33px, 42%, 6em`.
-    Comma,
-
-    /// Separated by spaces (` `).
-    ///
-    /// Example: `left top`.
-    Space,
-
-    /// Separated by commas (`,`) then spaces (` `).
-    ///
-    /// Example: `left, 12% 33px, right center`.
-    Both,
-}
-
-/// Accepted inferred CSS arbitrary value types for a specific plugin.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Serialize, Deserialize)]
-pub enum PluginArbitraryMatcher<Str, ArrayStr> {
-    /// Match a [`shadow`](crate::utils::value_matchers::is_matching_shadow) CSS property value.
-    Shadow,
-
-    /// Match an [`absolute size`](crate::utils::value_matchers::is_matching_absolute_size) CSS property value.
-    AbsoluteSize,
-
-    /// Match a [`relative size`](crate::utils::value_matchers::is_matching_relative_size) CSS property value.
-    RelativeSize,
-
-    /// Match a [`line width`](crate::utils::value_matchers::is_matching_line_width`) CSS property value.
-    LineWidth,
-
-    /// Match a [`line style`](crate::utils::value_matchers::is_matching_line_style`) CSS property value.
-    LineStyle,
-
-    /// Match a [`<color>`](crate::utils::value_matchers::is_matching_color`) CSS property value.
-    Color,
-
-    /// Match a [`<length>`](crate::utils::value_matchers::is_matching_length`) CSS property value.
-    Length,
-
-    /// Match a [`<number>`](crate::utils::value_matchers::is_matching_number`) CSS property value.
-    Number,
-
-    /// Match a [`<percentage>`](crate::utils::value_matchers::is_matching_percentage`) CSS property value.
-    Percentage,
-
-    /// Match a [`<time>`](crate::utils::value_matchers::is_matching_time`) CSS property value.
-    Time,
-
-    /// Match a [`<gradient>`](crate::utils::value_matchers::is_matching_gradient`) CSS property value.
-    Gradient,
-
-    /// Match a [`<position>`](crate::utils::value_matchers::is_matching_position`) CSS property value.
-    Position,
-
-    /// Match an [`<angle>`](crate::utils::value_matchers::is_matching_angle`) CSS property value.
-    Angle,
-
-    /// Match an [`<image>`](crate::utils::value_matchers::is_matching_image`) CSS property value.
-    Image,
-
-    /// Match a [`font family name`](crate::utils::value_matchers::is_matching_font_family_name`) CSS property value.
-    FontFamilyName,
-
-    /// Match a single custom value.
-    Custom(Str),
-
-    /// Match at least one value among a list of custom values.
-    CustomMultiple(ArrayStr),
 }
 
 /// Either a single or several CSS property names.
@@ -265,6 +160,42 @@ pub enum PropertyName<Str, ArrayStr> {
     MultipleProps(ArrayStr),
 }
 
+/// When defining a [`PluginArbitraryMatcher`] for an [`Arbitrary`] kind, defines how values
+/// are separated.
+///
+/// A lot of CSS properties allow specifying several values of a single type separated by a
+/// character, e.g `margin` allows [`<length>`](crate::utils::value_matchers::is_matching_length`)
+/// or [`<percentage>`](crate::utils::value_matchers::is_matching_percentage`)
+/// values separated by spaces, to define a specific margin for each side of the CSS layout box.
+///
+/// This enumeration helps matching these values when using a [`PluginArbitraryMatcher`], e.g for
+/// the `margin` example, you would use
+///
+/// ```ignore
+/// Plugin::new(...)
+///     .matchers(&[Length, Percentage], PluginArbitraryMatcherSeparation::Space)
+/// ```
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Serialize, Deserialize)]
+pub enum ArbitraryDisambiguateSeparation {
+    /// No separation, a single value is matched.
+    None,
+
+    /// Separated by commas (`,`).
+    ///
+    /// Example: `33px, 42%, 6em`.
+    Comma,
+
+    /// Separated by spaces (` `).
+    ///
+    /// Example: `left top`.
+    Space,
+
+    /// Separated by commas (`,`) then spaces (` `).
+    ///
+    /// Example: `left, 12% 33px, right center`.
+    Both,
+}
+
 #[doc = include_str!("./doc_extra_slash.md")]
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
 pub struct ExtraSlash<Str, MapStr> {
@@ -278,10 +209,9 @@ pub struct ExtraSlash<Str, MapStr> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ArbitraryDisambiguate<ArrayMatchers, ArrayHints> {
-    pub matchers: ArrayMatchers,
-    pub matcher_separation: PluginArbitraryMatcherSeparation,
-    pub hints: ArrayHints,
+pub struct ArbitraryDisambiguate<ArrayMatched> {
+    pub matched: ArrayMatched,
+    pub separation: ArbitraryDisambiguateSeparation,
 }
 
 /// Define a plugin using a map between utility classes and raw CSS lines.
@@ -1276,7 +1206,7 @@ impl<ArrayStr, MapStr> Number<String, ArrayStr, MapStr> {
 ///
 /// [`arbitrary values`]: crate::selector
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Arbitrary<Str, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
+pub struct Arbitrary<Str, ArrayStr, MapStr, ArrayMatched> {
     /// The namespace (i.e common prefix) that all classes need to start with in order to be
     /// matched by this plugin.
     pub namespace: Str,
@@ -1335,7 +1265,7 @@ pub struct Arbitrary<Str, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
     pub shadow_color_replacement: Option<Str>,
 
     /// See [`ArbitraryDisambiguate`].
-    pub disambiguate: Option<ArbitraryDisambiguate<ArrayMatchers, ArrayHints>>,
+    pub disambiguate: Option<ArbitraryDisambiguate<ArrayMatched>>,
 
     #[doc = include_str!("./doc_template.md")]
     pub template: Option<PropertyName<Str, ArrayStr>>,
@@ -1350,7 +1280,7 @@ pub struct Arbitrary<Str, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
     pub extra_class: Option<Str>,
 }
 
-impl<ArrayStr, MapStr, ArrayHints, ArrayMatchers> Arbitrary<&'static str, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
+impl<ArrayStr, MapStr, ArrayMatched> Arbitrary<&'static str, ArrayStr, MapStr, ArrayMatched> {
     /// Make a default [`Arbitrary`] plugin kind.
     ///
     /// All required fields are initialized with empty values and optional fields are initialized
@@ -1390,7 +1320,7 @@ impl<ArrayStr, MapStr, ArrayHints, ArrayMatchers> Arbitrary<&'static str, ArrayS
     }
 }
 
-impl<ArrayStr, MapStr, ArrayHints, ArrayMatchers> Arbitrary<String, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
+impl<ArrayStr, MapStr, ArrayMatched> Arbitrary<String, ArrayStr, MapStr, ArrayMatched> {
     /// Make a default [`Arbitrary`] plugin kind.
     ///
     /// All required fields are initialized with empty values and optional fields are initialized
@@ -1671,14 +1601,8 @@ impl Functional<String> {
 ///     namespace: "stroke",
 ///     prop: SingleProp("stroke-width"),
 ///     disambiguate: Some(ArbitraryDisambiguate {
-///         matchers: &[
-///             PluginArbitraryMatcher::Length,
-///             PluginArbitraryMatcher::Percentage,
-///             PluginArbitraryMatcher::LineWidth,
-///             PluginArbitraryMatcher::Number,
-///         ],
-///         matcher_separation: PluginArbitraryMatcherSeparation::Comma,
-///         hints: &[ArbitraryHint::Length, ArbitraryHint::Percentage],
+///         matched: &[CssType::Length, CssType::Percentage, CssType::LineWidth, CssType::Number],
+///         separation: ArbitraryDisambiguateSeparation::Comma,
 ///     }),
 ///     ..Arbitrary::default()
 /// });
@@ -1784,7 +1708,7 @@ impl Functional<String> {
 /// [`Config::register_plugin`]: crate::Config::register_plugin
 /// [`Config`]: crate::Config
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum Plugin<Str, ArrayStr, MapStr, MapArrayStr, ArrayHints, ArrayMatchers> {
+pub enum Plugin<Str, ArrayStr, MapStr, MapArrayStr, ArrayMatched> {
     /// See [`ListProperties`].
     ListProperties(ListProperties<Str, ArrayStr, MapStr, MapArrayStr>),
 
@@ -1801,7 +1725,7 @@ pub enum Plugin<Str, ArrayStr, MapStr, MapArrayStr, ArrayHints, ArrayMatchers> {
     Number(Number<Str, ArrayStr, MapStr>),
 
     /// See [`Arbitrary`].
-    Arbitrary(Arbitrary<Str, ArrayStr, MapStr, ArrayHints, ArrayMatchers>),
+    Arbitrary(Arbitrary<Str, ArrayStr, MapStr, ArrayMatched>),
 
     /// See [`Functional`].
     ///

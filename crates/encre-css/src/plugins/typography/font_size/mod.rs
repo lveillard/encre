@@ -25,19 +25,13 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "text",
     prop: SingleProp("font-size"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[
-            PluginArbitraryMatcher::Length,
-            PluginArbitraryMatcher::Percentage,
-            PluginArbitraryMatcher::AbsoluteSize,
-            PluginArbitraryMatcher::RelativeSize,
+        matched: &[
+            CssType::Length,
+            CssType::Percentage,
+            CssType::AbsoluteSize,
+            CssType::RelativeSize,
         ],
-        matcher_separation: PluginArbitraryMatcherSeparation::None,
-        hints: &[
-            ArbitraryHint::Length,
-            ArbitraryHint::Percentage,
-            ArbitraryHint::AbsoluteSize,
-            ArbitraryHint::RelativeSize,
-        ],
+        separation: ArbitraryDisambiguateSeparation::None,
     }),
     ..Arbitrary::default()
 });

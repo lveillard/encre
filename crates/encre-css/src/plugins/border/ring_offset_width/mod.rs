@@ -16,9 +16,8 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "ring-offset",
     prop: SingleProp("--en-ring-offset-width"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[PluginArbitraryMatcher::Length],
-        matcher_separation: PluginArbitraryMatcherSeparation::None,
-        hints: &[ArbitraryHint::Length],
+        matched: &[CssType::Length],
+        separation: ArbitraryDisambiguateSeparation::None,
     }),
     extra_rule_css: Some(&[RING_OFFSET_SHADOW]),
     ..Arbitrary::default()

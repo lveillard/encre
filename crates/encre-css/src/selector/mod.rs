@@ -111,74 +111,59 @@ use std::{borrow::Cow, cmp::Ordering, str::FromStr};
 pub(crate) use parser::parse;
 use serde::{Deserialize, Serialize};
 
-/// A hint forcing the specified CSS type to be inferred for an arbitrary value.
+/// The type of an arbitrary CSS value.
 ///
-/// Each hint is suffixed by `:` and followed by the value, e.g `bg-[color:var(--primary)]` will
-/// generate a `background-color: var(--primary);` CSS property because the hint will force the use
-/// of the `background-color` plugin even though the CSS value type cannot be inferred.
-///
-/// List of all type hints:
-///
-/// - `color`
-/// - `length`
-/// - `line-width`
-/// - `line-style`
-/// - `image`
-/// - `url`
-/// - `position`
-/// - `percentage`
-/// - `number`
-/// - `generic-name`
-/// - `family-name`
-/// - `absolute-size`
-/// - `relative-size`
-/// - `shadow`
-#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Serialize, Deserialize)]
-pub enum ArbitraryHint {
-    /// A shadow CSS property value
+/// This enum is used when matching a class to an [`Arbitrary`] plugin when it needs to be
+/// disambiguated from other plugins sharing the same namespace.
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub enum CssType {
+    /// Match a [`shadow`](crate::utils::value_matchers::is_matching_shadow) CSS property value.
     Shadow,
 
-    /// An absolute-size CSS property value
+    /// Match an [`absolute size`](crate::utils::value_matchers::is_matching_absolute_size) CSS property value.
     AbsoluteSize,
 
-    /// A relative-size CSS property value
+    /// Match a [`relative size`](crate::utils::value_matchers::is_matching_relative_size) CSS property value.
     RelativeSize,
 
-    /// An URL CSS property value
+    /// Match an [`url`](crate::utils::value_matchers::is_matching_url) CSS property value.
     Url,
 
-    /// A line width CSS property value
+    /// Match a [`line width`](crate::utils::value_matchers::is_matching_line_width`) CSS property value.
     LineWidth,
 
-    /// A line style CSS property value
+    /// Match a [`line style`](crate::utils::value_matchers::is_matching_line_style`) CSS property value.
     LineStyle,
 
-    /// A color CSS property value
+    /// Match a [`<color>`](crate::utils::value_matchers::is_matching_color`) CSS property value.
     Color,
 
-    /// A length CSS property value
+    /// Match a [`<length>`](crate::utils::value_matchers::is_matching_length`) CSS property value.
     Length,
 
-    /// A percentage CSS property value
-    Percentage,
-
-    /// A number CSS property value
+    /// Match a [`<number>`](crate::utils::value_matchers::is_matching_number`) CSS property value.
     Number,
 
-    /// A position CSS property value
+    /// Match a [`<percentage>`](crate::utils::value_matchers::is_matching_percentage`) CSS property value.
+    Percentage,
+
+    /// Match a [`<time>`](crate::utils::value_matchers::is_matching_time`) CSS property value.
+    Time,
+
+    /// Match a [`<position>`](crate::utils::value_matchers::is_matching_position`) CSS property value.
     Position,
 
-    /// A image CSS property value
+    /// Match an [`<angle>`](crate::utils::value_matchers::is_matching_angle`) CSS property value.
+    Angle,
+
+    /// Match an [`<image>`](crate::utils::value_matchers::is_matching_image`) CSS property value.
     Image,
 
-    /// A generic-name CSS property value
-    GenericName,
-
-    /// A family-name CSS property value
-    FamilyName,
+    /// Match a [`font family name`](crate::utils::value_matchers::is_matching_font_family_name`) CSS property value.
+    FontFamilyName,
 }
 
-impl FromStr for ArbitraryHint {
+impl FromStr for CssType {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -194,9 +179,9 @@ impl FromStr for ArbitraryHint {
             "percentage" => Self::Percentage,
             "number" => Self::Number,
             "position" => Self::Position,
+            "angle" => Self::Angle,
             "image" => Self::Image,
-            "generic-name" => Self::GenericName,
-            "family-name" => Self::FamilyName,
+            "generic-name" | "family-name" => Self::FontFamilyName,
             _ => return Err(()),
         })
     }
@@ -226,14 +211,14 @@ pub enum Modifier<'a> {
     /// the [`background color`](crate::plugins::background::background_color) or the
     /// [`background size`](crate::plugins::background::background_size) utility. In this case,
     /// you need to provide a [CSS type](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Types)
-    /// hint (see the list of hints below) before the arbitrary value. For example
+    /// hint before the arbitrary value. For example
     /// `bg-[length:var(--foo)]` will generate `background-size: var(--foo);` (using the
     /// [`background size`](crate::plugins::background::background_size) utility).
     ///
-    /// See [`ArbitraryHint`] for a list of type hints.
+    /// See [`CssType`] for a list of type hints.
     Arbitrary {
         /// The type hint needed for ambiguous values.
-        hint: Option<ArbitraryHint>,
+        hint: Option<CssType>,
 
         /// The inner value of the modifier.
         ///

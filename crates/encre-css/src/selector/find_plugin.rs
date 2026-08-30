@@ -1,13 +1,20 @@
 use std::ops::Range;
 
 use crate::{
-    Config, error::{ParseError, ParseErrorKind}, generator::ContextCanHandle, plugins::{
-        Arbitrary, Color, CustomPlugin, DynamicPluginArbitraryMatcher, DynamicPropertyName, Functional, ListProperties, ListValues, Number, Plugin, PluginArbitraryMatcher, PluginArbitraryMatcherSeparation, PropertyName, Spacing, StaticPluginArbitraryMatcher, StaticPropertyName,
-    }, selector::{
-        Modifier, Selector, Variant,
+    Config,
+    error::{ParseError, ParseErrorKind},
+    generator::ContextCanHandle,
+    plugins::{
+        Arbitrary, Color, CustomPlugin, DynamicPropertyName, Functional, ListProperties,
+        ListValues, Number, Plugin, ArbitraryDisambiguateSeparation, PropertyName, Spacing,
+        StaticPropertyName,
+    },
+    selector::{
+        CssType, Modifier, Selector, Variant,
         parser::{ARBITRARY_END, ARBITRARY_START, LAYER_BUILTIN, LAYER_CUSTOM, to_css_value},
         trie::{Trie, TrieData},
-    }, utils::{color, spacing, value_matchers::*},
+    },
+    utils::{color, spacing, value_matchers::*},
 };
 
 fn is_template_matching_prop_type(
@@ -41,15 +48,15 @@ fn dynamic_is_template_matching_prop_type(
 }
 
 fn is_arbitrary_matching(
-    matchers: &[StaticPluginArbitraryMatcher],
-    matcher_separation: PluginArbitraryMatcherSeparation,
+    matchers: &[CssType],
+    matcher_separation: ArbitraryDisambiguateSeparation,
     value: &str,
 ) -> bool {
     let values: Vec<&str> = match matcher_separation {
-        PluginArbitraryMatcherSeparation::None => std::iter::once(value).collect(),
-        PluginArbitraryMatcherSeparation::Comma => value.split(',').collect(),
-        PluginArbitraryMatcherSeparation::Space => value.split(' ').collect(),
-        PluginArbitraryMatcherSeparation::Both => {
+        ArbitraryDisambiguateSeparation::None => std::iter::once(value).collect(),
+        ArbitraryDisambiguateSeparation::Comma => value.split(',').collect(),
+        ArbitraryDisambiguateSeparation::Space => value.split(' ').collect(),
+        ArbitraryDisambiguateSeparation::Both => {
             value.split(',').flat_map(|s| s.split(' ')).collect()
         }
     };
@@ -60,68 +67,58 @@ fn is_arbitrary_matching(
             if value.is_empty() {
                 return false;
             }
-            (match matcher {
-                PluginArbitraryMatcher::Shadow => is_matching_shadow(value),
-                PluginArbitraryMatcher::AbsoluteSize => is_matching_absolute_size(value),
-                PluginArbitraryMatcher::RelativeSize => is_matching_relative_size(value),
-                PluginArbitraryMatcher::LineWidth => is_matching_line_width(value),
-                PluginArbitraryMatcher::LineStyle => is_matching_line_style(value),
-                PluginArbitraryMatcher::Color => is_matching_color(value),
-                PluginArbitraryMatcher::Length => is_matching_length(value),
-                PluginArbitraryMatcher::Number => is_matching_number(value),
-                PluginArbitraryMatcher::Percentage => is_matching_percentage(value),
-                PluginArbitraryMatcher::Time => is_matching_time(value),
-                PluginArbitraryMatcher::Gradient => is_matching_gradient(value),
-                PluginArbitraryMatcher::Position => is_matching_position(value),
-                PluginArbitraryMatcher::Angle => is_matching_angle(value),
-                PluginArbitraryMatcher::Image => is_matching_image(value),
-                PluginArbitraryMatcher::FontFamilyName => is_matching_font_family_name(value),
-                PluginArbitraryMatcher::Custom(v) => value == *v,
-                PluginArbitraryMatcher::CustomMultiple(values) => values.contains(&value),
-            }) || is_matching_var(value)
+            match matcher {
+                CssType::Shadow => is_matching_shadow(value),
+                CssType::AbsoluteSize => is_matching_absolute_size(value),
+                CssType::RelativeSize => is_matching_relative_size(value),
+                CssType::Url => is_matching_url(value),
+                CssType::LineWidth => is_matching_line_width(value),
+                CssType::LineStyle => is_matching_line_style(value),
+                CssType::Color => is_matching_color(value),
+                CssType::Length => is_matching_length(value),
+                CssType::Number => is_matching_number(value),
+                CssType::Percentage => is_matching_percentage(value),
+                CssType::Time => is_matching_time(value),
+                CssType::Position => is_matching_position(value),
+                CssType::Angle => is_matching_angle(value),
+                CssType::Image => is_matching_image(value),
+                CssType::FontFamilyName => is_matching_font_family_name(value),
+            }
         })
     })
 }
 
 fn dynamic_is_arbitrary_matching(
-    matchers: &[DynamicPluginArbitraryMatcher],
-    matcher_separation: PluginArbitraryMatcherSeparation,
+    matchers: &[CssType],
+    matcher_separation: ArbitraryDisambiguateSeparation,
     value: &str,
 ) -> bool {
     let values: Vec<&str> = match matcher_separation {
-        PluginArbitraryMatcherSeparation::None => std::iter::once(value).collect(),
-        PluginArbitraryMatcherSeparation::Comma => value.split(',').collect(),
-        PluginArbitraryMatcherSeparation::Space => value.split(' ').collect(),
-        PluginArbitraryMatcherSeparation::Both => {
+        ArbitraryDisambiguateSeparation::None => std::iter::once(value).collect(),
+        ArbitraryDisambiguateSeparation::Comma => value.split(',').collect(),
+        ArbitraryDisambiguateSeparation::Space => value.split(' ').collect(),
+        ArbitraryDisambiguateSeparation::Both => {
             value.split(',').flat_map(|s| s.split(' ')).collect()
         }
     };
 
     values.iter().all(|value| {
-        matchers.iter().any(|matcher| {
-            (match matcher {
-                DynamicPluginArbitraryMatcher::Shadow => is_matching_shadow(value),
-                DynamicPluginArbitraryMatcher::AbsoluteSize => is_matching_absolute_size(value),
-                DynamicPluginArbitraryMatcher::RelativeSize => is_matching_relative_size(value),
-                DynamicPluginArbitraryMatcher::LineWidth => is_matching_line_width(value),
-                DynamicPluginArbitraryMatcher::LineStyle => is_matching_line_style(value),
-                DynamicPluginArbitraryMatcher::Color => is_matching_color(value),
-                DynamicPluginArbitraryMatcher::Length => is_matching_length(value),
-                DynamicPluginArbitraryMatcher::Number => is_matching_number(value),
-                DynamicPluginArbitraryMatcher::Percentage => is_matching_percentage(value),
-                DynamicPluginArbitraryMatcher::Time => is_matching_time(value),
-                DynamicPluginArbitraryMatcher::Gradient => is_matching_gradient(value),
-                DynamicPluginArbitraryMatcher::Position => is_matching_position(value),
-                DynamicPluginArbitraryMatcher::Angle => is_matching_angle(value),
-                DynamicPluginArbitraryMatcher::Image => is_matching_image(value),
-                DynamicPluginArbitraryMatcher::FontFamilyName => {
-                    is_matching_font_family_name(value)
-                }
-                DynamicPluginArbitraryMatcher::Custom(v) => value == v,
-                DynamicPluginArbitraryMatcher::CustomMultiple(values) => {
-                    values.iter().any(|v| v == value)
-                }
-            }) || is_matching_var(value)
+        matchers.iter().any(|matcher| match matcher {
+            CssType::Shadow => is_matching_shadow(value),
+            CssType::AbsoluteSize => is_matching_absolute_size(value),
+            CssType::RelativeSize => is_matching_relative_size(value),
+            CssType::Url => is_matching_url(value),
+            CssType::LineWidth => is_matching_line_width(value),
+            CssType::LineStyle => is_matching_line_style(value),
+            CssType::Color => is_matching_color(value),
+            CssType::Length => is_matching_length(value),
+            CssType::Number => is_matching_number(value),
+            CssType::Percentage => is_matching_percentage(value),
+            CssType::Time => is_matching_time(value),
+            CssType::Position => is_matching_position(value),
+            CssType::Angle => is_matching_angle(value),
+            CssType::Image => is_matching_image(value),
+            CssType::FontFamilyName => is_matching_font_family_name(value),
         })
     })
 }
@@ -323,11 +320,19 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
         (
             CustomPlugin::Static(Plugin::Color(Color { prop, template, .. })),
             Modifier::Builtin { value, .. },
-        ) => color::is_matching_builtin_color(config, value) && template.is_none_or(|t| is_template_matching_prop_type(&t, prop)),
+        ) => {
+            color::is_matching_builtin_color(config, value)
+                && template.is_none_or(|t| is_template_matching_prop_type(&t, prop))
+        }
         (
             CustomPlugin::Dynamic(Plugin::Color(Color { prop, template, .. })),
             Modifier::Builtin { value, .. },
-        ) => color::is_matching_builtin_color(config, value) && template.as_ref().is_none_or(|t| dynamic_is_template_matching_prop_type(&t, prop)),
+        ) => {
+            color::is_matching_builtin_color(config, value)
+                && template
+                    .as_ref()
+                    .is_none_or(|t| dynamic_is_template_matching_prop_type(&t, prop))
+        }
 
         (
             CustomPlugin::Static(Plugin::Number(Number {
@@ -358,7 +363,7 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
                     || (has_auto.unwrap_or(false) && value == "auto")
                     || (value.parse::<usize>().is_ok()
                         && (has_negative.unwrap_or(false) || !*is_negative)))
-                 && template.is_none_or(|t| is_template_matching_prop_type(&t, prop))
+                && template.is_none_or(|t| is_template_matching_prop_type(&t, prop))
         }
         (
             CustomPlugin::Dynamic(Plugin::Number(Number {
@@ -389,33 +394,35 @@ fn can_handle(plugin: &CustomPlugin, config: &Config, modifier: &Modifier) -> bo
                     || (has_auto.unwrap_or(false) && value == "auto")
                     || (value.parse::<usize>().is_ok()
                         && (has_negative.unwrap_or(false) || !*is_negative)))
-                 && template.as_ref().is_none_or(|t| dynamic_is_template_matching_prop_type(&t, prop))
+                && template
+                    .as_ref()
+                    .is_none_or(|t| dynamic_is_template_matching_prop_type(&t, prop))
         }
 
         (
-            CustomPlugin::Static(Plugin::Arbitrary(Arbitrary {
-                disambiguate, ..
-            })),
+            CustomPlugin::Static(Plugin::Arbitrary(Arbitrary { disambiguate, .. })),
             Modifier::Arbitrary { hint, value },
-        ) => {
-            disambiguate.as_ref().is_none_or(|disambiguate| {
-                hint.is_some_and(|h| disambiguate.hints.contains(&h))
-                    || (hint.is_none()
-                        && is_arbitrary_matching(&disambiguate.matchers, disambiguate.matcher_separation, value))
-            })
-        }
+        ) => disambiguate.as_ref().is_none_or(|disambiguate| {
+            hint.is_some_and(|h| disambiguate.matched.contains(&h))
+                || (hint.is_none()
+                    && is_arbitrary_matching(
+                        &disambiguate.matched,
+                        disambiguate.separation,
+                        value,
+                    ))
+        }),
         (
-            CustomPlugin::Dynamic(Plugin::Arbitrary(Arbitrary {
-                disambiguate, ..
-            })),
+            CustomPlugin::Dynamic(Plugin::Arbitrary(Arbitrary { disambiguate, .. })),
             Modifier::Arbitrary { hint, value },
-        ) => {
-            disambiguate.as_ref().is_none_or(|disambiguate| {
-                hint.is_some_and(|h| disambiguate.hints.contains(&h))
-                    || (hint.is_none()
-                        && dynamic_is_arbitrary_matching(&disambiguate.matchers, disambiguate.matcher_separation, value))
-            })
-        }
+        ) => disambiguate.as_ref().is_none_or(|disambiguate| {
+            hint.is_some_and(|h| disambiguate.matched.contains(&h))
+                || (hint.is_none()
+                    && dynamic_is_arbitrary_matching(
+                        &disambiguate.matched,
+                        disambiguate.separation,
+                        value,
+                    ))
+        }),
 
         (
             CustomPlugin::Static(Plugin::Functional(Functional { can_handle, .. })),

@@ -13,9 +13,8 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "outline-offset",
     prop: SingleProp("outline-offset"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[PluginArbitraryMatcher::Length],
-        matcher_separation: PluginArbitraryMatcherSeparation::None,
-        hints: &[ArbitraryHint::Length],
+        matched: &[CssType::Length],
+        separation: ArbitraryDisambiguateSeparation::None,
     }),
     ..Arbitrary::default()
 });

@@ -19,9 +19,8 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "text-shadow",
     prop: SingleProp("text-shadow"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[PluginArbitraryMatcher::Shadow],
-        matcher_separation: PluginArbitraryMatcherSeparation::None,
-        hints: &[ArbitraryHint::Shadow],
+        matched: &[CssType::Shadow],
+        separation: ArbitraryDisambiguateSeparation::None,
     }),
     shadow_color_replacement: Some("var(--en-text-shadow-color, {})"),
     ..Arbitrary::default()

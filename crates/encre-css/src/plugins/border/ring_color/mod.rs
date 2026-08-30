@@ -12,9 +12,8 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "ring",
     prop: SingleProp("--en-ring-color"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[PluginArbitraryMatcher::Color],
-        matcher_separation: PluginArbitraryMatcherSeparation::None,
-        hints: &[ArbitraryHint::Color],
+        matched: &[CssType::Color],
+        separation: ArbitraryDisambiguateSeparation::None,
     }),
     ..Arbitrary::default()
 });
@@ -29,9 +28,8 @@ pub(crate) const PLUGIN_INSET_2: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "inset-ring",
     prop: SingleProp("--en-inset-ring-color"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[PluginArbitraryMatcher::Color],
-        matcher_separation: PluginArbitraryMatcherSeparation::None,
-        hints: &[ArbitraryHint::Color],
+        matched: &[CssType::Color],
+        separation: ArbitraryDisambiguateSeparation::None,
     }),
     ..Arbitrary::default()
 });

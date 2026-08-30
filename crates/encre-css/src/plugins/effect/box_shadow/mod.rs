@@ -26,9 +26,8 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     prop: SingleProp("--en-shadow"),
     extra_rule_css: Some(&[BOX_SHADOW]),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[PluginArbitraryMatcher::Shadow],
-        matcher_separation: PluginArbitraryMatcherSeparation::None,
-        hints: &[ArbitraryHint::Shadow],
+        matched: &[CssType::Shadow],
+        separation: ArbitraryDisambiguateSeparation::None,
     }),
     shadow_color_replacement: Some("var(--en-shadow-color, {})"),
     ..Arbitrary::default()
@@ -51,9 +50,8 @@ pub(crate) const PLUGIN_INSET_2: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     prop: SingleProp("--en-inset-shadow"),
     extra_rule_css: Some(&[INSET_BOX_SHADOW]),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[PluginArbitraryMatcher::Shadow],
-        matcher_separation: PluginArbitraryMatcherSeparation::None,
-        hints: &[ArbitraryHint::Shadow],
+        matched: &[CssType::Shadow],
+        separation: ArbitraryDisambiguateSeparation::None,
     }),
     shadow_color_replacement: Some("var(--en-inset-shadow-color, {})"),
     ..Arbitrary::default()

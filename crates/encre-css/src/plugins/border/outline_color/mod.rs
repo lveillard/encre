@@ -12,9 +12,8 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "outline",
     prop: SingleProp("outline-color"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[PluginArbitraryMatcher::Color],
-        matcher_separation: PluginArbitraryMatcherSeparation::None,
-        hints: &[ArbitraryHint::Color],
+        matched: &[CssType::Color],
+        separation: ArbitraryDisambiguateSeparation::None,
     }),
     ..Arbitrary::default()
 });

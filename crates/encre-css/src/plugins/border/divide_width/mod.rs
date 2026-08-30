@@ -28,9 +28,8 @@ pub(crate) const PLUGIN_X_3: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     prop: MultipleProps(&["border-inline-start-width", "border-inline-end-width"]),
     extra_class: Some(" > :not([hidden]) ~ :not([hidden])"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[PluginArbitraryMatcher::Length, PluginArbitraryMatcher::LineWidth],
-        matcher_separation: PluginArbitraryMatcherSeparation::Space,
-        hints: &[ArbitraryHint::Length],
+        matched: &[CssType::Length, CssType::LineWidth],
+        separation: ArbitraryDisambiguateSeparation::Space,
     }),
     template: Some(MultipleProps(&[
         "calc({} * var(--en-divide-x-reverse))",
@@ -66,9 +65,8 @@ pub(crate) const PLUGIN_Y_3: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     prop: MultipleProps(&["border-block-start-width", "border-block-end-width"]),
     extra_class: Some(" > :not([hidden]) ~ :not([hidden])"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[PluginArbitraryMatcher::Length, PluginArbitraryMatcher::LineWidth],
-        matcher_separation: PluginArbitraryMatcherSeparation::Space,
-        hints: &[ArbitraryHint::Length],
+        matched: &[CssType::Length, CssType::LineWidth],
+        separation: ArbitraryDisambiguateSeparation::Space,
     }),
     template: Some(MultipleProps(&[
         "calc({} * var(--en-divide-y-reverse))",

@@ -16,9 +16,8 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "font",
     prop: SingleProp("font-family"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[PluginArbitraryMatcher::FontFamilyName],
-        matcher_separation: PluginArbitraryMatcherSeparation::Comma,
-        hints: &[ArbitraryHint::GenericName, ArbitraryHint::FamilyName],
+        matched: &[CssType::FontFamilyName],
+        separation: ArbitraryDisambiguateSeparation::Comma,
     }),
     ..Arbitrary::default()
 });

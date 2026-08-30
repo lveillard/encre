@@ -23,9 +23,8 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "border",
     prop: SingleProp("border-style"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[PluginArbitraryMatcher::LineStyle],
-        matcher_separation: PluginArbitraryMatcherSeparation::Space,
-        hints: &[ArbitraryHint::LineStyle],
+        matched: &[CssType::LineStyle],
+        separation: ArbitraryDisambiguateSeparation::Space,
     }),
     ..Arbitrary::default()
 });

@@ -22,9 +22,8 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "bg",
     prop: SingleProp("background-position"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[PluginArbitraryMatcher::Position],
-        matcher_separation: PluginArbitraryMatcherSeparation::Both,
-        hints: &[ArbitraryHint::Position],
+        matched: &[CssType::Position],
+        separation: ArbitraryDisambiguateSeparation::Both,
     }),
     ..Arbitrary::default()
 });

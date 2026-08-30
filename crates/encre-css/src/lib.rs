@@ -257,10 +257,10 @@ pub mod prelude {
             plugins::{
                 Arbitrary, ArbitraryDisambiguate, Color, DynamicPlugin, DynamicPropertyName,
                 ExtraSlash, Functional, ListProperties, ListValues, Number, Plugin,
-                PluginArbitraryMatcher, PluginArbitraryMatcherSeparation, PropertyName,
+                ArbitraryDisambiguateSeparation, PropertyName,
                 PropertyName::*, Spacing, StaticPlugin, StaticPropertyName,
             },
-            selector::{ArbitraryHint, Modifier},
+            selector::{CssType, Modifier},
             utils::{buffer::Buffer, color, shadow, spacing, value_matchers::*},
         };
         pub use phf::{self, phf_map as map};

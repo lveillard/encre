@@ -13,9 +13,8 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "divide",
     prop: SingleProp("border-color"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[PluginArbitraryMatcher::Color],
-        matcher_separation: PluginArbitraryMatcherSeparation::None,
-        hints: &[ArbitraryHint::Color],
+        matched: &[CssType::Color],
+        separation: ArbitraryDisambiguateSeparation::None,
     }),
     extra_class: Some(" > :not([hidden]) ~ :not([hidden])"),
     ..Arbitrary::default()

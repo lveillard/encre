@@ -197,26 +197,6 @@ const GENERIC_FONT_FAMILIES: &[&str] = &[
 ];
 const FONT_WEIGHT_KEYWORDS: &[&str] = &["normal", "bold", "lighter", "bolder"];
 
-fn is_matching_base(value: &str) -> bool {
-    is_matching_var(value)
-        || [
-            "inherit",
-            "initial",
-            "revert",
-            "revert-layer",
-            "unset",
-            "fill",
-            "max-content",
-            "min-content",
-            "fit-content",
-        ]
-        .contains(&value)
-}
-
-fn is_matching_url(value: &str) -> bool {
-    value.starts_with("url(")
-}
-
 fn is_matching_computational_css_function(value: &str) -> bool {
     value.starts_with("min(")
         || value.starts_with("max(")
@@ -224,15 +204,11 @@ fn is_matching_computational_css_function(value: &str) -> bool {
         || value.starts_with("calc(")
 }
 
-/// Returns whether the CSS value is a [`var()`](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties).
-///
-/// # Example
-///
-/// ```
-/// use encre_css::utils::value_matchers::is_matching_var;
-/// assert!(is_matching_var("var(--bg-blue)"));
-/// ```
-pub fn is_matching_var(value: &str) -> bool {
+fn is_matching_gradient(value: &str) -> bool {
+    GRADIENT_TYPES.iter().any(|t| value.starts_with(t))
+}
+
+pub(super) fn is_matching_var(value: &str) -> bool {
     value.starts_with("var(")
 }
 
@@ -270,6 +246,18 @@ pub fn is_matching_absolute_size(value: &str) -> bool {
 /// ```
 pub fn is_matching_relative_size(value: &str) -> bool {
     RELATIVE_SIZES.contains(&value)
+}
+
+/// Returns whether the CSS value is an [`url`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/url_value).
+///
+/// # Example
+///
+/// ```
+/// use encre_css::utils::value_matchers::is_matching_url;
+/// assert!(is_matching_url("url('https://youtube.com/watch?v=dQw4w9WgXcQ')"));
+/// ```
+pub fn is_matching_url(value: &str) -> bool {
+    value.starts_with("url(")
 }
 
 /// Returns whether the CSS value is a [`line width`](https://developer.mozilla.org/en-US/docs/Web/CSS/border-width#values).
@@ -311,7 +299,6 @@ pub fn is_matching_color(value: &str) -> bool {
             .iter()
             .any(|e| value.starts_with(e))
         || NAMED_COLORS.iter().any(|c| &value == c)
-        || is_matching_base(value)
 }
 
 /// Returns whether the CSS value has the [`<length>`](https://developer.mozilla.org/en-US/docs/Web/CSS/length) type.
@@ -326,7 +313,6 @@ pub fn is_matching_length(value: &str) -> bool {
     value == "0"
         || LENGTH_UNITS.iter().any(|u| value.ends_with(u))
         || is_matching_computational_css_function(value)
-        || is_matching_base(value)
 }
 
 /// Returns whether the CSS value has the [`<number>`](https://developer.mozilla.org/en-US/docs/Web/CSS/number) type.
@@ -338,9 +324,7 @@ pub fn is_matching_length(value: &str) -> bool {
 /// assert!(is_matching_number("42.12"));
 /// ```
 pub fn is_matching_number(value: &str) -> bool {
-    value.parse::<f32>().is_ok()
-        || is_matching_computational_css_function(value)
-        || is_matching_base(value)
+    value.parse::<f32>().is_ok() || is_matching_computational_css_function(value)
 }
 
 /// Returns whether the CSS value has the [`<percentage>`](https://developer.mozilla.org/en-US/docs/Web/CSS/percentage) type.
@@ -352,7 +336,7 @@ pub fn is_matching_number(value: &str) -> bool {
 /// assert!(is_matching_percentage("10%"));
 /// ```
 pub fn is_matching_percentage(value: &str) -> bool {
-    value.ends_with('%') || is_matching_computational_css_function(value) || is_matching_base(value)
+    value.ends_with('%') || is_matching_computational_css_function(value)
 }
 
 /// Returns whether the CSS value has the [`<time>`](https://developer.mozilla.org/en-US/docs/Web/CSS/time) type.
@@ -365,22 +349,7 @@ pub fn is_matching_percentage(value: &str) -> bool {
 /// assert!(is_matching_time("10ms"));
 /// ```
 pub fn is_matching_time(value: &str) -> bool {
-    value.ends_with('s')
-        || value.ends_with("ms")
-        || is_matching_computational_css_function(value)
-        || is_matching_base(value)
-}
-
-/// Returns whether the CSS value has the [`<gradient>`](https://developer.mozilla.org/en-US/docs/Web/CSS/gradient) type.
-///
-/// # Example
-///
-/// ```
-/// use encre_css::utils::value_matchers::is_matching_gradient;
-/// assert!(is_matching_gradient("linear-gradient(45deg, blue, red);"));
-/// ```
-pub fn is_matching_gradient(value: &str) -> bool {
-    GRADIENT_TYPES.iter().any(|t| value.starts_with(t)) || is_matching_base(value)
+    value.ends_with('s') || value.ends_with("ms") || is_matching_computational_css_function(value)
 }
 
 /// Returns whether the CSS value has the [`<position>`](https://developer.mozilla.org/en-US/docs/Web/CSS/position_value) type.
@@ -394,10 +363,7 @@ pub fn is_matching_gradient(value: &str) -> bool {
 /// assert!(is_matching_position("42%"));
 /// ```
 pub fn is_matching_position(value: &str) -> bool {
-    VALID_POSITIONS.contains(&value)
-        || is_matching_length(value)
-        || is_matching_percentage(value)
-        || is_matching_base(value)
+    VALID_POSITIONS.contains(&value) || is_matching_length(value) || is_matching_percentage(value)
 }
 
 /// Returns whether the CSS value has the [`<angle>`](https://developer.mozilla.org/en-US/docs/Web/CSS/angle) type.
@@ -409,9 +375,7 @@ pub fn is_matching_position(value: &str) -> bool {
 /// assert!(is_matching_angle("0.2turn"));
 /// ```
 pub fn is_matching_angle(value: &str) -> bool {
-    ANGLES.iter().any(|a| value.ends_with(a))
-        || is_matching_computational_css_function(value)
-        || is_matching_base(value)
+    ANGLES.iter().any(|a| value.ends_with(a)) || is_matching_computational_css_function(value)
 }
 
 /// Returns whether the CSS value has the [`<image>`](https://developer.mozilla.org/en-US/docs/Web/CSS/image) type.
@@ -423,12 +387,10 @@ pub fn is_matching_angle(value: &str) -> bool {
 /// assert!(is_matching_image("linear-gradient(to_right,red,orange,yellow,green,blue,indigo,violet)"));
 /// ```
 pub fn is_matching_image(value: &str) -> bool {
-    is_matching_url(value)
-        || is_matching_gradient(value)
+    is_matching_gradient(value)
         || ["element(", "image(", "cross-fade(", "image-set("]
             .iter()
             .any(|e| value.starts_with(e))
-        || is_matching_base(value)
 }
 
 /// Returns whether the CSS value is a font family name.

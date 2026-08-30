@@ -24,9 +24,8 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> (StaticPlu
             namespace,
             prop,
             disambiguate: Some(ArbitraryDisambiguate {
-                matchers: &[PluginArbitraryMatcher::Length, PluginArbitraryMatcher::Percentage],
-                matcher_separation: PluginArbitraryMatcherSeparation::Space,
-                hints: &[ArbitraryHint::Length, ArbitraryHint::Percentage],
+                matched: &[CssType::Length, CssType::Percentage],
+                separation: ArbitraryDisambiguateSeparation::Space,
             }),
             ..Arbitrary::default()
         }),

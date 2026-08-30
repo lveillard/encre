@@ -13,14 +13,13 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "stroke",
     prop: SingleProp("stroke-width"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[
-            PluginArbitraryMatcher::Length,
-            PluginArbitraryMatcher::Percentage,
-            PluginArbitraryMatcher::LineWidth,
-            PluginArbitraryMatcher::Number,
+        matched: &[
+            CssType::Length,
+            CssType::Percentage,
+            CssType::LineWidth,
+            CssType::Number,
         ],
-        matcher_separation: PluginArbitraryMatcherSeparation::Comma,
-        hints: &[ArbitraryHint::Length, ArbitraryHint::Percentage],
+        separation: ArbitraryDisambiguateSeparation::Comma,
     }),
     ..Arbitrary::default()
 });

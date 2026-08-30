@@ -22,13 +22,8 @@ pub(crate) const PLUGIN_ARBITRARY: StaticPlugin = Plugin::Arbitrary(Arbitrary {
     namespace: "decoration",
     prop: SingleProp("text-decoration-thickness"),
     disambiguate: Some(ArbitraryDisambiguate {
-        matchers: &[
-            PluginArbitraryMatcher::Length,
-            PluginArbitraryMatcher::Percentage,
-            PluginArbitraryMatcher::CustomMultiple(&["auto", "from-font"]),
-        ],
-        matcher_separation: PluginArbitraryMatcherSeparation::None,
-        hints: &[ArbitraryHint::Length, ArbitraryHint::Percentage],
+        matched: &[CssType::Length, CssType::Percentage],
+        separation: ArbitraryDisambiguateSeparation::None,
     }),
     ..Arbitrary::default()
 });

@@ -683,7 +683,7 @@ mod tests {
     // as Default::default()
     use super::*;
 
-    use crate::selector::{ArbitraryHint, trie::build_trie};
+    use crate::selector::{CssType, trie::build_trie};
     #[allow(clippy::wildcard_imports)]
     use crate::{config::Config, plugins::*, selector::Selector};
 
@@ -1649,7 +1649,7 @@ mod tests {
                 plugin: CustomPlugin::Static(&background::background_color::PLUGIN),
                 variants: vec![],
                 modifier: Modifier::Arbitrary {
-                    hint: Some(ArbitraryHint::Color),
+                    hint: Some(CssType::Color),
                     value: Cow::from("#fff"),
                 },
                 is_important: false,
@@ -1729,7 +1729,7 @@ mod tests {
                     },
                 ],
                 modifier: Modifier::Arbitrary {
-                    hint: Some(ArbitraryHint::Color),
+                    hint: Some(CssType::Color),
                     value: Cow::from("#fff"),
                 },
                 is_important: false,
@@ -1885,7 +1885,7 @@ mod tests {
                     }
                 ],
                 modifier: Modifier::Arbitrary {
-                    hint: Some(ArbitraryHint::Color),
+                    hint: Some(CssType::Color),
                     value: Cow::from("#fff"),
                 },
                 is_important: false,
@@ -2002,7 +2002,7 @@ mod tests {
                         template: Cow::Borrowed("&:hover")
                     }],
                     modifier: Modifier::Arbitrary {
-                        hint: Some(ArbitraryHint::Color),
+                        hint: Some(CssType::Color),
                         value: Cow::from("black,"),
                     },
                     is_important: false,
@@ -2180,7 +2180,7 @@ mod tests {
                         },
                     ],
                     modifier: Modifier::Arbitrary {
-                        hint: Some(ArbitraryHint::Color),
+                        hint: Some(CssType::Color),
                         value: Cow::from("black"),
                     },
                     is_important: false,
@@ -2281,7 +2281,7 @@ mod tests {
                         },
                     ],
                     modifier: Modifier::Arbitrary {
-                        hint: Some(ArbitraryHint::Color),
+                        hint: Some(CssType::Color),
                         value: Cow::from("black,"),
                     },
                     is_important: false,

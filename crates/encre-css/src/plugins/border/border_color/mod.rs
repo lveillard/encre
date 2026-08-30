@@ -15,9 +15,8 @@ const fn plugin(namespace: &'static str, prop: StaticPropertyName) -> P {
             namespace,
             prop,
             disambiguate: Some(ArbitraryDisambiguate {
-                matchers: &[PluginArbitraryMatcher::Color],
-                matcher_separation: PluginArbitraryMatcherSeparation::None,
-                hints: &[ArbitraryHint::Color],
+                matched: &[CssType::Color],
+                separation: ArbitraryDisambiguateSeparation::None,
             }),
             ..Arbitrary::default()
         }),
