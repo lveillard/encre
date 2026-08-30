@@ -107,7 +107,7 @@ pub type DynamicPluginArbitraryMatcher = PluginArbitraryMatcher<String, Vec<Stri
 fn can_handle_nop(_: &ContextCanHandle) -> bool { false }
 fn handle_nop(_: &mut ContextHandle) {}
 
-#[derive(Debug, PartialEq, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub(crate) enum CustomPlugin {
     #[serde(skip_serializing)]
     Static(&'static StaticPlugin),
@@ -246,7 +246,7 @@ pub enum PropertyName<Str, ArrayStr> {
     /// use encre_css::{Config, generate};
     /// use encre_css::prelude::build_plugin::*;
     ///
-    /// pub(crate) const PLUGIN: StaticPlugin = Plugin::Color(Color {
+    /// const PLUGIN: StaticPlugin = Plugin::Color(Color {
     ///     namespace: "custom-decoration",
     ///     prop: MultipleProps(&["-webkit-text-decoration-color", "text-decoration-color"]),
     ///     ..Color::default()
@@ -331,7 +331,7 @@ pub struct ExtraSlash<Str, MapStr> {
 /// overflow-scroll = ["overflow: scroll;"]
 /// overflow-auto = ["overflow: auto;"]
 /// ```
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ListProperties<Str, ArrayStr, MapStr, MapArrayStr> {
     /// The map between utility classes and raw CSS lines.
     ///
@@ -516,7 +516,7 @@ impl<Str, ArrayStr, MapStr> ListProperties<Str, ArrayStr, MapStr, HashMap<String
 /// w-max = "max-content"
 /// w-min = "min-content"
 /// ```
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ListValues<Str, ArrayStr, MapStr> {
     /// The CSS property name of the generated CSS rule.
     ///
@@ -673,7 +673,63 @@ impl<ArrayStr> ListValues<String, ArrayStr, HashMap<String, String>> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+/// Define a plugin which supports all spacing modifiers,
+/// that is a (potentially floating) number, a fraction (e.g `3/4`) or `px`.
+///
+/// This plugin kind can also support the `auto` and `full` modifiers by setting [`Spacing::has_auto`] and [`Spacing::has_full`].
+///
+/// ### Example
+///
+/// ```
+/// use encre_css::{Config, generate};
+/// use encre_css::prelude::build_plugin::*;
+///
+/// const PLUGIN: StaticPlugin = Plugin::Spacing(Spacing {
+///     namespace: "h",
+///     prop: SingleProp("height"),
+///     has_auto: Some(true),
+///     has_full: Some(true),
+///     ..Spacing::default()
+/// });
+///
+/// let mut config = Config::default();
+/// config.register_plugin(&PLUGIN);
+///
+/// let generated = generate(["h-2", "h-3/4", "h-px", "h-auto", "h-full"], &config);
+///
+/// assert!(generated.ends_with(r".h-2 {
+///   height: 0.5rem;
+/// }
+///
+/// .h-3\/4 {
+///   height: 75%;
+/// }
+///
+/// .h-auto {
+///   height: auto;
+/// }
+///
+/// .h-full {
+///   height: 100%;
+/// }
+///
+/// .h-px {
+///   height: 1px;
+/// }"));
+/// ```
+///
+/// ### Example in TOML
+///
+/// ```toml
+/// [[custom_plugins]]
+///
+/// [custom_plugins.Spacing]
+/// namespace = "h"
+/// prop = "height"
+/// has_auto = true
+/// has_full = true
+/// ```
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Spacing<Str, ArrayStr, MapStr> {
     /// The namespace (i.e common prefix) that all classes need to start with in order to be
     /// matched by this plugin.
@@ -798,7 +854,53 @@ impl<ArrayStr, MapStr> Spacing<String, ArrayStr, MapStr> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+/// Define a plugin which supports all color modifiers, e.g `red-200` (the list of colors is based
+/// on [`BUILTIN_COLORS`] and [`Theme::colors`] which is defined by the [`Config`]).
+///
+/// [`BUILTIN_COLORS`]: crate::config::BUILTIN_COLORS
+/// [`Theme::colors`]: crate::config::Theme::colors
+/// [`Config`]: crate::config::Config
+///
+/// ### Example
+///
+/// ```
+/// use encre_css::{Config, generate};
+/// use encre_css::prelude::build_plugin::*;
+///
+/// const PLUGIN: StaticPlugin = Plugin::Color(Color {
+///     namespace: "bg",
+///     prop: SingleProp("background-color"),
+///     ..Color::default()
+/// });
+///
+/// let mut config = Config::default();
+/// config.register_plugin(&PLUGIN);
+///
+/// let generated = generate(["bg-red-200", "bg-black", "bg-inherit"], &config);
+///
+/// assert!(generated.ends_with(r".bg-black {
+///   background-color: #000;
+/// }
+///
+/// .bg-inherit {
+///   background-color: inherit;
+/// }
+///
+/// .bg-red-200 {
+///   background-color: oklch(88.5% .062 18.334);
+/// }"));
+/// ```
+///
+/// ### Example in TOML
+///
+/// ```toml
+/// [[custom_plugins]]
+///
+/// [custom_plugins.Color]
+/// namespace = "bg"
+/// prop = "background-color"
+/// ```
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Color<Str, ArrayStr, MapStr> {
     /// The namespace (i.e common prefix) that all classes need to start with in order to be
     /// matched by this plugin.
@@ -904,7 +1006,55 @@ impl<ArrayStr, MapStr> Color<String, ArrayStr, MapStr> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+/// Define a plugin which supports any number as modifier.
+///
+/// The number must be an integer (signed integers can be supported by enabling
+/// [`Number::has_negative`]).
+///
+/// ### Example
+///
+/// ```
+/// use encre_css::{Config, generate};
+/// use encre_css::prelude::build_plugin::*;
+///
+/// const PLUGIN: StaticPlugin = Plugin::Number(Number {
+///    namespace: "z",
+///    prop: SingleProp("z-index"),
+///    has_negative: Some(true),
+///    has_auto: Some(true),
+///    ..Number::default()
+/// });
+///
+/// let mut config = Config::default();
+/// config.register_plugin(&PLUGIN);
+///
+/// let generated = generate(["z-20", "-z-5", "z-auto"], &config);
+///
+/// assert!(generated.ends_with(r".-z-5 {
+///   z-index: -5;
+/// }
+///
+/// .z-20 {
+///   z-index: 20;
+/// }
+///
+/// .z-auto {
+///   z-index: auto;
+/// }"));
+/// ```
+///
+/// ### Example in TOML
+///
+/// ```toml
+/// [[custom_plugins]]
+///
+/// [custom_plugins.Number]
+/// namespace = "z"
+/// prop = "z-index"
+/// has_negative = true
+/// has_auto = true
+/// ```
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Number<Str, ArrayStr, MapStr> {
     /// The namespace (i.e common prefix) that all classes need to start with in order to be
     /// matched by this plugin.
@@ -917,6 +1067,37 @@ pub struct Number<Str, ArrayStr, MapStr> {
     /// properties.
     pub prop: PropertyName<Str, ArrayStr>,
 
+    /// A float by which to divide the number given in the utility class.
+    ///
+    /// It can for example be used to support classes having a percentage between 1-100 but which
+    /// need to generate a CSS property value between 0-1.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::{Config, generate};
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// const PLUGIN: StaticPlugin = Plugin::Number(Number {
+    ///     namespace: "custom-opacity",
+    ///     prop: SingleProp("opacity"),
+    ///     divide_by: Some(100.0),
+    ///     ..Number::default()
+    /// });
+    ///
+    /// let mut config = Config::default();
+    /// config.register_plugin(&PLUGIN);
+    ///
+    /// let generated = generate(["custom-opacity-80", "custom-opacity-2"], &config);
+    ///
+    /// assert!(generated.ends_with(r".custom-opacity-2 {
+    ///   opacity: 0.02;
+    /// }
+    ///
+    /// .custom-opacity-80 {
+    ///   opacity: 0.8;
+    /// }"));
+    /// ```
     pub divide_by: Option<f32>,
 
     /// Automatically add support for the `auto` modifier.
@@ -1039,7 +1220,7 @@ impl<ArrayStr, MapStr> Number<String, ArrayStr, MapStr> {
 }
 
 /// Define a plugin supporting [`arbitrary values`], i.e all selectors in the form
-/// `<namespace>-[...]`
+/// `<namespace>-[...]` (i.e the modifier is wrapped in square brackets).
 ///
 /// It directly copies the contents given inside brackets as the value of the `<prop>` CSS
 /// propertie(s).
@@ -1100,7 +1281,52 @@ pub struct Arbitrary<Str, ArrayStr, MapStr, ArrayHints, ArrayMatchers> {
     /// properties.
     pub prop: PropertyName<Str, ArrayStr>,
 
+    /// If the arbitrary value is a shadow, replace all the colors used by a single CSS variable
+    /// given as string.
+    ///
+    /// This field should only be used for shadows that need to have their colors separately set
+    /// using a dedicated utility class.
+    ///
+    /// If the value contains a placeholder `{}`, it will be replaced by the previous color value.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use encre_css::{Config, generate};
+    /// use encre_css::prelude::build_plugin::*;
+    ///
+    /// const PLUGIN_SHADOW: StaticPlugin = Plugin::Arbitrary(Arbitrary {
+    ///     namespace: "custom-shadow",
+    ///     prop: SingleProp("box-shadow"),
+    ///     shadow_color_replacement: Some("var(--shadow-color, {})"),
+    ///     ..Arbitrary::default()
+    /// });
+    ///
+    /// const PLUGIN_SHADOW_COLOR: StaticPlugin = Plugin::Color(Color {
+    ///     namespace: "custom-shadow-color",
+    ///     prop: SingleProp("--shadow-color"),
+    ///     ..Color::default()
+    /// });
+    ///
+    /// let mut config = Config::default();
+    /// config.register_plugin(&PLUGIN_SHADOW);
+    /// config.register_plugin(&PLUGIN_SHADOW_COLOR);
+    ///
+    /// let generated = generate(["custom-shadow-[10px_5px_5px_red]", "custom-shadow-color-blue-100"], &config);
+    ///
+    /// assert!(generated.ends_with(r"
+    /// .custom-shadow-\[10px_5px_5px_red\] {
+    ///   box-shadow: 10px 5px 5px var(--shadow-color, red);
+    /// }
+    ///
+    /// .custom-shadow-color-blue-100 {
+    ///   --shadow-color: oklch(93.2% .032 255.585);
+    /// }"));
+    /// ```
+    ///
+    ///
     pub shadow_color_replacement: Option<Str>,
+
     // TODO: make a structure for matchers + hints (Disambiguate...) and make a default for PluginArbitraryMatcherSeparation
     pub matchers: Option<(ArrayMatchers, PluginArbitraryMatcherSeparation)>,
     pub hints: Option<ArrayHints>,
@@ -1280,7 +1506,7 @@ impl<ArrayStr, MapStr, ArrayHints, ArrayMatchers> Arbitrary<String, ArrayStr, Ma
 /// [`generate_at_rules`]: crate::generator::generate_at_rules
 /// [`generate_class`]: crate::generator::generate_class
 /// [`generate_wrapper`]: crate::generator::generate_wrapper
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub struct Functional<Str> {
     /// The namespace (i.e common prefix) that all classes need to start with in order to be
     /// matched by this plugin.
@@ -1553,7 +1779,7 @@ impl Functional<String> {
 ///
 /// [`Config::register_plugin`]: crate::Config::register_plugin
 /// [`Config`]: crate::Config
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Plugin<Str, ArrayStr, MapStr, MapArrayStr, ArrayHints, ArrayMatchers> {
     /// See [`ListProperties`].
     ListProperties(ListProperties<Str, ArrayStr, MapStr, MapArrayStr>),
