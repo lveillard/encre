@@ -1,3 +1,7 @@
+> **Temporary downstream fork of [encre-org/encre-css](https://gitlab.com/encre-org/encre-css).**
+> This repository preserves upstream history and authorship and carries two fixes for BlitzStore.
+> It is not a separate CSS framework. See [FORK.md](FORK.md) for the changes and upstream revision.
+
 <div align="center">
   <img src="https://gitlab.com/encre-org/encre-css/raw/main/.assets/logo.png" width="100" />
   <h1>encre-css</h1>
