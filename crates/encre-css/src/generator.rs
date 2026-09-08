@@ -8,7 +8,7 @@ use crate::{
     preflight::Preflight,
     selector::{
         Modifier, Selector, Variant, parse,
-        trie::{Trie, build_trie},
+        trie::{Trie, shared_trie},
     },
     utils::{buffer::Buffer, color, shadow, spacing},
 };
@@ -1012,7 +1012,7 @@ fn resolve_selector<'a>(
 pub fn generate<'a>(sources: impl IntoIterator<Item = &'a str>, config: &Config) -> String {
     let config_derived_variants = config.get_derived_variants();
     let mut selectors = BTreeSet::new();
-    let trie = build_trie(config);
+    let trie = shared_trie(config);
 
     // Add selectors from the safelist
     for safe_selector in config.safelist.iter() {
