@@ -1,7 +1,16 @@
-use std::{borrow::Cow, collections::HashMap};
+use std::{
+    borrow::Cow,
+    collections::HashMap,
+    sync::{Arc, LazyLock},
+};
 
 use crate::{
-    Config, config::BUILTIN_PLUGINS, plugins::{Arbitrary, Color, CustomPlugin, Functional, ListProperties, ListValues, Number, Plugin, Spacing},
+    Config,
+    config::BUILTIN_PLUGINS,
+    plugins::{
+        Arbitrary, Color, CustomPlugin, Functional, ListProperties, ListValues, Number, Plugin,
+        Spacing,
+    },
 };
 
 #[derive(Debug)]
@@ -85,6 +94,18 @@ impl Trie {
     }
 }
 
+pub(crate) fn shared_trie(config: &Config) -> Arc<Trie> {
+    // Only custom_plugins affects this index. Theme values, variants and other
+    // configuration are still read from the caller while resolving selectors.
+    static BUILTIN_TRIE: LazyLock<Arc<Trie>> =
+        LazyLock::new(|| Arc::new(build_trie(&Config::default())));
+    if config.custom_plugins.is_empty() {
+        Arc::clone(&BUILTIN_TRIE)
+    } else {
+        Arc::new(build_trie(config))
+    }
+}
+
 pub(crate) fn build_trie(config: &Config) -> Trie {
     let mut trie = Trie::new();
 
@@ -107,7 +128,9 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
         )
     {
         match &plugin {
-            Plugin::ListProperties(ListProperties { namespace, props, .. }) => {
+            Plugin::ListProperties(ListProperties {
+                namespace, props, ..
+            }) => {
                 if let Some(namespace) = namespace {
                     trie.insert(
                         namespace,
@@ -132,7 +155,9 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                     }
                 }
             }
-            Plugin::ListValues(ListValues { namespace, values, .. }) => {
+            Plugin::ListValues(ListValues {
+                namespace, values, ..
+            }) => {
                 if let Some(namespace) = namespace {
                     trie.insert(
                         namespace,
@@ -188,7 +213,9 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
         })
     {
         match &plugin {
-            Plugin::ListProperties(ListProperties { namespace, props, .. }) => {
+            Plugin::ListProperties(ListProperties {
+                namespace, props, ..
+            }) => {
                 if let Some(namespace) = &namespace {
                     trie.insert(
                         namespace,
@@ -213,7 +240,9 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
                     }
                 }
             }
-            Plugin::ListValues(ListValues { namespace, values, .. }) => {
+            Plugin::ListValues(ListValues {
+                namespace, values, ..
+            }) => {
                 if let Some(namespace) = &namespace {
                     trie.insert(
                         namespace,
@@ -257,4 +286,33 @@ pub(crate) fn build_trie(config: &Config) -> Trie {
     }
 
     trie
+}
+
+#[cfg(test)]
+mod cache_tests {
+    use super::*;
+    use crate::{generate, plugins::PropertyName};
+
+    #[test]
+    fn builtin_index_is_reused_across_configurations() {
+        let first = shared_trie(&Config::default());
+        let second = shared_trie(&Config::default());
+        assert!(Arc::ptr_eq(&first, &second));
+    }
+
+    #[test]
+    fn custom_plugins_do_not_leak_into_the_builtin_index() {
+        let mut config = Config::default();
+        let original = generate(["audit-color"], &config);
+        for color in ["orange", "purple"] {
+            config.custom_plugins.clear();
+            config.register_dynamic_plugin(Plugin::ListValues(ListValues {
+                prop: PropertyName::SingleProp("color".to_owned()),
+                values: HashMap::from([("audit-color".to_owned(), color.to_owned())]),
+                ..ListValues::default_dynamic()
+            }));
+            assert!(generate(["audit-color"], &config).contains(&format!("color: {color};")));
+            assert_eq!(generate(["audit-color"], &Config::default()), original);
+        }
+    }
 }
